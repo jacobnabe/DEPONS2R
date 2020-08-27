@@ -1,0 +1,7 @@
+load("/Users/au155800/Dropbox/Statistics and modelling/R code/DEPONS2R/data/bathymetryraster.RData")
+library(raster)
+plot(bathymetryraster)
+library(DEPONS2R)
+load("/Users/au155800/Dropbox/Statistics and modelling/R code/DEPONS2R/data/bathymetry.RData")
+plot(bathymetry)
+plot(bathymetry)
