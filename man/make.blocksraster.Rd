@@ -7,76 +7,71 @@
 \usage{
 \S4method{make.blocksraster}{DeponsRaster}(
   template,
-  blocks,
-  blockvals,
-  fname,
+  blocks = NA,
+  blockvals = NULL,
+  NAvalue = -9999,
   plot = FALSE,
+  fname = NULL,
   overwrite = FALSE
 )
 }
 \arguments{
 \item{template}{DeponsRaster object used as template for new blocks file}
 
-\item{blocks}{List of areas to be used for new blocks. Each item in 'blocks' should
-either be a matrix (with two columns, corresponding to x and y-coordinates)
-or a \code{\link{SpatialPolygons}} object.}
+\item{blocks}{list of areas to be used for new blocks. Each item in 'blocks'
+should be a matrix (with two columns, corresponding to x- and y-coordinates)
+or a SpatialPolygons object}
 
 \item{blockvals}{Vector of integer values defining the labels of the new blocks.
 The first value defines the background value, so the length of 'blockvals'
-should equal the number of blocks plus 1.}
+should equal the number of blocks plus 1}
 
-\item{fname}{Name of the output file (ending with '.asc'). The blocks raster
-will only be saved if a name is provided.}
+\item{NAvalue}{Value used for missing data in the output object}
 
-\item{plot}{Whether a plot should be produced.}
+\item{plot}{If TRUE, the raster block is plotted}
 
-\item{overwrite}{Overwrite existing file?}
+\item{fname}{Name of the output raster file (character string ending with '.asc')}
+
+\item{overwrite}{Whether to replace existing file.}
 }
 \description{
-Make file for counting the number of animals in different parts
-('blocks') of the landscape during DEPONS simulations.
+Create a new blocks file
 }
 \details{
-Any of the raster files in simulations for a specific landscape can
-be used as template. The new blocks file will have the same resolution and
-extent as the template, but will consist of a number of blocks with a shape
-defined using the \code{blocks} parameter. If an item on the blocks list is
-a matrix with spatial coordinates, it is assumed to use the same coordinate
-reference system as the template. In that case the new block is defined by the
-smallest possible rectangle that contains all positions. For \code{SpatialPoints}
-or \code{SpatialPolygons} elements, the blocks can take any shape. Raster cells
-are included in the new blocks if the polygons that define them include the
-centre of the raster cell.
+Produces a raster file for use in DEPONS simulation. This allows
+animals to be counted within specific regions (blocks) of the landscape
+during the simulation. The new blocks can be specified as either matrices or
+SpatialPolygons objects. For matrices, the blocks are defined as the smallest
+rectangle that includes all the specified positions.
 }
 \note{
-Blocks files should not be modified when running simulations in the
-Kattegat landscape. In this landscape the blocks file allows simulated animals
-to navigate beteween different parts of the landscape when they use large-scale
-movements.
+The blocks file should not be modified when running DEPONS
+simulations using the 'Kattegat' landscape. In this landscape the simulated
+animals use the blocks file for navigation. Also note that blocks are added
+to the new blocks raster in the order they are file in the order in which
+they are listed in 'blocks', so the order mattes if the blocks overlap.
 }
 \examples{
-# Make list with areas to designate as blocks
+#Load file to use as template for new blocks file
+data("bathymetry")
+
+# Make list of blocks to create
 new.blocks <- list()
-x <- runif(7, 700000, 760000)
-y <- runif(7, 6200000, 6300000)
+x <- runif(8, 700000, 760000)
+y <- runif(8, 6200000, 6300000)
 new.blocks[[1]] <- cbind(x,y)
 x <- c(600000, 635000, 670000, 635000)
 y <- c(6150000, 6200000, 6150000, 6100000)
-xy <- cbind(x,y)
 library(sp)
-srl <- list(Polygon(xy))
-Srl <- list(sp::Polygons(srl, ID=as.vector(as.character(2))))
+srl <- list(Polygon(cbind(x,y)))
+Srl <- list(Polygons(srl, ID=as.vector("p")))
 new.blocks[[2]] <- SpatialPolygons(Srl, proj4string=crs(bathymetry))
 
-make.blocksraster(template=bathymetry, blocks=new.blocks, plot=TRUE)
+make.blocksraster(bathymetry, new.blocks, plot=TRUE)
 points(new.blocks[[1]])
 plot(new.blocks[[2]], add=TRUE)
 
 \dontrun{
-make.blocksraster(template=bathymetry, blocks=new.blocks, fname="test.asc")
+make.blocksraster(bathymetry, new.blocks, fname="test.asc")
 }
-}
-\seealso{
-See \code{readShapePoly} (\code{maptools}-package) for details on how to
-read a polygon shapefile into a SpatialPolygonsDataFrame object.
 }

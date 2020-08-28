@@ -17,7 +17,7 @@
 #' @slot simdate POSIXlt object with the date and time when the simulation was
 #' finished. This is read from the name of the imput file.
 #' @slot crs CRS object providing the coordinate reference system used; see
-#' \code{\link[sp]{CRS}} for details
+#' \link[sp]{CRS} for details
 #' @slot simstart POSIXlt object with the first day of the simulation, i.e.
 #' the first day in the period that the simulations are intended to represent in
 #' the real world.
@@ -32,7 +32,6 @@
 #' a.DeponsDyn
 #' @note DeponsDyn-objects are usually read in from csv files produced during
 #' DEPONS simulations.
-#' @seealso \code{\link{read.DeponsDyn}}
 #' @note Use data(bathymetry) to load example data.
 setClass(Class="DeponsDyn",
          slots=list(title="character", landscape="character", simdate="POSIXlt",

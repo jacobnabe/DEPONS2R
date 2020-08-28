@@ -15,9 +15,6 @@
 }
 \description{
 Get the map projection (also known as coordinate reference
-system, crs) of DeponsRaster and DeponsTrack objects.
-}
-\seealso{
-See \code{\link[sp]{proj4string}} about the format of the text
-string defining the map projection.
+system, crs) of DeponsRaster and DeponsTrack objects. For {sp} objects the
+text string defining the crs is called the \code{\link[sp]{proj4string}}.
 }

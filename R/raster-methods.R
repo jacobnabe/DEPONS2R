@@ -151,7 +151,6 @@ setGeneric("plot")
 #' @import raster
 #' @import methods
 #' @import sp
-#' \code{add=TRUE} to the call.
 #' @aliases plot.DeponsRaster
 #' @aliases plot,DeponsRaster,ANY-method
 #' @aliases plot,DeponsRaster,DeponsTrack-method
@@ -223,32 +222,6 @@ setMethod("plot", signature("DeponsRaster", "ANY"),
 )
 
 
-
-as.DeponsRaster <- function(obj, type="NA", landscape="NA", nodata_value=-9999) {
-  the.res <- res(obj)
-  if(!identical(the.res[1], the.res[2])) stop("x-resolution must be
-                                                        equal to y-resolution")
-  if(the.res[1]!=400) warning("Resolution not equal to 400 m")
-  new.dr <- new("DeponsRaster", type=type, landscape=landscape,
-                crs="NA", ncols=dim(obj)[2], nrows=dim(obj)[1],
-                xllcorner=extent(obj)@xmin, yllcorner=extent(obj)@ymin,
-                cellsize=the.res[1], nodata_value=nodata_value
-  )
-  new.dr@data <- as.matrix(obj)
-  return(new.dr)
-}
-
-
-#' 'as.DeponsRaster'
-#' @title Convert RasterLayer objects to DeponsRaster objects
-#' @param obj RasterLayer object (see \code{\link[raster]{raster}})
-#' @param type Landscape type (see \code{\link{DeponsRaster-class}})
-#' @param landscape The spatial region of the landscape
-#' @param nodata_value Value used for missing data in the output object
-#' @exportMethod as.DeponsRaster
-setMethod("as.DeponsRaster", signature("RasterLayer"), as.DeponsRaster)
-
-
 setGeneric("crs")
 
 #' Get map projection
@@ -258,7 +231,7 @@ setGeneric("crs")
 #' text string defining the crs is called the \code{\link[sp]{proj4string}}.
 #' @aliases crs,DeponsRaster-method
 #' @aliases crs,DeponsTrack-method
-#' @param x Object of class {code{DeponsRaster}} or \code{DeponsTrack}.
+#' @param x Object of class {code{DeponsRaster}}.
 #' @exportMethod crs
 setMethod("crs", signature("DeponsRaster"),
           function(x) {
@@ -267,102 +240,122 @@ setMethod("crs", signature("DeponsRaster"),
 )
 
 
-
-make.br <- function(template, blocks=NA, blockvals=NULL) {
+make.br <- function(template, blocks=NA, blockvals=NULL, NAvalue=-9999,
+                    plot=FALSE, fname=NULL, overwrite=FALSE) {
   # the template is another DeponsRaster file with same size and resolution
   if(class(blocks)!="list") stop("Please a list of 'blocks' to update")
   good.class <- function(elem) {
-    any(class(elem)=="matrix") || any(class(elem)=="SpatialPoints")
+    any(class(elem)=="matrix") || any(class(elem)=="SpatialPolygons")
   }
   if(!all(sapply(blocks, FUN=good.class))) {
     stop("All elements in 'blocks' must be of class 'matrix' or
-                   'SpatialPoints'")
+                   'SpatialPolygons'")
   }
   if(missing(blockvals)) blockvals <- 1:(length(blocks)+1)
   if(class(blockvals)!="integer") stop("'blockvals' should be an vector of integers'")
   if(length(blockvals) != length(blocks)+1) stop("Please provide a value for the
       background plus a value for each element in 'blocks'")
-  template[] <- blockvals[1]  # Set background value
-  # Convert each element in the blocks list to a SpatialPoints element outlining
+  template@data[] <- blockvals[1]  # Set background value
+  # Convert each element in the blocks list to a SpatialPolygons element outlining
   # the new block. If it was a matrix of coordinates, use the bounding box to
   # define the new block. The numbers assigned to these blocks are taken from
   # 'blockvals'.
   new.blocks <- list()
-  templ.ext <- raster::extent(template)
-  for(i in 1:length(blocks)) {
-    if(any(class(blocks[[i]])=="SpatialPoints")) {
-      if(as.character(new.blocks[[i]]@proj4string)!=as.character(crs(template))) {
-        warning(paste("CRS of block", i,"and template do not match"))
+  templ.r <- raster::raster(template@data, template@ext$xleft, template@ext$xright,
+                           template@ext$ybottom, template@ext$ytop, crs=template@crs)
+  templ.r[] <- blockvals[1]
+    for(i in 1:length(blocks)) {
+      if(any(class(blocks[[i]])=="SpatialPolygons")) {
+        crs.b <- as.character(blocks[[i]]@proj4string)
+        crs.t <- as.character(crs(template))
+        if(!(is.na(crs.b)==is.na(crs.t))) {
+          warning(paste("CRS of block", i,"and template do not match"))
+        } else if(crs.b != crs.t) {
+          warning(paste("CRS of block", i,"and template do not match"))
+        }
+        new.blocks[[i]] <- blocks[[i]]
       }
-      new.blocks[[i]] <- blocks[[i]]
+      if(any(class(blocks[[i]])=="matrix")) {
+        if(ncol(blocks[[i]])!=2) stop("Matrices defining blocks must have 2 columns")
+        bb <- sp::SpatialPoints(blocks[[i]])
+        bb <- sp::bbox(bb)
+        bb.matr.x <- c(bb[1,1], bb[1,2], bb[1,2], bb[1,1])
+        if(min(bb.matr.x)<template@ext$xleft) warning(paste("xmin < raster extent in block", i))
+        if(max(bb.matr.x)>template@ext$xright) warning(paste("xmax > raster extent in block", i))
+        bb.matr.y <- c(bb[2,1], bb[2,1], bb[2,2], bb[2,2])
+        if(min(bb.matr.y)<template@ext$ybottom) warning(paste("ymin < raster extent in block", i))
+        if(max(bb.matr.y)>template@ext$ytop) warning(paste("ymax > raster extent in block", i))
+        bb.coords <- cbind("x"=bb.matr.x, "y"=bb.matr.y)
+        srl <- list(sp::Polygon(bb.coords))
+        Srl <- list(sp::Polygons(srl, ID=as.vector(as.character(i))))
+        new.blocks[[i]] <- SpatialPolygons(Srl, proj4string=sp::CRS(template@crs))  # ASSUMES correct proj
+      }
+      out <- raster::rasterize(new.blocks[[i]], templ.r)
+      templ.r[!is.na(out)] <- blockvals[i+1]
     }
-    if(any(class(blocks[[i]])=="matrix")) {
-      if(ncol(blocks[[i]])!=2) stop("Matrices defining blocks must have 2 columns")
-      bb <- sp::SpatialPoints(blocks[[i]])
-      bb <- sp::bbox(bb)
-      bb.matr.x <- c(bb[1,1], bb[1,2], bb[1,2], bb[1,1])
-      if(min(bb.matr.x)<xmin(templ.ext)) warning(paste("xmin < raster extent in block", i))
-      if(max(bb.matr.x)>xmax(templ.ext)) warning(paste("xmax > raster extent in block", i))
-      bb.matr.y <- c(bb[2,1], bb[2,1], bb[2,2], bb[2,2])
-      if(min(bb.matr.y)<ymin(templ.ext)) warning(paste("ymin < raster extent in block", i))
-      if(max(bb.matr.y)>ymax(templ.ext)) warning(paste("ymax > raster extent in block", i))
-      bb.coords <- cbind("x"=bb.matr.x, "y"=bb.matr.y)
-      srl <- list(sp::Polygon(bb.coords))
-      Srl <- list(sp::Polygons(srl, ID=as.vector(as.character(i))))
-      new.blocks[[i]] <- SpatialPolygons(Srl, proj4string=template@crs)  # ASSUMES correct proj
+    # Write the RasterLayer to a file, or plot
+    if(plot) plot(templ.r)
+    if(!is.null(fname) && !missing(fname)) {
+      nc <- nchar(fname)
+      if(substr(fname, nc-3, nc)!=".asc") warning("File names should end with '.asc")
+      raster::writeRaster(templ.r, filename=fname, format="ascii", overwrite=overwrite)
     }
-    out <- raster::rasterize(new.blocks[[i]], template)
-    # Can't get 'update=TRUE' to work. Instead update template based on 'out'
-    template[!is.na(out)] <- blockvals[i+1]
-  }
-  return(template)
+  invisible(templ.r)
 }
 
 
 setGeneric("make.blocksraster", make.br)
 
 
-#' 'make.blocksraster'
-#' @title Create a new blocks file
+#' @name make.blocksraster
+#' @description Produces a raster file for use in DEPONS simulation. This allows
+#' animals to be counted within specific regions (blocks) of the landscape
+#' during the simulation. The new blocks can be specified as either matrices or
+#' SpatialPolygons objects. For matrices, the blocks are defined as the smallest
+#' rectangle that includes all the specified positions.
+#' @aliases make.blocksraster,DeponsRaster-method
 #' @param template DeponsRaster object used as template for new blocks file
-#' @param blocks list Areas to be used for new blocks. Each item in 'blocks' should
-#' be a matrix (with two columns, corresponding to x- and y-coordinates) or of
-#' class SpatialPoints.
+#' @param blocks list of areas to be used for new blocks. Each item in 'blocks'
+#' should be a matrix (with two columns, corresponding to x- and y-coordinates)
+#' or a SpatialPolygons object
 #' @param blockvals Vector of integer values defining the labels of the new blocks.
 #' The first value defines the background value, so the length of 'blockvals'
-#' should equal the number of blocks plus 1.
-#' @param crs Value used for missing data in the output object
+#' should equal the number of blocks plus 1
+#' @param NAvalue Value used for missing data in the output object
+#' @param plot If TRUE, the raster block is plotted
+#' @param fname Name of the output raster file (character string ending with
+#' '.asc'). No file is written to disk if fname is not provided.
+#' @param overwrite Whether to replace existing file.
+#' @note The blocks file should not be modified when running DEPONS
+#' simulations using the 'Kattegat' landscape. In this landscape the simulated
+#' animals use the blocks file for navigation. Also note that blocks are added
+#' to the new blocks raster in the order they are file in the order in which
+#' they are listed in 'blocks', so the order mattes if the blocks overlap.
+#' @examples
+#' #Load file to use as template for new blocks file
+#' data("bathymetry")
+#'
+#' # Make list of blocks to create
+#' new.blocks <- list()
+#' x <- runif(8, 700000, 760000)
+#' y <- runif(8, 6200000, 6300000)
+#' new.blocks[[1]] <- cbind(x,y)
+#' x <- c(600000, 635000, 670000, 635000)
+#' y <- c(6150000, 6200000, 6150000, 6100000)
+#' library(sp)
+#' srl <- list(Polygon(cbind(x,y)))
+#' Srl <- list(Polygons(srl, ID=as.vector("p")))
+#' new.blocks[[2]] <- SpatialPolygons(Srl, proj4string=crs(bathymetry))
+#'
+#' make.blocksraster(bathymetry, new.blocks, plot=TRUE)
+#' points(new.blocks[[1]])
+#' plot(new.blocks[[2]], add=TRUE)
+#'
+#' \dontrun{
+#' make.blocksraster(bathymetry, new.blocks, fname="test.asc")
+#' }
 #' @exportMethod make.blocksraster
 setMethod("make.blocksraster", signature("DeponsRaster"), make.br)
 
 
-# MAKE BLOCKS FILE
 
-# bb.file <- "/Applications/DEPONS 2.1/DEPONS/data/Kattegat/blocks.asc"
-# the.crs <- "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
-# x <- read.DeponsRaster(bb.file, crs=the.crs)
-# template <- raster::raster(x=x@data, xmn=x@ext$xleft, xmx=x@ext$xright,
-#                            ymn=x@ext$ybottom, ymx=x@ext$ytop, crs=the.crs)
-#
-# x <- c(700000, 700000, 760000, 760000)
-# y <- c(6200000, 6300000, 6300000, 6200000)
-# xy.1 <- cbind(x,y)
-# class(xy.1)
-# x <- c(600000, 600000, 670000, 670000)
-# y <- c(6100000, 6200000, 6200000, 6100000)
-# xy.2 <- cbind(x,y)
-# blocks <- list(xy.1, xy.2)
-# ##make another blocks list
-#
-# library(sp)
-# library(raster)
-#
-# ttt <- make.blocksraster(template, blocks, crs=the.crs, blockvals=c(4:6))
-# dim(ttt)
-# summary(ttt)
-# plot(ttt)
-# class(ttt)
-# uuu <- as.matrix(ttt)
-# dim(uuu)
-# summary(uuu)
-#

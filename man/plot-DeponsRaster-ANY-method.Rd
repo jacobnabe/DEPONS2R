@@ -80,7 +80,6 @@ object contains more than one track. Ignored if \code{y} is missing}
 \description{
 Plot the values in a DeponsRaster object. Porpoisetracks or
 other kinds of lines, poits etc. can be drawn on top of the plot by adding
-\code{add=TRUE} to the call.
 }
 \examples{
 data("bathymetry")

@@ -15,7 +15,8 @@ landscapes.
 be 'food', 'patches', bathymetry', 'dtc', 'salinity', 'blocks' or 'NA'.}
 
 \item{\code{landscape}}{Character  Identifier for the landscape used in the DEPONS
-simulations; typically set to 'North Sea'.}
+simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
+'Homogeneous', and 'User defined' are distributed with the DEPONS model.}
 
 \item{\code{crs}}{Object of class "CRS", i.e. the coordinate reference system. This
 value is called 'proj4string' in spatial objects (from "RasterLayer").}
@@ -40,5 +41,5 @@ a.deponsraster <- new("DeponsRaster")
 a.deponsraster
 }
 \seealso{
-\code{\link{read.DeponsRaster}}, \code{\link{write.DeponsRaster}}.
+\code{\link{read.DeponsRaster}}
 }

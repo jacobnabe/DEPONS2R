@@ -2,6 +2,7 @@
 
 export(read.DeponsRaster)
 export(read.DeponsTrack)
+exportClasses(DeponsDyn)
 exportClasses(DeponsRaster)
 exportClasses(DeponsTrack)
 exportMethods(crs)

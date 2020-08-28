@@ -13,7 +13,7 @@ tracks generated with DEPONS.
 \describe{
 \item{\code{title}}{Name of the object (character)}
 
-\item{\code{date}}{POSIXlt object with the date and time when the simulation was
+\item{\code{simdate}}{POSIXlt object with the date and time when the simulation was
 finished. This is read from the name of the imput file.}
 
 \item{\code{crs}}{CRS object providing the coordinate reference system used; see

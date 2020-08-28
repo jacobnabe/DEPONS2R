@@ -1,0 +1,548 @@
+tan (pi)
+tan (120*pi/180)
+100 / tan (120*pi/180)
+pi * 120/180
+pi * 26/180
+tan (pi * 26/180)
+100 / tan (pi * 26/180)
+100/205
+tan 2
+tan 0.5
+tan (0.5)
+atan(0.5463025)
+100/205
+library(nlme)
+?nls
+library(ggtern)
+?ggtern
+?ggern
+?ggtern
+ggtern(data=data.frame(x=1,y=1,z=1),aes(x,y,z)) + geom_point()
+?ggtern
+ggtern(data=data.frame(x=2,y=1,z=1),aes(x,y,z)) + geom_point()
+ggtern(data=data.frame(x=2,y=1,z=0),aes(x,y,z)) + geom_point()
+ggtern(data=data.frame(x=100,y=1,z=0),aes(x,y,z)) + geom_point()
+track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.20_53_33.csv"))
+ecl.dir <- "~/eclipse-workspace/porpoise-2020-05-22-master-e534946.zip_expanded/PorpoiseJava/"#
+track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.20_53_33.csv"))
+head(track)
+track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.20_53_33.csv"), sep=";")#
+head(track)
+summary(track)
+track.det <- track[track$DeterStrength>0 ,]
+track.det
+track.det <- track[track$DeterStrength>0, c(1,3,4,6)]
+track.det
+head(track.det)
+wf <- read.table(paste0(ecl.dir, "data/wind-farms/User-def.txt"))
+wf
+wf <- read.table(paste0(ecl.dir, "data/wind-farms/User-def.txt"), header=TRUE)
+wf
+(wf$x.coordinate - track.det$UtmX)^2
+track.det$dist <- sqrt((wf$x.coordinate - track.det$UtmX)^2 + (wf$y.coordinate - track.det$UtmY)^2)
+track.det$dist
+head(track.det)
+plot(track.det$dist, track.det$DeterStrength)
+head(track)
+nrow(track.det)
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn])
+nn <- nrow(track.det)#
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn])
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], xlab=expression("dist",[t-1]))
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], xlab=expression("dist",["t-1"]))
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength")
+wf
+wf$impact
+wf$theo.deter <- wf$impact - 10*log10(track.det$dist)
+wf$impact
+10*log10(track.det$dist)
+track.det$theo.deter <- wf$impact - 10*log10(track.det$dist)
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.6, col="blue")
+plot(track.det$dist, track.det$theo.deter, pch=16, cex=0.6, col="blue")
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)
+T.deter <- 152.9 # and
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)#
+track.det$theo.deter <- c*(track.det$sound.level - T.deter)#
+plot(track.det$dist, track.det$theo.deter, pch=16, cex=0.6, col="blue")
+c <- 0.07 # (default)
+track.det$theo.deter <- c*(track.det$sound.level - T.deter)
+plot(track.det$dist, track.det$theo.deter, pch=16, cex=0.6, col="blue")
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+plot(track.det$dist, track.det$theo.deter, pch=16, cex=0.6, col="blue")
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength")#
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)#
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.6, col="blue")
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength")#
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)#
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.2, col="blue")
+legend("topright", pch=c(1,16), col=c("black", "blue"), legend=c("Sim", "Theoretical"))
+legend("topright", pch=c(1,16), col=c("black", "blue"), legend=c("Sim", "Theoretical"), bty="n")
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength", main="Test deter, 10LogR")#
+# Plot theoretical values#
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)#
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.2, col="blue")#
+legend("topright", pch=c(1,16), col=c("black", "blue"), legend=c("Sim", "Theoretical"), bty="n")
+T.deter <- 152.9 # dB and #
+c <- 0.07 # (default)#
+ecl.dir <- "~/eclipse-workspace/porpoise-2020-05-22-master-e534946.zip_expanded/PorpoiseJava/"#
+track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.20_53_33.csv"), sep=";")#
+track.det <- track[track$DeterStrength>0, c(1,3,4,6)]#
+head(track)#
+head(track.det)#
+wf <- read.table(paste0(ecl.dir, "data/wind-farms/User-def.txt"), header=TRUE)#
+# add dist to turbine to track#
+track.det$dist <- sqrt((wf$x.coordinate - track.det$UtmX)^2 + (wf$y.coordinate - track.det$UtmY)^2)#
+nn <- nrow(track.det)#
+# Compare distance to sound before step to actual steplength (deterrence)#
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength", main="Test sound propagation, 10LogR")#
+# Plot theoretical values#
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)#
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.2, col="blue")#
+legend("topright", pch=c(1,16), col=c("black", "blue"), legend=c("Sim", "Theoretical"), bty="n")
+# Same, but using beta_hat=10 and alpha_hat=0.0001#
+track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.21_46_20.csv"), sep=";")#
+track.det <- track[track$DeterStrength>0, c(1,3,4,6)]#
+track.det$dist <- sqrt((wf$x.coordinate - track.det$UtmX)^2 + (wf$y.coordinate - track.det$UtmY)^2)#
+nn <- nrow(track.det)#
+# Compare distance to sound before step to actual steplength (deterrence)#
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength", main="Test sound propagation, 10LogR")#
+# Plot theoretical values#
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)#
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.2, col="blue")#
+legend("topright", pch=c(1,16), col=c("black", "blue"), legend=c("Sim", "Theoretical"), bty="n")
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength", main="Test sound propagation, 10LogR - 0.0001R")#
+# Plot theoretical values#
+track.det$sound.level <- wf$impact - 10*log10(track.det$dist)#
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.2, col="blue")#
+legend("topright", pch=c(1,16), col=c("black", "blue"), legend=c("Sim", "Theoretical"), bty="n")
+plot(track.det$dist, track.det$theo.deter, pch=16, cex=0.2, col="blue")
+plot(track.det$dist, track.det$theo.deter, pch=16, cex=0.4, col="blue")
+beta_hat <- 10 # and#
+alpha_hat <- =0.0001#
+track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.21_46_20.csv"), sep=";")#
+track.det <- track[track$DeterStrength>0, c(1,3,4,6)]#
+track.det$dist <- sqrt((wf$x.coordinate - track.det$UtmX)^2 + (wf$y.coordinate - track.det$UtmY)^2)#
+nn <- nrow(track.det)#
+# Compare distance to sound before step to actual steplength (deterrence)#
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength", #
+	main=paste0("Test sound propagation, ", beta_hat , "LogR - ", alpha_hat, "R"))
+alpha_hat <- 0.0001#
+track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.21_46_20.csv"), sep=";")#
+track.det <- track[track$DeterStrength>0, c(1,3,4,6)]#
+track.det$dist <- sqrt((wf$x.coordinate - track.det$UtmX)^2 + (wf$y.coordinate - track.det$UtmY)^2)#
+nn <- nrow(track.det)#
+# Compare distance to sound before step to actual steplength (deterrence)#
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength", #
+	main=paste0("Test sound propagation, ", beta_hat , "LogR - ", alpha_hat, "R"))
+track.det$sound.level <- wf$impact - beta_hat*log10(track.det$dist) - alpha_hat*(track.det$dist)
+track.det$theo.deter <- (track.det$sound.level - T.deter)#
+plot(track.det$dist, track.det$theo.deter, pch=16, cex=0.4, col="blue")
+plot(track.det$dist[1:(nn-1)], track.det$DeterStrength[2:nn], #
+	xlab="dist to sound [m]", ylab="deter strength", #
+	main=paste0("Test sound propagation, ", beta_hat , "LogR - ", alpha_hat, "R"))
+points(track.det$dist, track.det$theo.deter, pch=16, cex=0.4, col="blue")
+legend("topright", pch=c(1,16), col=c("black", "blue"), legend=c("Sim", "Theoretical"), bty="n")
+citation()
+library(DEPONS2R)
+?bathymetry
+?porpoisetrack
+library(DEPONS2R)
+?bathymetry
+library(DEPON2R)
+library(DEPONS2R)
+?bathymetry
+library(DEPONS2R)
+data(bathymetry)
+plot(bathymetry)
+class(bathymetry)
+plot(bathymetry, y=2)
+plot(bathymetry, bathymetry)
+plot(bathymetry, add?FALSE)
+plot(bathymetry, add=FALSE)
+library(DEPONS2R)
+?bathymetry
+data("bathymetry")
+plot(bathymetry)
+data(bathymetryraster)
+bathymetryraster
+plot(bathymetry)
+library(DEPONS2R)
+?bathymetry
+data(bathymetry)#
+plot(bathymetry)#
+data("coastline")#
+plot(coastline, add=TRUE, col="lightyellow2")
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack)#
+plot(coastline, add=TRUE, col="lightyellow2")
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack, legend=FALSE)#
+plot(coastline, add=TRUE, col="lightyellow2")
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack)
+par(bty='n')
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack)
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack, legend=FALSE)
+# Don't move following method to file 'raster-methods' -- classes defined#
+# in that file have to be loaded first (files are loaded alphabetially)#
+#' @describeIn plot-DeponsRaster-ANY-method Plots a DeponsRaster object#
+setMethod("plot", signature("DeponsRaster", "DeponsTrack"),#
+          function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,#
+                   ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,#
+                   nc, nr, maxnl=16, main, npretty=0, trackToPlot=1, ...)  {#
+            obj2 <- raster::raster()#
+            obj2@file <- x@file#
+            obj2@data <- x@data#
+            obj2@legend <- x@legend#
+            obj2@title <- x@title#
+            obj2@extent <- x@extent#
+            obj2@rotated <- x@rotated#
+            obj2@ncols <- x@ncols#
+            obj2@nrows <- x@nrows#
+            obj2@crs <- x@crs#
+            obj2@history <- x@history#
+            obj2@z <- x@z#
+            if (missing(main)) {#
+              main <- paste(x@landscape, x@type, sep=" - ")#
+            }#
+            if(!identical(x@crs, y@crs)) stop("Projections of track and landscape#
+                                              not identical")#
+#
+            if(missing(col) && x@type=="bathymetry") {#
+              tmp.col <- grDevices::rainbow(1000)[501:800]#
+              col <- c(tmp.col[1:100], rep(tmp.col[101:250], each=5))#
+            }#
+            plot(y@tracks[[trackToPlot]])#
+            plot(obj2, col=col, main=main, add=TRUE, legend=FALSE)#
+            y.coords <- y@tracks[[trackToPlot]]@coords#
+            lines(y.coords)#
+          }#
+)
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack, legend=FALSE)
+# Don't move following method to file 'raster-methods' -- classes defined#
+# in that file have to be loaded first (files are loaded alphabetially)#
+#' @describeIn plot-DeponsRaster-ANY-method Plots a DeponsRaster object#
+setMethod("plot", signature("DeponsRaster", "DeponsTrack"),#
+          function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,#
+                   ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,#
+                   nc, nr, maxnl=16, main, npretty=0, trackToPlot=1, ...)  {#
+            obj2 <- raster::raster()#
+            obj2@file <- x@file#
+            obj2@data <- x@data#
+            obj2@legend <- x@legend#
+            obj2@title <- x@title#
+            obj2@extent <- x@extent#
+            obj2@rotated <- x@rotated#
+            obj2@ncols <- x@ncols#
+            obj2@nrows <- x@nrows#
+            obj2@crs <- x@crs#
+            obj2@history <- x@history#
+            obj2@z <- x@z#
+            if (missing(main)) {#
+              main <- paste(x@landscape, x@type, sep=" - ")#
+            }#
+            if(!identical(x@crs, y@crs)) stop("Projections of track and landscape#
+                                              not identical")#
+#
+            if(missing(col) && x@type=="bathymetry") {#
+              tmp.col <- grDevices::rainbow(1000)[501:800]#
+              col <- c(tmp.col[1:100], rep(tmp.col[101:250], each=5))#
+            }#
+            plot(y@tracks[[trackToPlot]], type="n")#
+            plot(obj2, col=col, main=main, add=TRUE, legend=FALSE)#
+            y.coords <- y@tracks[[trackToPlot]]@coords#
+            lines(y.coords)#
+          }#
+)
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack, legend=FALSE)
+# Don't move following method to file 'raster-methods' -- classes defined#
+# in that file have to be loaded first (files are loaded alphabetially)#
+#' @describeIn plot-DeponsRaster-ANY-method Plots a DeponsRaster object#
+setMethod("plot", signature("DeponsRaster", "DeponsTrack"),#
+          function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,#
+                   ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,#
+                   nc, nr, maxnl=16, main, npretty=0, trackToPlot=1, ...)  {#
+            obj2 <- raster::raster()#
+            obj2@file <- x@file#
+            obj2@data <- x@data#
+            obj2@legend <- x@legend#
+            obj2@title <- x@title#
+            obj2@extent <- x@extent#
+            obj2@rotated <- x@rotated#
+            obj2@ncols <- x@ncols#
+            obj2@nrows <- x@nrows#
+            obj2@crs <- x@crs#
+            obj2@history <- x@history#
+            obj2@z <- x@z#
+            if (missing(main)) {#
+              main <- paste(x@landscape, x@type, sep=" - ")#
+            }#
+            if(!identical(x@crs, y@crs)) stop("Projections of track and landscape#
+                                              not identical")#
+#
+            if(missing(col) && x@type=="bathymetry") {#
+              tmp.col <- grDevices::rainbow(1000)[501:800]#
+              col <- c(tmp.col[1:100], rep(tmp.col[101:250], each=5))#
+            }#
+            plot(y@tracks[[trackToPlot]], col="white")#
+            plot(obj2, col=col, main=main, add=TRUE, legend=FALSE)#
+            y.coords <- y@tracks[[trackToPlot]]@coords#
+            lines(y.coords)#
+          }#
+)
+data(porpoisetrack)#
+plot(bathymetry, porpoisetrack, legend=FALSE)
+plot(bathymety)
+plot(bathymetry)
+plot(porpoisetrack, add=TRUE)
+is.missing(add)
+#' @title Plot a DeponsTrack object#
+#' @description Plot the coordinates in a movement track simulated with DEPONS.#
+#' @param x DeponsTrack object#
+#' @param y Not used#
+#' @param trackToPlot Integer; indicates which track to plot if there more than#
+#' one animal was tracked during the simulation.#
+#' @param ... Optional plotting parameters#
+#' @examples data(porpoisetrack)#
+#' plot(porpoisetrack)#
+setMethod("plot", signature("DeponsTrack", "missing"),#
+          function(x, y, trackToPlot=1, ...)  {#
+            the.main <- ifelse(x@name=="NA", "DEPONS track", x@name)#
+            trk <- x@tracks[[trackToPlot]]#
+            if(missing(add)) add <- FALSE#
+            plot(sp::coordinates(trk), type="l", asp=1, main=the.main, add)#
+          }#
+)
+plot(bathymetry)
+plot(porpoisetrack, add=TRUE)
+#' @title Plot a DeponsTrack object#
+#' @description Plot the coordinates in a movement track simulated with DEPONS.#
+#' @param x DeponsTrack object#
+#' @param y Not used#
+#' @param trackToPlot Integer; indicates which track to plot if there more than#
+#' @param add Logical, whether to add the track to an existing plot#
+#' one animal was tracked during the simulation.#
+#' @param ... Optional plotting parameters#
+#' @examples data(porpoisetrack)#
+#' plot(porpoisetrack)#
+setMethod("plot", signature("DeponsTrack", "missing"),#
+          function(x, y, trackToPlot=1, add=FALSE, ...)  {#
+            the.main <- ifelse(x@name=="NA", "DEPONS track", x@name)#
+            trk <- x@tracks[[trackToPlot]]#
+            plot(sp::coordinates(trk), type="l", asp=1, main=the.main, add)#
+          }#
+)
+plot(porpoisetrack, add=TRUE)
+plot(porpoisetrack)
+#' @title Plot a DeponsTrack object#
+#' @description Plot the coordinates in a movement track simulated with DEPONS.#
+#' @param x DeponsTrack object#
+#' @param y Not used#
+#' @param trackToPlot Integer; indicates which track to plot if there more than#
+#' @param add Logical, whether to add the track to an existing plot#
+#' one animal was tracked during the simulation.#
+#' @param ... Optional plotting parameters#
+#' @examples data(porpoisetrack)#
+#' plot(porpoisetrack)#
+setMethod("plot", signature("DeponsTrack", "missing"),#
+          function(x, y, trackToPlot=1, add=FALSE, ...)  {#
+            the.main <- ifelse(x@name=="NA", "DEPONS track", x@name)#
+            trk <- x@tracks[[trackToPlot]]#
+            plot(sp::coordinates(trk), type="l", asp=1, main=the.main, add=add)#
+          }#
+)
+plot(porpoisetrack)
+lines(sp::coordinates(trk), type="l", asp=1, main=the.main)
+#' @title Plot a DeponsTrack object#
+#' @description Plot the coordinates in a movement track simulated with DEPONS.#
+#' @param x DeponsTrack object#
+#' @param y Not used#
+#' @param trackToPlot Integer; indicates which track to plot if there more than#
+#' @param add Logical, whether to add the track to an existing plot#
+#' one animal was tracked during the simulation.#
+#' @param ... Optional plotting parameters#
+#' @examples data(porpoisetrack)#
+#' plot(porpoisetrack)#
+setMethod("plot", signature("DeponsTrack", "missing"),#
+          function(x, y, trackToPlot=1, add=FALSE, ...)  {#
+            the.main <- ifelse(x@name=="NA", "DEPONS track", x@name)#
+            trk <- x@tracks[[trackToPlot]]#
+            if (!add) plot(sp::coordinates(trk), type="l", asp=1, main=the.main)#
+            else lines(sp::coordinates(trk), type="l", asp=1, main=the.main)#
+          }#
+)
+plot(bathymetry)
+plot(porpoisetrack)
+plot(bathymetry)
+plot(porpoisetrack, add=TRUE)
+plot(bathymetry)
+plot(bathymetry, axes=FALSE)
+plot(bathymetry, axes=FALSE, box=FALSE)
+setMethod("plot", signature("DeponsRaster", "ANY"),#
+          function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,#
+                   ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,#
+                   nc, nr, maxnl=16, main, npretty=0, ...)  {#
+            obj2 <- raster::raster()#
+            obj2@file <- x@file#
+            obj2@data <- x@data#
+            obj2@legend <- x@legend#
+            obj2@title <- x@title#
+            obj2@extent <- x@extent#
+            obj2@rotated <- x@rotated#
+            obj2@ncols <- x@ncols#
+            obj2@nrows <- x@nrows#
+            obj2@crs <- x@crs#
+            obj2@history <- x@history#
+            obj2@z <- x@z#
+            if (missing(main)) {#
+              main <- paste(x@landscape, x@type, sep=" - ")#
+            }#
+#
+            if(missing(col) && x@type=="bathymetry") {#
+              tmp.col <- grDevices::rainbow(1000)[501:800]#
+              col <- c(tmp.col[1:100], rep(tmp.col[101:250], each=5))#
+            }#
+            if(missing(ext)) {#
+              ext <- raster::extent(obj2)#
+            }#
+            plot(obj2, col=col, alpha=alpha, add=add, ext=ext, main=main, axes)#
+           }#
+)
+plot(bathymetry, axes=FALSE, box=FALSE)
+setMethod("plot", signature("DeponsRaster", "ANY"),#
+          function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,#
+                   ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,#
+                   nc, nr, maxnl=16, main, npretty=0, axes=TRUE, ...)  {#
+            obj2 <- raster::raster()#
+            obj2@file <- x@file#
+            obj2@data <- x@data#
+            obj2@legend <- x@legend#
+            obj2@title <- x@title#
+            obj2@extent <- x@extent#
+            obj2@rotated <- x@rotated#
+            obj2@ncols <- x@ncols#
+            obj2@nrows <- x@nrows#
+            obj2@crs <- x@crs#
+            obj2@history <- x@history#
+            obj2@z <- x@z#
+            if (missing(main)) {#
+              main <- paste(x@landscape, x@type, sep=" - ")#
+            }#
+#
+            if(missing(col) && x@type=="bathymetry") {#
+              tmp.col <- grDevices::rainbow(1000)[501:800]#
+              col <- c(tmp.col[1:100], rep(tmp.col[101:250], each=5))#
+            }#
+            if(missing(ext)) {#
+              ext <- raster::extent(obj2)#
+            }#
+            plot(obj2, col=col, alpha=alpha, add=add, ext=ext, main=main, axes=axes)#
+           }#
+)
+plot(bathymetry, axes=FALSE, box=FALSE)
+setMethod("plot", signature("DeponsRaster", "ANY"),#
+          function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,#
+                   ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,#
+                   nc, nr, maxnl=16, main, npretty=0, axes=TRUE, #
+                   legend=TRUE, ...)  {#
+            obj2 <- raster::raster()#
+            obj2@file <- x@file#
+            obj2@data <- x@data#
+            obj2@legend <- x@legend#
+            obj2@title <- x@title#
+            obj2@extent <- x@extent#
+            obj2@rotated <- x@rotated#
+            obj2@ncols <- x@ncols#
+            obj2@nrows <- x@nrows#
+            obj2@crs <- x@crs#
+            obj2@history <- x@history#
+            obj2@z <- x@z#
+            if (missing(main)) {#
+              main <- paste(x@landscape, x@type, sep=" - ")#
+            }#
+#
+            if(missing(col) && x@type=="bathymetry") {#
+              tmp.col <- grDevices::rainbow(1000)[501:800]#
+              col <- c(tmp.col[1:100], rep(tmp.col[101:250], each=5))#
+            }#
+            if(missing(ext)) {#
+              ext <- raster::extent(obj2)#
+            }#
+            plot(obj2, col=col, alpha=alpha, add=add, ext=ext, main=main, #
+            	axes=axes, legend=legend)#
+           }#
+)
+plot(bathymetry, axes=FALSE, legend=FALSE)
+?bathymetry
+library(DEPONS2R)
+read.DeponsTrack("/Applications/DEPONS 2.0.1/DEPONS/RandomPorpoise.2020.May.27.20_11_09.csv", nam/Applications/DEPONS 2.0.1/DEPONS/data/NorthSea/blocks.asce
+bb.file <- "/Applications/DEPONS 2.0.1/DEPONS/data/NorthSea/blocks.asc"
+library(raster)
+bb <- raster(bb.file)
+plot(bb)
+library(DEPONS2R)
+cc <- read.DeponsRaster(bb.file)
+cc.file <- "/Applications/DEPONS 2.0.1/DEPONS/data/NorthSea/bathy.asc"
+cc <- read.DeponsRaster(cc.file)
+bb <- raster(bb.file, crs="NA")
+bb <- raster(bb.file, crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs")
+bb@crs
+crs.bb <- bb@crs
+crs.bb
+bb <- raster(bb.file, crs=crs.bb)
+bb <- raster(bb.file, crs=as.character(crs.bb))
+bb.file <- "/Applications/DEPONS 2.0.1/DEPONS/data/NorthSea/blocks.asc"
+bb <- raster(bb.file, crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs")
+bb <- raster(bb.file, crs=CRS("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs"))
+CRS("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs")
+as.character(CRS("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs"))
+bb <- raster(bb.file, crs=CRS("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs"))
+crs=CRS("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs")
+class(crs)
+class(crs)=="CRS"
+cc <- read.DeponsRaster(cc.file, crs=)
+bb <- raster(bb.file, crs=CRS("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs"))
+library(raster)
+tt <- raster("test.asc")
+class(tt)
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+tt <- raster("test.asc")
+plot(tt)
+ba <- raster("bathy.asc")
+plot(ba)
+plot(ba, main="ba")
+tt <- raster("test.asc")
+plot(tt)

@@ -4,7 +4,12 @@
 \alias{read.DeponsTrack}
 \title{Reading DEPONS track files}
 \usage{
-read.DeponsTrack(fname, title = "NA", date = "NA", crs = CRS(as.character(NA)))
+read.DeponsTrack(
+  fname,
+  title = "NA",
+  simdate = "NA",
+  crs = CRS(as.character(NA))
+)
 }
 \arguments{
 \item{fname}{Name of the file (character) that contains movement data
@@ -13,15 +18,15 @@ not the current working directory.}
 
 \item{title}{Optional character string giving name of simulation}
 
-\item{date}{Optional POSIXlt object with date of simulation. If
+\item{simdate}{Optional POSIXlt object with date of simulation. If
 not provided this is obtained from name of input file}
 
 \item{crs}{Character, coordinate reference system (map projection)}
 }
 \value{
-Returns an object with the elements \code{title}, \code{date},
-\code{crs}, and \code{tracks}. \code{date} is extracted from
-the input data if not provided explicitly (a \code{POSIXlt} object. The
+Returns an object with the elements \code{title}, \code{simdate},
+\code{crs}, and \code{tracks}. The \code{date} is extracted from input data
+if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
 element \code{tracks} is a list of objects of class
 \link[sp]{SpatialPointsDataFrame}, each of which corresponds to one
 simulated animal (several animals can be tracked in one simulation).
