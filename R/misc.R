@@ -53,10 +53,13 @@ get.simdate <- function(fname=NULL) {
 
 
 # MAKE track FILE
+# fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Jul.31.09_43_10.csv"
 # fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Aug.19.11_28_36.csv"
+# file.exists(fname)
 # porpoisetrack <- read.DeponsTrack(fname, title="Porpoise track simulated with DEPONS 2.1",
 #                                 crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs"
 # )
+# porpoisetrack
 # save(porpoisetrack, file="porpoisetrack.RData", compress="xz")
 
 
@@ -66,12 +69,14 @@ get.simdate <- function(fname=NULL) {
 
 # MAKE bathymetry FILE
 # fname <- "/Applications/DEPONS 2.1/DEPONS/data/Kattegat/bathy.asc"
+# file.exists(fname)
 # bathymetry <- read.DeponsRaster(fname,
 #                                 crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs",
 #                                 type="bathymetry", landscape="Kattegat"
 # )
+# bathymetry
 # save(bathymetry, file="bathymetry.RData", compress="xz")
-
+#
 
 # MAKE bathymetry FILE
 
@@ -81,5 +86,14 @@ get.simdate <- function(fname=NULL) {
 #                                 type="bathymetry", landscape="North Sea"
 # )
 # save(bathymetry, file="bathymetry.RData", compress="xz")
+
+
+
+#######
+
+# Test I/O without examples
+
+lsc <- "/Applications/DEPONS 2.1/DEPONS/data/DanTysk/bathy.asc"
+file.exists(lsc)
 
 

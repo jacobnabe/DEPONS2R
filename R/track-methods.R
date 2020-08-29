@@ -42,7 +42,7 @@ setMethod("show", "DeponsTrack",
           function(object) {
             cat("class:\t\t", "DeponsTrack \n")
             cat("title:\t\t", object@title, "\n")
-            cat("simdate:\t\t", as.character(object@simdate), "\n")
+            cat("simdate:  \t", as.character(object@simdate), "\n")
             cat("crs:\t\t", object@crs, "\n")
             cat("N tracks:\t", length(object@tracks), "\n")
           }

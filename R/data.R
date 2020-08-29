@@ -19,6 +19,7 @@
 #' corresponding proj4string is "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
 #' (see \url{https://epsg.io/32632}).
 #' @format DeponsRaster
+#' @seealso \code{\link{DeponsRaster-class}}
 #' @keywords datasets
 #' @references Nabe-Nielsen, J., Sibly, R. M., Tougaard, J., Teilmann, J., &
 #' Sveegaard, S. (2014). Effects of noise and by-catch on a Danish harbour

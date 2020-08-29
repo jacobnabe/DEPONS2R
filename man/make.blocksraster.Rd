@@ -3,7 +3,7 @@
 \name{make.blocksraster}
 \alias{make.blocksraster}
 \alias{make.blocksraster,DeponsRaster-method}
-\title{Create a new blocks file}
+\title{Makes new file with blocks}
 \usage{
 \S4method{make.blocksraster}{DeponsRaster}(
   template,
@@ -30,19 +30,17 @@ should equal the number of blocks plus 1}
 
 \item{plot}{If TRUE, the raster block is plotted}
 
-\item{fname}{Name of the output raster file (character string ending with '.asc')}
+\item{fname}{Name of the output raster file (character string ending with
+'.asc'). No file is written to disk if fname is not provided.}
 
 \item{overwrite}{Whether to replace existing file.}
 }
 \description{
-Create a new blocks file
-}
-\details{
-Produces a raster file for use in DEPONS simulation. This allows
-animals to be counted within specific regions (blocks) of the landscape
-during the simulation. The new blocks can be specified as either matrices or
-SpatialPolygons objects. For matrices, the blocks are defined as the smallest
-rectangle that includes all the specified positions.
+Produces a DeponsRaster object of type='blocks' for use in DEPONS
+simulations. This allows animals to be counted within specific regions (blocks)
+of the landscape during the simulation. The new blocks can be specified as
+either matrices or SpatialPolygons objects. For matrices, the blocks are
+defined as the smallest rectangle that includes all the specified positions.
 }
 \note{
 The blocks file should not be modified when running DEPONS

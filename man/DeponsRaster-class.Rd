@@ -19,7 +19,7 @@ simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 'Homogeneous', and 'User defined' are distributed with the DEPONS model.}
 
 \item{\code{crs}}{Object of class "CRS", i.e. the coordinate reference system. This
-value is called 'proj4string' in spatial objects (from "RasterLayer").}
+value is called \code{\link{proj4string}} in spatial objects.}
 
 \item{\code{header}}{Data frame with data on number of columns and rows in the
 input raster, the coordinates of the lower left corner, the size of each

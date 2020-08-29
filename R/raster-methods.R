@@ -16,7 +16,7 @@
 #' simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 #' 'Homogeneous', and 'User defined' are distributed with the DEPONS model.
 #' @slot crs Object of class "CRS", i.e. the coordinate reference system. This
-#' value is called 'proj4string' in spatial objects (from "RasterLayer").
+#' value is called \code{\link{proj4string}} in spatial objects.
 #' @slot header Data frame with data on number of columns and rows in the
 #' input raster, the coordinates of the lower left corner, the size of each
 #' grid cell and the integer value used to represent missing data.
@@ -308,11 +308,12 @@ setGeneric("make.blocksraster", make.br)
 
 
 #' @name make.blocksraster
-#' @description Produces a raster file for use in DEPONS simulation. This allows
-#' animals to be counted within specific regions (blocks) of the landscape
-#' during the simulation. The new blocks can be specified as either matrices or
-#' SpatialPolygons objects. For matrices, the blocks are defined as the smallest
-#' rectangle that includes all the specified positions.
+#' @title Makes new file with blocks
+#' @description Produces a DeponsRaster object of type='blocks' for use in DEPONS
+#' simulations. This allows animals to be counted within specific regions (blocks)
+#' of the landscape during the simulation. The new blocks can be specified as
+#' either matrices or SpatialPolygons objects. For matrices, the blocks are
+#' defined as the smallest rectangle that includes all the specified positions.
 #' @aliases make.blocksraster,DeponsRaster-method
 #' @param template DeponsRaster object used as template for new blocks file
 #' @param blocks list of areas to be used for new blocks. Each item in 'blocks'

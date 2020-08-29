@@ -24,4 +24,7 @@ Sveegaard, S. (2014). Effects of noise and by-catch on a Danish harbour
 porpoise population. Ecological Modelling, 272, 242–251.
 \url{https://doi.org/10.1016/j.ecolmodel.2013.09.025}
 }
+\seealso{
+\code{\link{DeponsRaster-class}}
+}
 \keyword{datasets}
