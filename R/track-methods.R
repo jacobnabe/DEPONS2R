@@ -171,6 +171,8 @@ setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
 )
 
 
+setGeneric("crs", function(x) { return(sp::CRS(x@crs)) })
+
 #' @name crs
 #' @title Get map projection
 #' @param x Object of class {code{DeponsRaster}} or \code{DeponsTrack}.
