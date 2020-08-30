@@ -76,7 +76,7 @@ get.simdate <- function(fname=NULL) {
 # )
 # bathymetry
 # save(bathymetry, file="bathymetry.RData", compress="xz")
-#
+
 
 # MAKE bathymetry FILE
 
@@ -88,12 +88,6 @@ get.simdate <- function(fname=NULL) {
 # save(bathymetry, file="bathymetry.RData", compress="xz")
 
 
-
 #######
-
-# Test I/O without examples
-
-lsc <- "/Applications/DEPONS 2.1/DEPONS/data/DanTysk/bathy.asc"
-file.exists(lsc)
 
 

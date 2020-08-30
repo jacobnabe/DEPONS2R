@@ -44,10 +44,11 @@ data("coastline")
 #' @name porpoisetrack
 #' @title Simulated porpoise track
 #' @docType data
-#' @description An object with three elements: \code{title}, \code{date}, and
-#' \code{tracks}, where \code{tracks} is a list of objects of class
+#' @description An object with four elements: \code{title}, \code{simdate}, \code{crs},
+#'  and \code{tracks}. The \code{tracks} elemet is a list of objects of class
 #' \code{\link[sp]{SpatialPointsDataFrame}}, each of which corresponds to one
-#' simulated animal. \code{date} is the simulation date
+#' simulated animal. \code{simdate} is the simulation date.
 #' @format DeponsTrack
 #' @keywords datasets
+#' #' @seealso \code{\link{DeponsTrack-class}}
 data("porpoisetrack")

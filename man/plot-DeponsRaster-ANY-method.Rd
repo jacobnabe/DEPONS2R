@@ -85,7 +85,12 @@ other kinds of lines, poits etc. can be drawn on top of the plot by adding
 data("bathymetry")
 plot(bathymetry)
 data("coastline")
-plot(coastline, add=TRUE, col="lightyellow2")
+library(rgdal)
+# Change projection of coastline to match that of bathymetry data
+coastline2 <- spTransform(coastline, crs(bathymetry))
+plot(coastline2, add=TRUE, col="lightyellow2")
+text(512000, 6240000, 'Denmark')
+text(800000, 6300000, 'Sweden')
 
 plot(bathymetry, axes=FALSE, legend=FALSE, main="Simulated porpoise track")
 data("porpoisetrack")

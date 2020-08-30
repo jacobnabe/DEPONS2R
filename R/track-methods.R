@@ -171,9 +171,8 @@ setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
 )
 
 
-#' Get map projection
 #' @name crs
-#' @rdname crs
+#' @title Get map projection
 #' @param x Object of class {code{DeponsRaster}} or \code{DeponsTrack}.
 #' @exportMethod crs
 setMethod("crs", signature("DeponsTrack"),
@@ -182,4 +181,33 @@ setMethod("crs", signature("DeponsTrack"),
           }
 )
 
+
+setGeneric("title<-", function(x, value) {
+  x@title <- value
+  validObject(x)
+  x
+})
+
+#' @name title<-
+#' @rdname title
+#' @param x Object of class \code{DeponsTrack}.
+#' @exportMethod title<-
+setMethod("title<-", "DeponsTrack", function(x, value) {
+  x@title <- value
+  validObject(x)
+  x
+})
+
+
+setGeneric("title", function(x, value) { return(x@title) })
+
+#' @name title
+#' @title Get or set the title of DeponsTrack objects
+#' @aliases title,DeponsTrack-method
+#' @aliases title<-,DeponsTrack-method
+#' @rdname title
+#' @param value Character string
+#' @param x Object of class \code{DeponsTrack}.
+#' @exportMethod title
+setMethod("title", signature=("DeponsTrack"), function(x, value) { return(x@title) })
 
