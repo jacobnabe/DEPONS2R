@@ -13,6 +13,8 @@ tracks generated with DEPONS.
 \describe{
 \item{\code{title}}{Name of the object (character)}
 
+\item{\code{landscape}}{Name of the object (character)}
+
 \item{\code{simdate}}{POSIXlt object with the date and time when the simulation was
 finished. This is read from the name of the imput file.}
 

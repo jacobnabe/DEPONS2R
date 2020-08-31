@@ -2,7 +2,7 @@
 % Please edit documentation in R/dyn-methods.R
 \name{read.DeponsDyn}
 \alias{read.DeponsDyn}
-\title{Reading DEPONS track files}
+\title{Reading DEPONS simulation output}
 \usage{
 read.DeponsDyn(
   fname,
@@ -37,5 +37,5 @@ if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
 element \code{tracks} is a list of objects of class
 }
 \description{
-Function  for reading simulation outputproduced by DEPONS.
+Function  for reading simulation output produced by DEPONS.
 }

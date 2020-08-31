@@ -56,7 +56,7 @@ get.simdate <- function(fname=NULL) {
 # fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Jul.31.09_43_10.csv"
 # fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Aug.19.11_28_36.csv"
 # file.exists(fname)
-# porpoisetrack <- read.DeponsTrack(fname, title="Porpoise track simulated with DEPONS 2.1",
+# porpoisetrack <- read.DeponsTrack(fname, title="Porpoise track simulated with DEPONS 2.1", landscape="Kattegat",
 #                                 crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs"
 # )
 # porpoisetrack

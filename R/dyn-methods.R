@@ -75,8 +75,8 @@ setMethod("show", "DeponsDyn",
           }
 )
 
-#' @title Reading DEPONS track files
-#' @description Function  for reading simulation outputproduced by DEPONS.
+#' @title Reading DEPONS simulation output
+#' @description Function  for reading simulation output produced by DEPONS.
 #'
 # These
 # describe movements of simulated animals within the simulation landscape, where
@@ -121,34 +121,4 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA", crs=
 # all.data <- read.csv("Statistics.2020.Aug.27.10_55_36.csv", sep=";")
 # fname <- "Statistics.2020.Aug.27.10_55_36.csv"
 # uu <- read.DeponsDyn(fname)
-
-
-setGeneric("title<-", function(x, value) {
-  x@title <- value
-  validObject(x)
-  x
-})
-
-##' @name title<-
-##' @rdname title
-##' @param x Object of class \code{DeponsDyn}.
-##' @exportMethod title<-
-#setMethod("title<-", "DeponsDyn", function(x, value) {
-#  x@title <- value
-#  validObject(x)
-#  x
-#})
-
-
-setGeneric("title", function(x, value) { return(x@title) })
-
-##' @name title
-##' @title Get or set the title of objects
-##' @aliases title,DeponsDyn-method
-##' @aliases title<-,DeponsDyn-method
-##' @rdname title
-##' @param value Character string
-##' @param x Object of class \code{DeponsDyn}.
-##' @exportMethod title
-#setMethod("title", signature=("DeponsDyn"), function(x, value) { return(x@title) })
 
