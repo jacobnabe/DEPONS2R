@@ -91,3 +91,9 @@ get.simdate <- function(fname=NULL) {
 #######
 
 
+# MAKE porpoisedyn FILE
+
+# porpoisedyn <- read.csv("Statistics.2020.Aug.27.10_55_36.csv", sep=";")
+# fname <- "Statistics.2020.Aug.27.10_55_36.csv"
+# porpoisedyn <- read.DeponsDyn(fname, simstart="2010-01-01")
+# save(porpoisedyn, file="porpoisedyn.RData")

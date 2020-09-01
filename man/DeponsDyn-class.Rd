@@ -13,7 +13,8 @@ The following columns are included in the simulation output data
 frame: 'tick', which indicates the number of half-hourly time steps since the
 start of the simulation; 'count', which indicates the population size at a
 given time; 'energy', showing the average amount of energy stored by simulated
-animals, and 'lenergy' which shows the total amount of energy in the landscape.
+animals; 'lenergy', which shows the total amount of energy in the landscape,
+and 'simtime' which shows the time relative to 'simstart'.
 }
 \section{Slots}{
 
@@ -40,10 +41,11 @@ the real world.}
 \note{
 DeponsDyn-objects are usually read in from csv files produced during
 DEPONS simulations.
-
-Use data(bathymetry) to load example data.
 }
 \examples{
 a.DeponsDyn <- new("DeponsDyn")
 a.DeponsDyn
+}
+\seealso{
+Use data(bathymetry) to load example data.
 }

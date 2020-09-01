@@ -9,7 +9,8 @@ read.DeponsTrack(
   title = "NA",
   landscape = "NA",
   simdate = "NA",
-  crs = CRS(as.character(NA))
+  crs = CRS(as.character(NA)),
+  tz = "UTC"
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ simulation}
 not provided this is obtained from name of input file}
 
 \item{crs}{Character, coordinate reference system (map projection)}
+
+\item{tz}{Time zone used in simulations. Defaults to UTC/GMT.
+#'}
 }
 \value{
 Returns an object with the elements \code{title}, \code{simdate},

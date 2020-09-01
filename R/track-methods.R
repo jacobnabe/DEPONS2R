@@ -71,7 +71,8 @@ setMethod("show", "DeponsTrack",
 #' @param simdate Optional POSIXlt object with date of simulation. If
 #' not provided this is obtained from name of input file
 #' @param crs Character, coordinate reference system (map projection)
-#'
+#' @param tz Time zone used in simulations. Defaults to UTC/GMT.
+#' #'
 #' @return Returns an object with the elements \code{title}, \code{simdate},
 #' \code{crs}, and \code{tracks}. The \code{date} is extracted from input data
 #' if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
@@ -98,7 +99,7 @@ setMethod("show", "DeponsTrack",
 #' plot(porpoisetrack)
 #' @export read.DeponsTrack
 read.DeponsTrack <- function(fname, title="NA", landscape="NA", simdate="NA",
-                             crs=CRS(as.character(NA))) {
+                             crs=CRS(as.character(NA)), tz="UTC") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simdate=="NA")  simdate <- get.simdate(fname)
@@ -120,7 +121,7 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simdate="NA",
   all.data <- new("DeponsTrack")
   all.data@title <- title
   all.data@landscape <- landscape
-  all.data@simdate <- simdate
+  all.data@simdate <- as.POSIXlt(simdate, tz=tz)
   all.data@crs <- crs
   all.data@tracks <- tracks
   return(all.data)

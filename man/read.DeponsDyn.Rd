@@ -10,7 +10,8 @@ read.DeponsDyn(
   landscape = "NA",
   simdate = "NA",
   crs = CRS(as.character(NA)),
-  simstart = "NA"
+  simstart = "NA",
+  tz = "UTC"
 )
 }
 \arguments{
@@ -29,13 +30,13 @@ not provided this is obtained from name of input file}
 
 \item{simstart}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (POSIXlt)}
-}
-\value{
-Returns an object with the elements \code{title}, \code{simdate},
-\code{crs}, and ......   . The \code{date} is extracted from input data
-if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
-element \code{tracks} is a list of objects of class
+
+\item{tz}{Time zone used in simulations. Defaults to UTC/GMT.}
 }
 \description{
 Function  for reading simulation output produced by DEPONS.
+}
+\seealso{
+See \code{\link{DeponsDyn-class}} for details on what is stored in
+the output object.
 }

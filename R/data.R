@@ -41,6 +41,17 @@ data("bathymetry")       # uncomment line to trigger roxygen
 data("coastline")
 
 
+#' @name porpoisedyn
+#' @title Population dynamics for a simulated harbour porpoise population
+#' @docType data
+#' @description An object of class \code{DeponsDyn} with output from a DEPONS
+#' simulation based on the Kattegat landscape, assuming that the simulation
+#' represents the period 2010-01-01 onwards in the real world.
+#' @format DeponsDyn
+#' @keywords datasets
+data("porpoisedyn")
+
+
 #' @name porpoisetrack
 #' @title Simulated porpoise track
 #' @docType data

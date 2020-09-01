@@ -26,13 +26,14 @@
 #' frame: 'tick', which indicates the number of half-hourly time steps since the
 #' start of the simulation; 'count', which indicates the population size at a
 #' given time; 'energy', showing the average amount of energy stored by simulated
-#' animals, and 'lenergy' which shows the total amount of energy in the landscape.
+#' animals; 'lenergy', which shows the total amount of energy in the landscape,
+#' and 'simtime' which shows the time relative to 'simstart'.
 #' @exportClass DeponsDyn
 #' @examples a.DeponsDyn <- new("DeponsDyn")
 #' a.DeponsDyn
 #' @note DeponsDyn-objects are usually read in from csv files produced during
 #' DEPONS simulations.
-#' @note Use data(bathymetry) to load example data.
+#' @seealso Use data(bathymetry) to load example data.
 setClass(Class="DeponsDyn",
          slots=list(title="character", landscape="character", simdate="POSIXlt",
                     crs="character", simstart="POSIXlt", data="data.frame")
@@ -61,10 +62,10 @@ setMethod("show", "DeponsDyn",
             cat("crs:      \t", object@crs, "\n")
             cat("data     \t tick \t count \t energy\tlenergy\ttime \n" )
             l.obj <- nrow(object)
-            cat("   start:\t",  object@data$tick[1], "\t", object@data$count[1],
+            cat("   start:\t",  object@data$tick[1], "  \t", object@data$count[1],
                 "\t" ,object@data$energy[1], "\t" ,object@data$lenergy[1],
                 "\t", as.character(object@simstart), "\n")
-            cat("   mean:\t",  mean(object@data$tick), "\t", mean(object@data$count),
+            cat("   mean:\t",  mean(object@data$tick), "  \t", mean(object@data$count),
                 "\t", mean(object@data$energy), "\t", mean(object@data$lenergy),
                 "\t NA \n")
             if(!is.null(l.obj)) {
@@ -97,28 +98,28 @@ setMethod("show", "DeponsDyn",
 #' @param crs Character, coordinate reference system (map projection)
 #' @param simstart The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
-#' @return Returns an object with the elements \code{title}, \code{simdate},
-#' \code{crs}, and ......   . The \code{date} is extracted from input data
-#' if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
-#' element \code{tracks} is a list of objects of class
+#' @param tz Time zone used in simulations. Defaults to UTC/GMT.
+#' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
+#' the output object.
 #' @export read.DeponsDyn
 read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA", crs=CRS(as.character(NA)),
-                           simstart="NA") {
+                           simstart="NA", tz="UTC") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simdate=="NA")  simdate <- get.simdate(fname)
+  if (simstart=="NA")  simstart <- NA
   all.data <- new("DeponsDyn")
   all.data@title <- title
   all.data@landscape <- landscape
-  all.data@simdate <- simdate
-  all.data@crs <- crs
-  all.data@simstart <- simstart
-  all.data$data <- utils::read.csv(fname, sep=";")
+  all.data@simdate <- as.POSIXlt(simdate, tz=tz)
+  all.data@crs <- as.character(crs)
+  all.data@simstart <- as.POSIXlt(simstart, tz=tz)
+  the.data <- utils::read.csv(fname, sep=";")
+  names(the.data) <- c("tick", "count", "energy", "lenergy")
+  the.data$simtime <- as.POSIXlt(the.data$tick*30*60,
+                                 origin=as.POSIXlt(simstart, tz=tz), tz=tz)
+  all.data@data <- the.data
   return(all.data)
 }
 
-
-# all.data <- read.csv("Statistics.2020.Aug.27.10_55_36.csv", sep=";")
-# fname <- "Statistics.2020.Aug.27.10_55_36.csv"
-# uu <- read.DeponsDyn(fname)
 
