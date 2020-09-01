@@ -1,11 +1,11 @@
 Package: DEPONS2R
 Type: Package
 Title: Read, plot and analyse output from DEPONS
-Version: 0.9.1
+Version: 0.9.2
 Author: Jacob Nabe-Nielsen
 Maintainer: Jacob Nabe-Nielsen <jnn@bios.au.dk>
 Description: Classes and methods for manipulating and plotting raster landscapes,
-    animal movement tracks and population dynamics produced by the DEPONS 
+    animal movement tracks and population dynamics data simulated using the DEPONS 
     model (www.depons.eu).
 License: GPL-3
 Encoding: UTF-8

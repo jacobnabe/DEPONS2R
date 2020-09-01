@@ -42,13 +42,14 @@ data("coastline")
 
 
 #' @name porpoisedyn
-#' @title Population dynamics for a simulated harbour porpoise population
+#' @title Simulated porpoise population dynamics
 #' @docType data
 #' @description An object of class \code{DeponsDyn} with output from a DEPONS
 #' simulation based on the Kattegat landscape, assuming that the simulation
-#' represents the period 2010-01-01 onwards in the real world.
+#' represents the period 2010-01-01 onward in the real world.
 #' @format DeponsDyn
 #' @keywords datasets
+#' @seealso \code{\link{DeponsDyn-class}}
 data("porpoisedyn")
 
 
@@ -61,5 +62,5 @@ data("porpoisedyn")
 #' simulated animal. \code{simdate} is the simulation date.
 #' @format DeponsTrack
 #' @keywords datasets
-#' #' @seealso \code{\link{DeponsTrack-class}}
+#' @seealso \code{\link{DeponsTrack-class}}
 data("porpoisetrack")

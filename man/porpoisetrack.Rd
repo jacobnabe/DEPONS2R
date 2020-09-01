@@ -13,7 +13,7 @@ An object with four elements: \code{title}, \code{simdate}, \code{crs},
 \code{\link[sp]{SpatialPointsDataFrame}}, each of which corresponds to one
 simulated animal. \code{simdate} is the simulation date.
 }
-\keyword{#'}
-\keyword{@seealso}
-\keyword{\code{\link{DeponsTrack-class}}}
+\seealso{
+\code{\link{DeponsTrack-class}}
+}
 \keyword{datasets}

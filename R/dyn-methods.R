@@ -10,11 +10,11 @@
 #' @title  DeponsDyn-class and methods
 #' @description Classes and methods for analyzing and plotting output from the
 #' DEPONS model.
-#' @slot title Character  Name of the object or simulation (character)
-#' @slot landscape Character  Identifier for the landscape used in the DEPONS
+#' @slot title Character. Name of the object or simulation
+#' @slot landscape Character. Identifier for the landscape used in the DEPONS
 #' simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 #' 'Homogeneous', and 'User defined' are distributed with the DEPONS model.
-#' @slot simdate POSIXlt object with the date and time when the simulation was
+#' @slot simdate \code{\link{POSIXlt}} object with the date and time when the simulation was
 #' finished. This is read from the name of the imput file.
 #' @slot crs CRS object providing the coordinate reference system used; see
 #' \link[sp]{CRS} for details
@@ -123,3 +123,37 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA", crs=
 }
 
 
+
+#' @title Plot a DeponsDyn object
+#' @description Plot population dynamics simulated with DEPONS
+#' @aliases plot.DeponsDyn
+#' @param x DeponsDyn object
+#' @param y Not used
+#' @param ... Optional plotting parameters
+#' @examples
+#' data("porpoisedyn")
+#' plot(porpoisedyn)
+setMethod("plot", signature("DeponsDyn", "missing"),
+          function(x, y, ...)  {
+            if (!is.na(x@simstart)) {
+              the.xlab <- "year"
+              plot(x@data$simtime, x@data$count,
+                   xlab=the.xlab, ylab="count")
+            } else {
+              the.xlab <- "tick"
+              plot(x@data$tick, x@data$count,
+                   xlab=the.xlab, ylab="count")
+            }
+          }
+)
+
+
+#
+# data("porpoisedyn")
+# dyndata <- porpoisedyn
+#
+# dd <- dyndata@data
+# plot(dd$simtime, dd$count)
+#
+# head(dyndata@data)
+# plot(porpoisedyn)

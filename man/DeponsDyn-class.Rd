@@ -19,13 +19,13 @@ and 'simtime' which shows the time relative to 'simstart'.
 \section{Slots}{
 
 \describe{
-\item{\code{title}}{Character  Name of the object or simulation (character)}
+\item{\code{title}}{Character. Name of the object or simulation}
 
-\item{\code{landscape}}{Character  Identifier for the landscape used in the DEPONS
+\item{\code{landscape}}{Character. Identifier for the landscape used in the DEPONS
 simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 'Homogeneous', and 'User defined' are distributed with the DEPONS model.}
 
-\item{\code{simdate}}{POSIXlt object with the date and time when the simulation was
+\item{\code{simdate}}{\code{\link{POSIXlt}} object with the date and time when the simulation was
 finished. This is read from the name of the imput file.}
 
 \item{\code{crs}}{CRS object providing the coordinate reference system used; see

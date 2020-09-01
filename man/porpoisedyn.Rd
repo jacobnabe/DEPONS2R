@@ -3,13 +3,16 @@
 \docType{data}
 \name{porpoisedyn}
 \alias{porpoisedyn}
-\title{Population dynamics for a simulated harbour porpoise population}
+\title{Simulated porpoise population dynamics}
 \format{
 DeponsDyn
 }
 \description{
 An object of class \code{DeponsDyn} with output from a DEPONS
 simulation based on the Kattegat landscape, assuming that the simulation
-represents the period 2010-01-01 onwards in the real world.
+represents the period 2010-01-01 onward in the real world.
+}
+\seealso{
+\code{\link{DeponsDyn-class}}
 }
 \keyword{datasets}
