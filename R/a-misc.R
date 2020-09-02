@@ -118,3 +118,21 @@ get.latest.sim <- function(dir) {
 # fname <- "Statistics.2020.Aug.27.10_55_36.csv"
 # porpoisedyn <- read.DeponsDyn(fname, simstart="2010-01-01")
 # save(porpoisedyn, file="porpoisedyn.RData")
+
+
+####
+
+# MAKE North Sea blockraster
+
+# the.crs <- crs(coastline)
+# templ <- read.DeponsRaster("blocks.asc", type="blocks", crs=the.crs, landscape="North Sea")
+# plot(templ)
+# x <- c(3700000, 4000000)
+# y <- c(3400000, 3700000)
+# points(x,y)
+# new.blocks <- list()
+# new.blocks[[1]] <- cbind(x,y)
+# make.blocksraster(template = templ, new.blocks, plot=TRUE)
+# plot(coastline, add=TRUE)
+# make.blocksraster(template = templ, new.blocks, fname="NS2blocks.asc")
+

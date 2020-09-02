@@ -16,8 +16,6 @@
 #' 'Homogeneous', and 'User defined' are distributed with the DEPONS model.
 #' @slot simdate \code{\link{POSIXlt}} object with the date and time when the simulation was
 #' finished. This is read from the name of the imput file.
-#' @slot crs CRS object providing the coordinate reference system used; see
-#' \link[sp]{CRS} for details
 #' @slot simstart POSIXlt object with the first day of the simulation, i.e.
 #' the first day in the period that the simulations are intended to represent in
 #' the real world.
@@ -38,7 +36,7 @@
 #' \code{\link[DEPONS2R]{read.DeponsDyn}}.
 setClass(Class="DeponsDyn",
          slots=list(title="character", landscape="character", simdate="POSIXlt",
-                    crs="character", simstart="POSIXlt", data="data.frame")
+                    simstart="POSIXlt", data="data.frame")
 )
 
 
@@ -47,7 +45,6 @@ setMethod("initialize", "DeponsDyn",
             .Object@title <- "NA"
             .Object@landscape <- "NA"
             .Object@simdate <- as.POSIXlt(NA)
-            .Object@crs <- "NA"
             .Object@simstart <- as.POSIXlt(NA)
             .Object@data <- data.frame("tick"=NA, "count"=NA, "energy"=NA, "lenergy"=NA)
             return((.Object))
@@ -61,7 +58,6 @@ setMethod("show", "DeponsDyn",
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
             cat("simdate:  \t", as.character(object@simdate), "\n")
-            cat("crs:      \t", object@crs, "\n")
             cat("data     \t tick    \t count \t\t energy   \t lenergy\ttime \n" )
             rnd <- function(n) sprintf(n, fmt='%#.3f')
             l.obj <- nrow(object@data)
@@ -98,14 +94,13 @@ setMethod("show", "DeponsDyn",
 #' @param landscape The landscape used in the simulation
 #' @param simdate Optional POSIXlt object with date of simulation. If
 #' not provided this is obtained from name of input file
-#' @param crs Character, coordinate reference system (map projection)
 #' @param simstart The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
 #' @param tz Time zone used in simulations. Defaults to UTC/GMT.
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object.
 #' @export read.DeponsDyn
-read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA", crs=CRS(as.character(NA)),
+read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
                            simstart="NA", tz="UTC") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
@@ -115,7 +110,6 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA", crs=
   all.data@title <- title
   all.data@landscape <- landscape
   all.data@simdate <- as.POSIXlt(simdate, tz=tz)
-  all.data@crs <- as.character(crs)
   all.data@simstart <- as.POSIXlt(simstart, tz=tz)
   the.data <- utils::read.csv(fname, sep=";")
   names(the.data) <- c("tick", "count", "energy", "lenergy")

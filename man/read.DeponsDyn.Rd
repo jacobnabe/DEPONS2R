@@ -9,7 +9,6 @@ read.DeponsDyn(
   title = "NA",
   landscape = "NA",
   simdate = "NA",
-  crs = CRS(as.character(NA)),
   simstart = "NA",
   tz = "UTC"
 )
@@ -25,8 +24,6 @@ not the current working directory.}
 
 \item{simdate}{Optional POSIXlt object with date of simulation. If
 not provided this is obtained from name of input file}
-
-\item{crs}{Character, coordinate reference system (map projection)}
 
 \item{simstart}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (POSIXlt)}

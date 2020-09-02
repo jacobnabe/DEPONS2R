@@ -28,9 +28,6 @@ simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 \item{\code{simdate}}{\code{\link{POSIXlt}} object with the date and time when the simulation was
 finished. This is read from the name of the imput file.}
 
-\item{\code{crs}}{CRS object providing the coordinate reference system used; see
-\link[sp]{CRS} for details}
-
 \item{\code{simstart}}{POSIXlt object with the first day of the simulation, i.e.
 the first day in the period that the simulations are intended to represent in
 the real world.}
@@ -40,12 +37,14 @@ the real world.}
 
 \note{
 DeponsDyn-objects are usually read in from csv files produced during
-DEPONS simulations.
+DEPONS simulations. These files are named 'Statistics.XXX.csv', where XXX
+indicates the date and time when the simulation was finished.
 }
 \examples{
 a.DeponsDyn <- new("DeponsDyn")
 a.DeponsDyn
 }
 \seealso{
-\code{\link[DEPONS2R]{plot.DeponsDyn}} and \code{\link[DEPONS2R]{read.DeponsDyn}}
+\code{\link[DEPONS2R]{plot.DeponsDyn}} and
+\code{\link[DEPONS2R]{read.DeponsDyn}}.
 }
