@@ -5,12 +5,19 @@
 \alias{plot.DeponsDyn}
 \title{Plot a DeponsDyn object}
 \usage{
-\S4method{plot}{DeponsDyn,missing}(x, y, ...)
+\S4method{plot}{DeponsDyn,missing}(x, y, dilute = 5, plot.energy = FALSE, ...)
 }
 \arguments{
 \item{x}{DeponsDyn object}
 
 \item{y}{Not used}
+
+\item{dilute}{Integer. Plot only one in every 'dilute' values. Defaults to
+5, which yields a plot of the first simulated value and one in every five of
+the following values.}
+
+\item{plot.energy}{If set to TRUE it plots the amount of energy stored in
+simulated and in the landscape in addition to the population count}
 
 \item{...}{Optional plotting parameters}
 }
@@ -19,5 +26,16 @@ Plot population dynamics simulated with DEPONS
 }
 \examples{
 data("porpoisedyn")
-plot(porpoisedyn)
+
+# Plot for specific range of years
+the.range <- c(as.POSIXct("2010-01-01"), as.POSIXct("2014-01-01"))
+rg <- c(as.POSIXlt("2011-01-01"), as.POSIXlt("2018-12-31"))
+plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
+
+\dontrun{
+sim.dir <- "/Applications/DEPONS 2.1/DEPONS"
+new.sim.name <- get.latest.sim(dir=sim.dir)
+new.sim.out <- read.DeponsDyn(fname=paste(sim.dir, new.sim.name, sep="/"))
+plot(new.sim.out)
+}
 }

@@ -60,18 +60,19 @@ setMethod("show", "DeponsDyn",
             cat("landscape:\t", object@landscape, "\n")
             cat("simdate:  \t", as.character(object@simdate), "\n")
             cat("crs:      \t", object@crs, "\n")
-            cat("data     \t tick \t count \t energy\tlenergy\ttime \n" )
-            l.obj <- nrow(object)
-            cat("   start:\t",  object@data$tick[1], "  \t", object@data$count[1],
-                "\t" ,object@data$energy[1], "\t" ,object@data$lenergy[1],
+            cat("data     \t tick    \t count \t\t energy   \t lenergy\ttime \n" )
+            rnd <- function(n) sprintf(n, fmt='%#.3f')
+            l.obj <- nrow(object@data)
+            cat("   start:\t",  object@data$tick[1], "\t\t", object@data$count[1],
+                "       \t" , rnd(object@data$energy[1]), "     \t" , rnd(object@data$lenergy[1]),
                 "\t", as.character(object@simstart), "\n")
-            cat("   mean:\t",  mean(object@data$tick), "  \t", mean(object@data$count),
-                "\t", mean(object@data$energy), "\t", mean(object@data$lenergy),
+            cat("   mean:\t",  rnd(mean(object@data$tick)), "  \t", rnd(mean(object@data$count)),
+                "\t", rnd(mean(object@data$energy)), "\t", rnd(mean(object@data$lenergy)),
                 "\t NA \n")
             if(!is.null(l.obj)) {
-              cat("   end:\t",  object@data$tick[l.obj], "\t", object@data$count[l.obj],
-                  "\t", object@data$energy[l.obj], "\t", object@data$lenergy[l.obj],
-                  "\t NA")
+              cat("   end:  \t",  object@data$tick[l.obj], "    \t", object@data$count[l.obj],
+                  "    \t", rnd(object@data$energy[l.obj]), "   \t", rnd(object@data$lenergy[l.obj]),
+                  "\t", as.character((object@data$simtime[l.obj])))
             }
           }
 )
@@ -129,31 +130,115 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA", crs=
 #' @aliases plot.DeponsDyn
 #' @param x DeponsDyn object
 #' @param y Not used
+#' @param dilute Integer. Plot only one in every 'dilute' values. Defaults to
+#' 5, which yields a plot of the first simulated value and one in every five of
+#' the following values.
 #' @param ... Optional plotting parameters
+#' @param plot.energy If set to TRUE it plots the amount of energy stored in
+#' simulated and in the landscape in addition to the population count
 #' @examples
 #' data("porpoisedyn")
-#' plot(porpoisedyn)
+#'
+#' # Plot for specific range of years
+#' the.range <- c(as.POSIXct("2010-01-01"), as.POSIXct("2014-01-01"))
+#' rg <- c(as.POSIXlt("2011-01-01"), as.POSIXlt("2018-12-31"))
+#' plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
+#'
+#' \dontrun{
+#' sim.dir <- "/Applications/DEPONS 2.1/DEPONS"
+#' new.sim.name <- get.latest.sim(dir=sim.dir)
+#' new.sim.out <- read.DeponsDyn(fname=paste(sim.dir, new.sim.name, sep="/"))
+#' plot(new.sim.out)
+#' }
 setMethod("plot", signature("DeponsDyn", "missing"),
-          function(x, y, ...)  {
-            if (!is.na(x@simstart)) {
-              the.xlab <- "year"
-              plot(x@data$simtime, x@data$count,
-                   xlab=the.xlab, ylab="count")
+          function(x, y, dilute=5, plot.energy=FALSE, ...)  {
+            if (!(dilute %% 1 == 0)) stop("'dilute' must be an integer")
+            use.row <- x@data$tick %% dilute == 0
+            use.row[1] <- TRUE
+            par(mar=c(4.2, 4.2, 4, 4.2))
+            if(!hasArg(ylab)) {
+              ylab <- "count"
             } else {
-              the.xlab <- "tick"
-              plot(x@data$tick, x@data$count,
-                   xlab=the.xlab, ylab="count")
+              ylab <- as.character(list(...)[["ylab"]])
+            }
+            if(!hasArg(lwd)) {
+              lwd <- 2
+            } else {
+              lwd <- as.character(list(...)[["lwd"]])
+            }
+            if(!hasArg(lty)) {
+              lty <- 1
+            } else {
+              lty <- as.character(list(...)[["lty"]])
+            }
+            if(!hasArg(col)) {
+              col <- "blue"
+            } else {
+              col <- as.character(list(...)[["col"]])
+            }
+            if(!hasArg(type)) {
+              type <- "l"
+            } else {
+              type <- as.character(list(...)[["type"]])
+            }
+            if(!hasArg(axes)) {
+              axes <- TRUE
+            } else {
+              axes <- list(...)[["axes"]]
+            }
+            if(!hasArg("ylim")) {
+              ylim <- c(min(x@data$count), max(x@data$count))
+            } else {
+              ylim <- list(...)[["ylim"]]
+            }
+            if(!hasArg("main")) {
+              main <- "DEPONS simulation output"
+            } else {
+              main <- x@title
+            }
+            # Make plot with either date or tick on x-axis
+            if (!is.na(x@simstart)) {
+              if(!hasArg("xlim")) {
+                xlim <- NULL
+              } else {
+                xlim <- list(...)[["xlim"]]
+              }
+              if(!hasArg("xlab")) {
+                xlab <- "year"
+              } else {
+                xlab <- list(...)[["xlab"]]
+              }
+              plot(x@data$simtime[use.row], x@data$count[use.row],
+                   xlab=xlab, ylab=ylab, main=main, col=col, type=type,
+                   xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
+            } else {
+              if(!hasArg("xlim")) {
+                xlim <- c(min(x@data$tick), max(x@data$tick))
+              } else {
+                xlim <- list(...)[["xlim"]]
+              }
+              if(!hasArg("xlab")) {
+                xlab <- "tick"
+              } else {
+                xlab <- list(...)[["xlab"]]
+              }
+              plot(x@data$tick[use.row], x@data$count[use.row],
+                   xlab=xlab, ylab=ylab, main=main, col=col, type=type,
+                   xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
+            }
+            if(plot.energy) {
+              par(new=TRUE)
+              plot(x@data$tick[use.row], x@data$energy[use.row],
+                   col="red", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
+              par(new=TRUE)
+              plot(x@data$tick[use.row], x@data$lenergy[use.row],
+                   col="orange", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
+              axis(4)
+              mtext("energy level", side=4, line=2.6)
+              legend("bottomright", fill=c(col, "red", "orange"),
+                     legend=c("population count", "animal energy level", "landscape energy"))
             }
           }
 )
 
 
-#
-# data("porpoisedyn")
-# dyndata <- porpoisedyn
-#
-# dd <- dyndata@data
-# plot(dd$simtime, dd$count)
-#
-# head(dyndata@data)
-# plot(porpoisedyn)
