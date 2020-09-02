@@ -1,15 +1,13 @@
-
 # Author: Jacob Nabe-Nielsen
-# Date: 27 August 2020
-# Version 0.9
+# Date: 2 September 2020
 # Licence GPL v3
-# Description: Methods and classes for reading and summarizing DEPONS raster
-#   objects
+# Description: Methods and classes for reading and summarizing DEPONS output
+#    stored in 'PorpoisePerBlock'-files, i.e. population dynamics for different
+#    parts of the landscape.
 
-
-#' @title  DeponsDyn-class and methods
-#' @description Classes and methods for analyzing and plotting output from the
-#' DEPONS model.
+#' @title  DeponsBlockdyn-class and methods
+#' @description Classes and methods for analyzing and plotting changes in
+#' population size for different parts of the landscape (i.e. different 'blocks')
 #' @slot title Character. Name of the object or simulation
 #' @slot landscape Character. Identifier for the landscape used in the DEPONS
 #' simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
@@ -20,64 +18,61 @@
 #' the first day in the period that the simulations are intended to represent in
 #' the real world.
 #' @slot data Data frame with simulation output.
-#' @details The following columns are included in the simulation output data
-#' frame: 'tick', which indicates the number of half-hourly time steps since the
-#' start of the simulation; 'count', which indicates the population size at a
-#' given time; 'energy', showing the average amount of energy stored by simulated
-#' animals; 'lenergy', which shows the total amount of energy in the landscape,
-#' and 'simtime' which shows the time relative to 'simstart'.
-#' @exportClass DeponsDyn
-#' @examples a.DeponsDyn <- new("DeponsDyn")
-#' a.DeponsDyn
-#' @note DeponsDyn-objects are usually read in from csv files produced during
-#' DEPONS simulations. These files are named 'Statistics.XXX.csv', where XXX
+#' @details The data frame with simulation output includes the columns 'tick',
+#' which indicates the number of half-hourly time steps since the start of the
+#' simulation; a column 'count.X' with the number of animals in each block at
+#' each tick, and 'simtime', which shows the real-world equivalent to 'tick.
+#' @exportClass DeponsBlockdyn
+#' @examples a.DeponsBlockdyn <- new("DeponsBlockdyn")
+#' a.DeponsBlockdyn
+#' @note DeponsBlockdyn-objects are usually read in from csv files produced during
+#' DEPONS simulations. These files are named 'PorpoisePerBlock.XXX.csv', where XXX
 #' indicates the date and time when the simulation was finished.
-#' @seealso \code{\link[DEPONS2R]{plot.DeponsDyn}} and
-#' \code{\link[DEPONS2R]{read.DeponsDyn}}.
-setClass(Class="DeponsDyn",
+#' @seealso \code{\link[DEPONS2R]{plot.DeponsBlockdyn}} and
+#' \code{\link[DEPONS2R]{read.DeponsBlockdyn}}.
+setClass(Class="DeponsBlockdyn",
          slots=list(title="character", landscape="character", simdate="POSIXlt",
                     simstart="POSIXlt", data="data.frame")
 )
 
 
-setMethod("initialize", "DeponsDyn",
+setMethod("initialize", "DeponsBlockdyn",
           function(.Object) {
             .Object@title <- "NA"
             .Object@landscape <- "NA"
             .Object@simdate <- as.POSIXlt(NA)
             .Object@simstart <- as.POSIXlt(NA)
-            .Object@data <- data.frame("tick"=NA, "count"=NA, "energy"=NA, "lenergy"=NA,
-                                       "simtime"=NA)
+            .Object@data <- data.frame("tick"=NA, "count.X"=NA, "simtime"=NA)
             return((.Object))
           }
 )
 
 
-setMethod("show", "DeponsDyn",
+setMethod("show", "DeponsBlockdyn",
           function(object) {
-            cat("class:    \t", "DeponsDyn \n")
+            cat("class:    \t", "DeponsBlockdyn \n")
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
             cat("simdate:  \t", as.character(object@simdate), "\n")
-            cat("data     \t tick    \t count \t\t energy   \t lenergy\ttime \n" )
+            cat("data     \t tick   \t count.X \t simtime \n" )
             rnd <- function(n) sprintf(n, fmt='%#.3f')
             l.obj <- nrow(object@data)
-            cat("   start:\t",  object@data$tick[1], "\t\t", object@data$count[1],
-                "       \t" , rnd(object@data$energy[1]), "     \t" , rnd(object@data$lenergy[1]),
-                "\t", as.character(object@simstart), "\n")
-            cat("   mean:\t",  rnd(mean(object@data$tick)), "  \t", rnd(mean(object@data$count)),
-                "\t", rnd(mean(object@data$energy)), "\t", rnd(mean(object@data$lenergy)),
-                "\t NA \n")
-            if(!is.null(l.obj)) {
-              cat("   end:  \t",  object@data$tick[l.obj], "    \t", object@data$count[l.obj],
-                  "    \t", rnd(object@data$energy[l.obj]), "   \t", rnd(object@data$lenergy[l.obj]),
-                  "\t", as.character((object@data$simtime[l.obj])))
-            }
+            # cat("   start:\t",  object@data$tick[1], "\t, object@data$count[1], "\t", as.character(object@simstart), "\n")
+            # cat("   mean:\t",  rnd(mean(object@data$tick)), "  \t",
+            #     "NA  \t", rnd(mean(object@data$count)))
+            #     "\t", rnd(mean(object@data$energy)), "\t", rnd(mean(object@data$lenergy)),
+            #     "\t NA \n")
+            # if(!is.null(l.obj)) {
+            #   cat("   end:  \t",  object@data$tick[l.obj], "    \t", object@data$count[l.obj],
+            #       "    \t", rnd(object@data$energy[l.obj]), "   \t", rnd(object@data$lenergy[l.obj]),
+            #       "\t", as.character((object@data$simtime[l.obj])))
+            # }
           }
 )
 
-#' @title Reading DEPONS simulation output
-#' @description Function  for reading simulation output produced by DEPONS.
+#' @title Reading simulated population count for blocks
+#' @description Function for reading DEPONS simulation output with number of
+#' animals per block for each time step.
 #'
 #' @param fname Name of the file (character) that contains movement data
 #' generated by DEPONS. The name includes the path to the directory if this is
@@ -89,22 +84,25 @@ setMethod("show", "DeponsDyn",
 #' @param simstart The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
 #' @param tz Time zone used in simulations. Defaults to UTC/GMT.
-#' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
+#' @seealso See \code{\link{DeponsBlockdyn-class}} for details on what is stored in
 #' the output object.
-#' @export read.DeponsDyn
-read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
+#' @export read.DeponsBlockdyn
+read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simdate="NA",
                            simstart="NA", tz="UTC") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simdate=="NA")  simdate <- get.simdate(fname)
   if (simstart=="NA")  simstart <- NA
-  all.data <- new("DeponsDyn")
+  all.data <- new("DeponsBlockdyn")
   all.data@title <- title
   all.data@landscape <- landscape
   all.data@simdate <- as.POSIXlt(simdate, tz=tz)
   all.data@simstart <- as.POSIXlt(simstart, tz=tz)
   the.data <- utils::read.csv(fname, sep=";")
-  names(the.data) <- c("tick", "count", "energy", "lenergy")
+
+  ### STACK THE INPUT FILE !!!
+
+  names(the.data) <- c("tick", "count")
   the.data$simtime <- as.POSIXlt(the.data$tick*30*60,
                                  origin=as.POSIXlt(simstart, tz=tz), tz=tz)
   all.data@data <- the.data
@@ -113,10 +111,10 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
 
 
 
-#' @title Plot a DeponsDyn object
+#' @title Plot a DeponsBlockdyn object
 #' @description Plot population dynamics simulated with DEPONS
-#' @aliases plot.DeponsDyn
-#' @param x DeponsDyn object
+#' @aliases plot.DeponsBlockdyn
+#' @param x DeponsBlockdyn object
 #' @param y Not used
 #' @param dilute Integer. Plot only one in every 'dilute' values. Defaults to
 #' 5, which yields a plot of the first simulated value and one in every five of
@@ -124,21 +122,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
 #' @param ... Optional plotting parameters
 #' @param plot.energy If set to TRUE it plots the amount of energy stored in
 #' simulated and in the landscape in addition to the population count
-#' @examples
-#' data("porpoisedyn")
-#'
-#' # Plot for specific range of years
-#' the.range <- c(as.POSIXct("2010-01-01"), as.POSIXct("2014-01-01"))
-#' rg <- c(as.POSIXlt("2011-01-01"), as.POSIXlt("2018-12-31"))
-#' plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
-#'
-#' \dontrun{
-#' sim.dir <- "/Applications/DEPONS 2.1/DEPONS"
-#' new.sim.name <- get.latest.sim(dir=sim.dir)
-#' new.sim.out <- read.DeponsDyn(fname=paste(sim.dir, new.sim.name, sep="/"))
-#' plot(new.sim.out)
-#' }
-setMethod("plot", signature("DeponsDyn", "missing"),
+setMethod("plot", signature("DeponsBlockdyn", "missing"),
           function(x, y, dilute=5, plot.energy=FALSE, ...)  {
             if (!(dilute %% 1 == 0)) stop("'dilute' must be an integer")
             use.row <- x@data$tick %% dilute == 0

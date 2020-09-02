@@ -136,3 +136,7 @@ get.latest.sim <- function(dir) {
 # plot(coastline, add=TRUE)
 # make.blocksraster(template = templ, new.blocks, fname="NS2blocks.asc")
 
+# dir()
+# blockdyn <- read.csv("PorpoisePerBlock.2020.Sep.02.20_24_17.csv", sep=",")
+# head(blockdyn)
+# dim(blockdyn)
