@@ -18,7 +18,8 @@
 #' @slot tracks Listwith one or more tracks, each stored
 #' as a \code{\link[sp]{SpatialPointsDataFrame}} object)
 #' @exportClass DeponsTrack
-#' @seealso \link{read.DeponsTrack}
+#' @seealso \code{\link[DEPONS2R]{plot.DeponsTrack}} and
+#' \code{\link[DEPONS2R]{read.DeponsTrack}}
 setClass(Class="DeponsTrack",
          slots=list(title="character", landscape="character", simdate="POSIXlt",
                     crs="character", tracks="list")

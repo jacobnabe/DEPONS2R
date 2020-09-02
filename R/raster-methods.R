@@ -27,7 +27,8 @@
 #' a.deponsraster
 #' @note DeponsRaster-objects are typically read in from ascii raster files that
 #' have been used for DEPONS simulations.
-#' @seealso \code{\link{read.DeponsRaster}}
+#' @seealso \code{\link[DEPONS2R]{plot.DeponsRaster}}, \code{\link[DEPONS2R]{read.DeponsRaster}} and
+#'\code{\link[DEPONS2R]{make.blocksraster}}
 #' @note Use data(bathymetry) to load example data.
 #' @import raster
 #' @import methods

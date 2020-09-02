@@ -32,8 +32,10 @@
 #' @examples a.DeponsDyn <- new("DeponsDyn")
 #' a.DeponsDyn
 #' @note DeponsDyn-objects are usually read in from csv files produced during
-#' DEPONS simulations.
-#' @seealso Use data(bathymetry) to load example data.
+#' DEPONS simulations. These files are named 'Statistics.XXX.csv', where XXX
+#' indicates the date and time when the simulation was finished.
+#' @seealso \code{\link[DEPONS2R]{plot.DeponsDyn}} and
+#' \code{\link[DEPONS2R]{read.DeponsDyn}}.
 setClass(Class="DeponsDyn",
          slots=list(title="character", landscape="character", simdate="POSIXlt",
                     crs="character", simstart="POSIXlt", data="data.frame")

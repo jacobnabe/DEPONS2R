@@ -47,5 +47,5 @@ a.DeponsDyn <- new("DeponsDyn")
 a.DeponsDyn
 }
 \seealso{
-Use data(bathymetry) to load example data.
+\code{\link[DEPONS2R]{plot.DeponsDyn}} and \code{\link[DEPONS2R]{read.DeponsDyn}}
 }

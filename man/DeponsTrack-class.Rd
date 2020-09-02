@@ -26,5 +26,6 @@ as a \code{\link[sp]{SpatialPointsDataFrame}} object)}
 }}
 
 \seealso{
-\link{read.DeponsTrack}
+\code{\link[DEPONS2R]{plot.DeponsTrack}} and
+\code{\link[DEPONS2R]{read.DeponsTrack}}
 }

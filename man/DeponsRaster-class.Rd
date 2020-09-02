@@ -41,5 +41,6 @@ a.deponsraster <- new("DeponsRaster")
 a.deponsraster
 }
 \seealso{
-\code{\link{read.DeponsRaster}}
+\code{\link[DEPONS2R]{plot.DeponsRaster}}, \code{\link[DEPONS2R]{read.DeponsRaster}} and
+\code{\link[DEPONS2R]{make.blocksraster}}
 }
