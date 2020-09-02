@@ -4,9 +4,14 @@
 \alias{get.latest.sim}
 \title{Get output}
 \usage{
-get.latest.sim(dir)
+get.latest.sim(type = "dyn", dir)
 }
 \arguments{
+\item{type}{Type of simulation output to check; can be one of:
+"dyn" (for looking in "Statistics.XX.csv" files)
+"blockdyn" (for looking in "PorpoisePerBlock.XX.csv" files)
+"track" (for looking in "RandomPorpoise.XX.csv" files)}
+
 \item{dir}{Directory to look for simulation output in (character string)}
 }
 \description{

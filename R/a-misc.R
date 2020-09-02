@@ -6,7 +6,13 @@
 
 # devtools::document()  # Make rd files based on roxygen comments.
 
-
+#' @title Get simulation date
+#' @name get.simdate
+#' @description Returns the date and time when a specific simulation was finished
+#' (a \code{\link{POSIXlt}} object)
+#' @param fname Character string with name of the file to extract the simulation
+#' date from, including the path
+#' @export get.simdate
 get.simdate <- function(fname=NULL) {
   ncf <- nchar(fname)
   tmp <- substr(fname, ncf-23, ncf-4)
@@ -40,19 +46,26 @@ get.simdate <- function(fname=NULL) {
 #' @name get.latest.sim
 #' @description Returns the name of the newest simulation output within the
 #' specified directory
+#' @param type Type of simulation output to check; can be one of:
+#' "dyn" (for looking in "Statistics.XX.csv" files)
+#' "blockdyn" (for looking in "PorpoisePerBlock.XX.csv" files)
+#' "track" (for looking in "RandomPorpoise.XX.csv" files)
 #' @param dir Directory to look for simulation output in (character string)
 #' @export get.latest.sim
-get.latest.sim <- function(dir) {
+get.latest.sim <- function(type="dyn", dir) {
+  if (!(type %in% c("dyn", "blockdyn", "track"))) {
+    stop ("type must be either 'dyn', 'blockdyn', or 'track'")
+  }
   the.dir <- dir
-  statfiles <- grep("Statistics", dir(the.dir))
-  if(length(statfiles)==0) stop("No sim output of type 'Statistics' found in dir")
-  fnms <- dir(the.dir)[statfiles]
+  outfiles <- grep(type, dir(the.dir))
+  if(length(outfiles)==0) stop("No sim output of type 'Statistics' found in dir")
+  fnms <- dir(the.dir)[outfiles]
   fnms2 <- as.list(fnms)
   ftime <- lapply(fnms2, FUN="get.simdate")
   for(i in 1:length(ftime)) ftime[[i]] <- as.character(ftime[[i]])
-  statfile.nos <- data.frame("file.no"=statfiles, "time.str"=unlist(ftime))
-  newest.sim <- sort(statfile.nos$time.str, decreasing=TRUE, index.return=TRUE)
-  no.of.newest.sim <- statfile.nos$file.no[newest.sim$ix][1]
+  outfile.nos <- data.frame("file.no"=outfiles, "time.str"=unlist(ftime))
+  newest.sim <- sort(outfile.nos$time.str, decreasing=TRUE, index.return=TRUE)
+  no.of.newest.sim <- outfile.nos$file.no[newest.sim$ix][1]
   latest.sim <- dir(the.dir)[no.of.newest.sim]
   return(latest.sim)
 }
