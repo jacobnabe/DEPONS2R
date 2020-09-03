@@ -42,10 +42,10 @@ get.simdate <- function(fname=NULL) {
 }
 
 
-#' @title Get output
+#' @title Get name of newest file
 #' @name get.latest.sim
 #' @description Returns the name of the newest simulation output within the
-#' specified directory
+#' specified directory as extracted from the file name
 #' @param type Type of simulation output to check; can be one of:
 #' "dyn" (for looking in "Statistics.XX.csv" files)
 #' "blockdyn" (for looking in "PorpoisePerBlock.XX.csv" files)

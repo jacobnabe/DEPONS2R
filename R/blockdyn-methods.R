@@ -5,6 +5,7 @@
 #    stored in 'PorpoisePerBlock'-files, i.e. population dynamics for different
 #    parts of the landscape.
 
+
 #' @title  DeponsBlockdyn-class and methods
 #' @description Classes and methods for analyzing and plotting changes in
 #' population size for different parts of the landscape (i.e. different 'blocks')
@@ -54,21 +55,21 @@ setMethod("show", "DeponsBlockdyn",
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
             cat("simdate:  \t", as.character(object@simdate), "\n")
-            cat("data     \t tick   \t count.X \t simtime \n" )
-            rnd <- function(n) sprintf(n, fmt='%#.3f')
-            l.obj <- nrow(object@data)
-            # cat("   start:\t",  object@data$tick[1], "\t, object@data$count[1], "\t", as.character(object@simstart), "\n")
-            # cat("   mean:\t",  rnd(mean(object@data$tick)), "  \t",
-            #     "NA  \t", rnd(mean(object@data$count)))
-            #     "\t", rnd(mean(object@data$energy)), "\t", rnd(mean(object@data$lenergy)),
-            #     "\t NA \n")
-            # if(!is.null(l.obj)) {
-            #   cat("   end:  \t",  object@data$tick[l.obj], "    \t", object@data$count[l.obj],
-            #       "    \t", rnd(object@data$energy[l.obj]), "   \t", rnd(object@data$lenergy[l.obj]),
-            #       "\t", as.character((object@data$simtime[l.obj])))
-            # }
+            cat("n.ticks:  \t", as.character(max(object@data$tick)), "\n")
+            cat("n.days:  \t", as.character(round(max(object@data$tick)/48, 2)), "\n\n")
+            b.nos <- sort(unique(object@data$block))
+            rnd <- function(n) sprintf(n, fmt='%#.2f')
+            cat("Count per block:")
+            cat("     block \t min   \t mean \t\t max \n" )
+            for (b in b.nos) {
+              cnt <- object@data$count[object@data$block==b]
+              if(max(cnt)<1000) cat("   \t", b, "\t", min(cnt), "   \t", rnd(mean(cnt)), "   \t", max(cnt), "\n")
+              else cat("  \t", b, "\t", min(cnt), "\t", rnd(mean(cnt)), "\t", max(cnt), "\n")
+            }
           }
 )
+
+
 
 #' @title Reading simulated population count for blocks
 #' @description Function for reading DEPONS simulation output with number of
@@ -83,12 +84,11 @@ setMethod("show", "DeponsBlockdyn",
 #' not provided this is obtained from name of input file
 #' @param simstart The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
-#' @param tz Time zone used in simulations. Defaults to UTC/GMT.
 #' @seealso See \code{\link{DeponsBlockdyn-class}} for details on what is stored in
 #' the output object.
 #' @export read.DeponsBlockdyn
 read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simdate="NA",
-                           simstart="NA", tz="UTC") {
+                           simstart="NA") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simdate=="NA")  simdate <- get.simdate(fname)
@@ -96,15 +96,12 @@ read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simdate="NA",
   all.data <- new("DeponsBlockdyn")
   all.data@title <- title
   all.data@landscape <- landscape
-  all.data@simdate <- as.POSIXlt(simdate, tz=tz)
-  all.data@simstart <- as.POSIXlt(simstart, tz=tz)
-  the.data <- utils::read.csv(fname, sep=";")
-
-  ### STACK THE INPUT FILE !!!
-
-  names(the.data) <- c("tick", "count")
+  all.data@simdate <- as.POSIXlt(simdate)
+  all.data@simstart <- as.POSIXlt(simstart)
+  the.data <- utils::read.csv(fname, sep=",")
+  names(the.data) <- c("tick", "block", "count")
   the.data$simtime <- as.POSIXlt(the.data$tick*30*60,
-                                 origin=as.POSIXlt(simstart, tz=tz), tz=tz)
+                                 origin=as.POSIXlt(simstart))
   all.data@data <- the.data
   return(all.data)
 }
@@ -214,3 +211,21 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
 )
 
 
+
+
+#############
+
+
+# fname <- "PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
+# title="Test simulation with two blocks"
+# landscape="North Sea"
+# simdate="NA"
+# simstart="NA"
+
+# rm(list=ls())
+
+# fname <- "PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
+# object <- read.DeponsBlockdyn(fname=fname)
+
+# ttt <- read.csv(fname)
+# head(ttt)

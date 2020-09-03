@@ -2,7 +2,7 @@
 % Please edit documentation in R/a-misc.R
 \name{get.latest.sim}
 \alias{get.latest.sim}
-\title{Get output}
+\title{Get name of newest file}
 \usage{
 get.latest.sim(type = "dyn", dir)
 }
@@ -16,5 +16,5 @@ get.latest.sim(type = "dyn", dir)
 }
 \description{
 Returns the name of the newest simulation output within the
-specified directory
+specified directory as extracted from the file name
 }

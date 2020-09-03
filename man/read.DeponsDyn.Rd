@@ -9,8 +9,7 @@ read.DeponsDyn(
   title = "NA",
   landscape = "NA",
   simdate = "NA",
-  simstart = "NA",
-  tz = "UTC"
+  simstart = "NA"
 )
 }
 \arguments{
@@ -27,8 +26,6 @@ not provided this is obtained from name of input file}
 
 \item{simstart}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (POSIXlt)}
-
-\item{tz}{Time zone used in simulations. Defaults to UTC/GMT.}
 }
 \description{
 Function  for reading simulation output produced by DEPONS.

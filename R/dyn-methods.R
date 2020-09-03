@@ -88,12 +88,11 @@ setMethod("show", "DeponsDyn",
 #' not provided this is obtained from name of input file
 #' @param simstart The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
-#' @param tz Time zone used in simulations. Defaults to UTC/GMT.
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object.
 #' @export read.DeponsDyn
 read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
-                           simstart="NA", tz="UTC") {
+                           simstart="NA") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simdate=="NA")  simdate <- get.simdate(fname)
@@ -101,12 +100,12 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
   all.data <- new("DeponsDyn")
   all.data@title <- title
   all.data@landscape <- landscape
-  all.data@simdate <- as.POSIXlt(simdate, tz=tz)
-  all.data@simstart <- as.POSIXlt(simstart, tz=tz)
+  all.data@simdate <- as.POSIXlt(simdate)
+  all.data@simstart <- as.POSIXlt(simstart)
   the.data <- utils::read.csv(fname, sep=";")
   names(the.data) <- c("tick", "count", "energy", "lenergy")
   the.data$simtime <- as.POSIXlt(the.data$tick*30*60,
-                                 origin=as.POSIXlt(simstart, tz=tz), tz=tz)
+                                 origin=as.POSIXlt(simstart))
   all.data@data <- the.data
   return(all.data)
 }
