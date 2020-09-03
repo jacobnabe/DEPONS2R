@@ -106,7 +106,6 @@ setMethod("landscape<-", "DeponsTrack", function(x, value) {
 setGeneric("landscape", function(x, value) { return(x@landscape) })
 
 #' @name landscape
-#' @title Get or set the landscape name of DeponsTrack objects
 #' @aliases landscape,DeponsTrack-method
 #' @aliases landscape<-,DeponsTrack-method
 #' @rdname landscape
@@ -129,7 +128,7 @@ setMethod("landscape<-", "DeponsDyn", function(x, value) {
 
 
 #' @name landscape
-#' @title Get or set the landscape of DeponsDyn objects
+#' @title Get or set the landscape name
 #' @aliases landscape,DeponsDyn-method
 #' @aliases landscape<-,DeponsDyn-method
 #' @rdname landscape
@@ -137,3 +136,48 @@ setMethod("landscape<-", "DeponsDyn", function(x, value) {
 #' @param x Object of class \code{DeponsDyn}.
 #' @exportMethod landscape
 setMethod("landscape", signature=("DeponsDyn"), function(x, value) { return(x@landscape) })
+
+
+#' @name landscape<-
+#' @rdname landscape
+#' @param x Object of class \code{DeponsBlockdyn}
+#' @param value landscape of the object (text string)
+#' @exportMethod landscape<-
+setMethod("landscape<-", "DeponsBlockdyn", function(x, value) {
+  x@landscape <- value
+  validObject(x)
+  x
+})
+
+
+#' @name landscape
+#' @title Get or set the landscape name
+#' @aliases landscape,DeponsBlockdyn-method
+#' @aliases landscape<-,DeponsBlockdyn-method
+#' @rdname landscape
+#' @param value Character string
+#' @param x Object of class \code{DeponsBlockdyn}.
+#' @exportMethod landscape
+setMethod("landscape", signature=("DeponsBlockdyn"), function(x, value) { return(x@landscape) })
+
+
+setGeneric("dyn", function(x, value) { return(x@dyn) })
+
+#' @name dyn
+#' @title Extract the dynamics data from DeponsDyn objects
+#' @aliases dyn,DeponsDyn-method
+#' @rdname dyn
+#' @param value Character string
+#' @param x Object of class \code{DeponsDyn}.
+#' @exportMethod dyn
+setMethod("dyn", signature=("DeponsDyn"), function(x, value) { return(x@dyn) })
+
+
+#' @name dyn
+#' @title Extract the dynamics dyn from DeponsDyn objects
+#' @aliases dyn,DeponsBlockdyn-method
+#' @rdname dyn
+#' @param value Character string
+#' @param x Object of class \code{DeponsBlockdyn}.
+#' @exportMethod dyn
+setMethod("dyn", signature=("DeponsBlockdyn"), function(x, value) { return(x@dyn) })

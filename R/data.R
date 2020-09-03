@@ -52,6 +52,17 @@ data("coastline")
 #' @seealso \code{\link{DeponsDyn-class}}
 data("porpoisedyn")
 
+#' @name porpoisebdyn
+#' @title Simulated porpoise population dynamics
+#' @docType data
+#' @description An object of class \code{DeponsBlockdyn} with output from a DEPONS
+#' simulation based on the North Sea landscape, using a landscape divided into
+#' two blocks.
+#' @format DeponsBlockdyn
+#' @keywords datasets
+#' @seealso \code{\link{DeponsBlockdyn-class}}
+data("porpoisebdyn")
+
 
 #' @name porpoisetrack
 #' @title Simulated porpoise track

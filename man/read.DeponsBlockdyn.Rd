@@ -9,7 +9,7 @@ read.DeponsBlockdyn(
   title = "NA",
   landscape = "NA",
   simtime = "NA",
-  simstart = "NA"
+  startday = "NA"
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ not the current working directory.}
 \item{simtime}{Optional POSIXlt object with date of simulation. If
 not provided this is obtained from name of input file}
 
-\item{simstart}{The start of the period that the  simulation represents, i.e.
+\item{startday}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (POSIXlt)}
 }
 \description{

@@ -16,16 +16,16 @@
 #' 'Homogeneous', and 'User defined' are distributed with the DEPONS model.
 #' @slot simtime \code{\link{POSIXlt}} object with the date and time when the
 #' simulation was finished. This is read from the name of the imput file.
-#' @slot simstart POSIXlt object with the first day of the simulation, i.e.
+#' @slot startday POSIXlt object with the first day of the simulation, i.e.
 #' the first day in the period that the simulations are intended to represent in
 #' the real world.
-#' @slot data Data frame with simulation output.
+#' @slot dyn Data frame with simulation output.
 #' @details The following columns are included in the simulation output data
 #' frame: 'tick', which indicates the number of half-hourly time steps since the
 #' start of the simulation; 'count', which indicates the population size at a
 #' given time; 'energy', showing the average amount of energy stored by simulated
 #' animals; 'lenergy', which shows the total amount of energy in the landscape,
-#' and 'real.time' which shows the time relative to 'simstart'.
+#' and 'real.time' which shows the time relative to 'startday'.
 #' @exportClass DeponsDyn
 #' @examples a.DeponsDyn <- new("DeponsDyn")
 #' a.DeponsDyn
@@ -36,7 +36,7 @@
 #' \code{\link[DEPONS2R]{read.DeponsDyn}}.
 setClass(Class="DeponsDyn",
          slots=list(title="character", landscape="character", simtime="POSIXlt",
-                    simstart="POSIXlt", data="data.frame")
+                    startday="POSIXlt", dyn="data.frame")
 )
 
 
@@ -45,8 +45,8 @@ setMethod("initialize", "DeponsDyn",
             .Object@title <- "NA"
             .Object@landscape <- "NA"
             .Object@simtime <- as.POSIXlt(NA)
-            .Object@simstart <- as.POSIXlt(NA)
-            .Object@data <- data.frame("tick"=NA, "count"=NA, "energy"=NA, "lenergy"=NA,
+            .Object@startday <- as.POSIXlt(NA)
+            .Object@dyn <- data.frame("tick"=NA, "count"=NA, "energy"=NA, "lenergy"=NA,
                                        "real.time"=NA)
             return((.Object))
           }
@@ -59,19 +59,19 @@ setMethod("show", "DeponsDyn",
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
             cat("simtime:  \t", as.character(object@simtime), "\n")
-            cat("data     \t tick    \t count \t\t energy   \t lenergy\ttime \n" )
+            cat("dyn     \t tick    \t count \t\t energy   \t lenergy\ttime \n" )
             rnd <- function(n) sprintf(n, fmt='%#.3f')
-            l.obj <- nrow(object@data)
-            cat("   start:\t",  object@data$tick[1], "\t\t", object@data$count[1],
-                "       \t" , rnd(object@data$energy[1]), "     \t" , rnd(object@data$lenergy[1]),
-                "\t", as.character(object@simstart), "\n")
-            cat("   mean:\t",  rnd(mean(object@data$tick)), "  \t", rnd(mean(object@data$count)),
-                "\t", rnd(mean(object@data$energy)), "\t", rnd(mean(object@data$lenergy)),
+            l.obj <- nrow(object@dyn)
+            cat("   start:\t",  object@dyn$tick[1], "\t\t", object@dyn$count[1],
+                "       \t" , rnd(object@dyn$energy[1]), "     \t" , rnd(object@dyn$lenergy[1]),
+                "\t", as.character(object@startday), "\n")
+            cat("   mean:\t",  rnd(mean(object@dyn$tick)), "  \t", rnd(mean(object@dyn$count)),
+                "\t", rnd(mean(object@dyn$energy)), "\t", rnd(mean(object@dyn$lenergy)),
                 "\t NA \n")
             if(!is.null(l.obj)) {
-              cat("   end:  \t",  object@data$tick[l.obj], "    \t", object@data$count[l.obj],
-                  "    \t", rnd(object@data$energy[l.obj]), "   \t", rnd(object@data$lenergy[l.obj]),
-                  "\t", as.character((object@data$real.time[l.obj])))
+              cat("   end:  \t",  object@dyn$tick[l.obj], "    \t", object@dyn$count[l.obj],
+                  "    \t", rnd(object@dyn$energy[l.obj]), "   \t", rnd(object@dyn$lenergy[l.obj]),
+                  "\t", as.character((object@dyn$real.time[l.obj])))
             }
           }
 )
@@ -86,28 +86,28 @@ setMethod("show", "DeponsDyn",
 #' @param landscape The landscape used in the simulation
 #' @param simtime Optional POSIXlt object with the date and time when the
 #' simulation finished. If not provided this is obtained from name of input file
-#' @param simstart The start of the period that the  simulation represents, i.e.
+#' @param startday The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object.
 #' @export read.DeponsDyn
 read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
-                           simstart="NA") {
+                           startday="NA") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simtime=="NA")  simtime <- get.simtime(fname)
-  if (simstart=="NA")  simstart <- NA
+  if (startday=="NA")  startday <- NA
   all.data <- new("DeponsDyn")
   all.data@title <- title
   all.data@landscape <- landscape
   all.data@simtime <- as.POSIXlt(simtime)
-  all.data@simstart <- as.POSIXlt(simstart)
+  all.data@startday <- as.POSIXlt(startday)
   the.data <- utils::read.csv(fname, sep=";")
   names(the.data) <- c("tick", "count", "energy", "lenergy")
-  tick.1.secs <- as.numeric(tick.to.date(1))
+  tick.1.secs <- as.numeric(tick.to.time(1))
   secs.since.start <- the.data$tick-tick.1.secs
-  the.data$real.time <- as.POSIXct(simstart)+secs.since.start
-  all.data@data <- the.data
+  the.data$real.time <- as.POSIXct(startday)+secs.since.start
+  all.data@dyn <- the.data
   return(all.data)
 }
 
@@ -140,7 +140,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 setMethod("plot", signature("DeponsDyn", "missing"),
           function(x, y, dilute=5, plot.energy=FALSE, ...)  {
             if (!(dilute %% 1 == 0)) stop("'dilute' must be an integer")
-            use.row <- x@data$tick %% dilute == 0
+            use.row <- x@dyn$tick %% dilute == 0
             use.row[1] <- TRUE
             graphics::par(mar=c(4.2, 4.2, 4, 4.2))
             if(!hasArg(ylab)) {
@@ -174,7 +174,7 @@ setMethod("plot", signature("DeponsDyn", "missing"),
               axes <- list(...)[["axes"]]
             }
             if(!hasArg("ylim")) {
-              ylim <- c(min(x@data$count), max(x@data$count))
+              ylim <- c(min(x@dyn$count), max(x@dyn$count))
             } else {
               ylim <- list(...)[["ylim"]]
             }
@@ -184,7 +184,7 @@ setMethod("plot", signature("DeponsDyn", "missing"),
               main <- x@title
             }
             # Make plot with either date or tick on x-axis
-            if (!is.na(x@simstart)) {
+            if (!is.na(x@startday)) {
               if(!hasArg("xlim")) {
                 xlim <- NULL
               } else {
@@ -195,12 +195,12 @@ setMethod("plot", signature("DeponsDyn", "missing"),
               } else {
                 xlab <- list(...)[["xlab"]]
               }
-              plot(x@data$real.time[use.row], x@data$count[use.row],
+              plot(x@dyn$real.time[use.row], x@dyn$count[use.row],
                    xlab=xlab, ylab=ylab, main=main, col=col, type=type,
                    xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
             } else {
               if(!hasArg("xlim")) {
-                xlim <- c(min(x@data$tick), max(x@data$tick))
+                xlim <- c(min(x@dyn$tick), max(x@dyn$tick))
               } else {
                 xlim <- list(...)[["xlim"]]
               }
@@ -209,16 +209,16 @@ setMethod("plot", signature("DeponsDyn", "missing"),
               } else {
                 xlab <- list(...)[["xlab"]]
               }
-              plot(x@data$tick[use.row], x@data$count[use.row],
+              plot(x@dyn$tick[use.row], x@dyn$count[use.row],
                    xlab=xlab, ylab=ylab, main=main, col=col, type=type,
                    xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
             }
             if(plot.energy) {
               graphics::par(new=TRUE)
-              plot(x@data$tick[use.row], x@data$energy[use.row],
+              plot(x@dyn$tick[use.row], x@dyn$energy[use.row],
                    col="red", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
               graphics::par(new=TRUE)
-              plot(x@data$tick[use.row], x@data$lenergy[use.row],
+              plot(x@dyn$tick[use.row], x@dyn$lenergy[use.row],
                    col="orange", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
               graphics::axis(4)
               graphics::mtext("energy level", side=4, line=2.6)

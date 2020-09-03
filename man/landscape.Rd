@@ -7,7 +7,9 @@
 \alias{landscape<-,DeponsTrack-method}
 \alias{landscape,DeponsDyn-method}
 \alias{landscape<-,DeponsDyn-method}
-\title{Get or set the landscape name of DeponsTrack objects}
+\alias{landscape,DeponsBlockdyn-method}
+\alias{landscape<-,DeponsBlockdyn-method}
+\title{Get or set the landscape name}
 \usage{
 \S4method{landscape}{DeponsTrack}(x) <- value
 
@@ -16,14 +18,18 @@
 \S4method{landscape}{DeponsDyn}(x) <- value
 
 \S4method{landscape}{DeponsDyn}(x, value)
+
+\S4method{landscape}{DeponsBlockdyn}(x) <- value
+
+\S4method{landscape}{DeponsBlockdyn}(x, value)
 }
 \arguments{
-\item{x}{Object of class \code{DeponsDyn}.}
+\item{x}{Object of class \code{DeponsBlockdyn}.}
 
 \item{value}{Character string}
 }
 \description{
-Get or set the landscape name of DeponsTrack objects
+Get or set the landscape name
 
-Get or set the landscape of DeponsDyn objects
+Get or set the landscape name
 }

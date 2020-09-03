@@ -6,6 +6,10 @@
 
 # devtools::document()  # Make rd files based on roxygen comments.
 
+# TO DO -- accessor fct for 'startdate'
+# plot porpoisebdyn + make stats
+
+
 #' @title Get simulation date
 #' @name get.simtime
 #' @description Returns the date and time when a specific simulation was finished
@@ -72,14 +76,14 @@ get.latest.sim <- function(type="dyn", dir) {
 
 
 #' @title Convert tick number to date
-#' @name tick.to.date
+#' @name tick.to.time
 #' @description Converts the number of ticks since the start of the simulation
 #' to a specific data while taking into account that DEPONS assumes that there
-#' is 30 days per month
+#' is 30 days per month. Returns an object of class \code{\link{as.POSIXlt}}
 #' @param tick Numeric; tick number
-#' @param ... Other parameters used by as.POSIXlt
-#' @export tick.to.date
-tick.to.date <- function(tick, ...) {
+#' @param ... Time zone (tz) and other parameters
+#' @export tick.to.time
+tick.to.time <- function(tick, ...) {
   minute <- tick*30
   hour <- floor(minute/60)
   day <- floor(hour/24)
@@ -99,17 +103,6 @@ tick.to.date <- function(tick, ...) {
   }
   return(as.POSIXlt(str, tz=tz))
 }
-
-
-# Notes regarding development of the DEPONS2R package
-
-# Enable manipulation and plotting of ship tracks
-# Reproduce population effects plots from paper
-
-
-# Collate controls the order in which R files are sourced. This only matters if
-# your code has side-effects; most commonly because you’re using S4.
-
 
 
 
@@ -158,10 +151,11 @@ tick.to.date <- function(tick, ...) {
 
 # MAKE porpoisedyn FILE
 
-# fname <- "Statistics.2020.Aug.27.10_55_36.csv"
+# fname <- "../DEPONS2R_extras/Statistics.2020.Aug.27.10_55_36.csv"
 # file.exists(fname)
-# porpoisedyn <- read.DeponsDyn(fname, simstart="2010-01-01")
+# porpoisedyn <- read.DeponsDyn(fname, startday="2010-01-01")
 # porpoisedyn@data <- porpoisedyn@data[1:100000 ,]
+# porpoisedyn
 # save(porpoisedyn, file="porpoisedyn.RData")
 
 
@@ -181,7 +175,13 @@ tick.to.date <- function(tick, ...) {
 # plot(coastline, add=TRUE)
 # make.blocksraster(template = templ, new.blocks, fname="NS2blocks.asc")
 
-# dir()
-# blockdyn <- read.csv("PorpoisePerBlock.2020.Sep.02.20_24_17.csv", sep=",")
-# head(blockdyn)
-# dim(blockdyn)
+
+
+#####
+
+# MAKE porpoisebdyn file
+
+# fname <- "../DEPONS2R_extras/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
+# file.exists(fname)
+# porpoisebdyn <- read.DeponsBlockdyn(fname, title="Test simulation with two blocks", landscape="North Sea")
+# save(porpoisebdyn, file="porpoisebdyn.RData")

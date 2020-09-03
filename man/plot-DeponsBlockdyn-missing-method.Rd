@@ -5,7 +5,7 @@
 \alias{plot.DeponsBlockdyn}
 \title{Plot a DeponsBlockdyn object}
 \usage{
-\S4method{plot}{DeponsBlockdyn,missing}(x, y, dilute = 5, plot.energy = FALSE, ...)
+\S4method{plot}{DeponsBlockdyn,missing}(x, y, dilute = 5, ...)
 }
 \arguments{
 \item{x}{DeponsBlockdyn object}
@@ -15,9 +15,6 @@
 \item{dilute}{Integer. Plot only one in every 'dilute' values. Defaults to
 5, which yields a plot of the first simulated value and one in every five of
 the following values.}
-
-\item{plot.energy}{If set to TRUE it plots the amount of energy stored in
-simulated and in the landscape in addition to the population count}
 
 \item{...}{Optional plotting parameters}
 }
