@@ -8,7 +8,7 @@ read.DeponsBlockdyn(
   fname,
   title = "NA",
   landscape = "NA",
-  simdate = "NA",
+  simtime = "NA",
   simstart = "NA"
 )
 }
@@ -21,7 +21,7 @@ not the current working directory.}
 
 \item{landscape}{The landscape used in the simulation}
 
-\item{simdate}{Optional POSIXlt object with date of simulation. If
+\item{simtime}{Optional POSIXlt object with date of simulation. If
 not provided this is obtained from name of input file}
 
 \item{simstart}{The start of the period that the  simulation represents, i.e.

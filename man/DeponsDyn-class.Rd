@@ -14,7 +14,7 @@ frame: 'tick', which indicates the number of half-hourly time steps since the
 start of the simulation; 'count', which indicates the population size at a
 given time; 'energy', showing the average amount of energy stored by simulated
 animals; 'lenergy', which shows the total amount of energy in the landscape,
-and 'simtime' which shows the time relative to 'simstart'.
+and 'real.time' which shows the time relative to 'simstart'.
 }
 \section{Slots}{
 
@@ -25,8 +25,8 @@ and 'simtime' which shows the time relative to 'simstart'.
 simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 'Homogeneous', and 'User defined' are distributed with the DEPONS model.}
 
-\item{\code{simdate}}{\code{\link{POSIXlt}} object with the date and time when the simulation was
-finished. This is read from the name of the imput file.}
+\item{\code{simtime}}{\code{\link{POSIXlt}} object with the date and time when the
+simulation was finished. This is read from the name of the imput file.}
 
 \item{\code{simstart}}{POSIXlt object with the first day of the simulation, i.e.
 the first day in the period that the simulations are intended to represent in

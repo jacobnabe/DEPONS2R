@@ -12,7 +12,7 @@ population size for different parts of the landscape (i.e. different 'blocks')
 The data frame with simulation output includes the columns 'tick',
 which indicates the number of half-hourly time steps since the start of the
 simulation; a column 'count.X' with the number of animals in each block at
-each tick, and 'simtime', which shows the real-world equivalent to 'tick.
+each tick, and 'real.time', which shows the real-world equivalent to 'tick.
 }
 \section{Slots}{
 
@@ -23,7 +23,7 @@ each tick, and 'simtime', which shows the real-world equivalent to 'tick.
 simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 'Homogeneous', and 'User defined' are distributed with the DEPONS model.}
 
-\item{\code{simdate}}{\code{\link{POSIXlt}} object with the date and time when the simulation was
+\item{\code{simtime}}{\code{\link{POSIXlt}} object with the date and time when the simulation was
 finished. This is read from the name of the imput file.}
 
 \item{\code{simstart}}{POSIXlt object with the first day of the simulation, i.e.

@@ -7,13 +7,13 @@
 # devtools::document()  # Make rd files based on roxygen comments.
 
 #' @title Get simulation date
-#' @name get.simdate
+#' @name get.simtime
 #' @description Returns the date and time when a specific simulation was finished
 #' (a \code{\link{POSIXlt}} object)
 #' @param fname Character string with name of the file to extract the simulation
 #' date from, including the path
-#' @export get.simdate
-get.simdate <- function(fname=NULL) {
+#' @export get.simtime
+get.simtime <- function(fname=NULL) {
   ncf <- nchar(fname)
   tmp <- substr(fname, ncf-23, ncf-4)
   tmp <- gsub("_", ":", tmp)
@@ -61,13 +61,43 @@ get.latest.sim <- function(type="dyn", dir) {
   if(length(outfiles)==0) stop("No sim output of type 'Statistics' found in dir")
   fnms <- dir(the.dir)[outfiles]
   fnms2 <- as.list(fnms)
-  ftime <- lapply(fnms2, FUN="get.simdate")
+  ftime <- lapply(fnms2, FUN="get.simtime")
   for(i in 1:length(ftime)) ftime[[i]] <- as.character(ftime[[i]])
   outfile.nos <- data.frame("file.no"=outfiles, "time.str"=unlist(ftime))
   newest.sim <- sort(outfile.nos$time.str, decreasing=TRUE, index.return=TRUE)
   no.of.newest.sim <- outfile.nos$file.no[newest.sim$ix][1]
   latest.sim <- dir(the.dir)[no.of.newest.sim]
   return(latest.sim)
+}
+
+
+#' @title Convert tick number to date
+#' @name tick.to.date
+#' @description Converts the number of ticks since the start of the simulation
+#' to a specific data while taking into account that DEPONS assumes that there
+#' is 30 days per month
+#' @param tick Numeric; tick number
+#' @param ... Other parameters used by as.POSIXlt
+#' @export tick.to.date
+tick.to.date <- function(tick, ...) {
+  minute <- tick*30
+  hour <- floor(minute/60)
+  day <- floor(hour/24)
+  month <- floor(day/30)
+  year <- floor(month/12)
+  mi <- substr(as.character((minute %% 60)+10000), 4, 5)
+  hh <- substr(as.character((hour %% 24)+10000), 4, 5)
+  dd <- substr(as.character((day %% 30)+10000+1), 4, 5)
+  mm <- substr(as.character((month %% 12)+10000+1), 4, 5)
+  yy <- substr(as.character(year+10000), 2, 5)
+  str <- paste0(yy, "-", mm, "-", dd, " ", hh, ":", mi, ":00")
+  if(!hasArg(tz)) {
+    tz <- ""
+  } else {
+    tz <- as.character(list(...)[["tz"]])
+    tz <- tz
+  }
+  return(as.POSIXlt(str, tz=tz))
 }
 
 
@@ -87,6 +117,7 @@ get.latest.sim <- function(type="dyn", dir) {
 
 
 # MAKE track FILE
+
 # fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Jul.31.09_43_10.csv"
 # fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Aug.19.11_28_36.csv"
 # file.exists(fname)
@@ -127,9 +158,10 @@ get.latest.sim <- function(type="dyn", dir) {
 
 # MAKE porpoisedyn FILE
 
-# porpoisedyn <- read.csv("Statistics.2020.Aug.27.10_55_36.csv", sep=";")
 # fname <- "Statistics.2020.Aug.27.10_55_36.csv"
+# file.exists(fname)
 # porpoisedyn <- read.DeponsDyn(fname, simstart="2010-01-01")
+# porpoisedyn@data <- porpoisedyn@data[1:100000 ,]
 # save(porpoisedyn, file="porpoisedyn.RData")
 
 

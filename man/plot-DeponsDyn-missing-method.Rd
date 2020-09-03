@@ -28,7 +28,6 @@ Plot population dynamics simulated with DEPONS
 data("porpoisedyn")
 
 # Plot for specific range of years
-the.range <- c(as.POSIXct("2010-01-01"), as.POSIXct("2014-01-01"))
 rg <- c(as.POSIXlt("2011-01-01"), as.POSIXlt("2018-12-31"))
 plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
 

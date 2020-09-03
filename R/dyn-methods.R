@@ -14,8 +14,8 @@
 #' @slot landscape Character. Identifier for the landscape used in the DEPONS
 #' simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 #' 'Homogeneous', and 'User defined' are distributed with the DEPONS model.
-#' @slot simdate \code{\link{POSIXlt}} object with the date and time when the simulation was
-#' finished. This is read from the name of the imput file.
+#' @slot simtime \code{\link{POSIXlt}} object with the date and time when the
+#' simulation was finished. This is read from the name of the imput file.
 #' @slot simstart POSIXlt object with the first day of the simulation, i.e.
 #' the first day in the period that the simulations are intended to represent in
 #' the real world.
@@ -25,7 +25,7 @@
 #' start of the simulation; 'count', which indicates the population size at a
 #' given time; 'energy', showing the average amount of energy stored by simulated
 #' animals; 'lenergy', which shows the total amount of energy in the landscape,
-#' and 'simtime' which shows the time relative to 'simstart'.
+#' and 'real.time' which shows the time relative to 'simstart'.
 #' @exportClass DeponsDyn
 #' @examples a.DeponsDyn <- new("DeponsDyn")
 #' a.DeponsDyn
@@ -35,7 +35,7 @@
 #' @seealso \code{\link[DEPONS2R]{plot.DeponsDyn}} and
 #' \code{\link[DEPONS2R]{read.DeponsDyn}}.
 setClass(Class="DeponsDyn",
-         slots=list(title="character", landscape="character", simdate="POSIXlt",
+         slots=list(title="character", landscape="character", simtime="POSIXlt",
                     simstart="POSIXlt", data="data.frame")
 )
 
@@ -44,10 +44,10 @@ setMethod("initialize", "DeponsDyn",
           function(.Object) {
             .Object@title <- "NA"
             .Object@landscape <- "NA"
-            .Object@simdate <- as.POSIXlt(NA)
+            .Object@simtime <- as.POSIXlt(NA)
             .Object@simstart <- as.POSIXlt(NA)
             .Object@data <- data.frame("tick"=NA, "count"=NA, "energy"=NA, "lenergy"=NA,
-                                       "simtime"=NA)
+                                       "real.time"=NA)
             return((.Object))
           }
 )
@@ -58,7 +58,7 @@ setMethod("show", "DeponsDyn",
             cat("class:    \t", "DeponsDyn \n")
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
-            cat("simdate:  \t", as.character(object@simdate), "\n")
+            cat("simtime:  \t", as.character(object@simtime), "\n")
             cat("data     \t tick    \t count \t\t energy   \t lenergy\ttime \n" )
             rnd <- function(n) sprintf(n, fmt='%#.3f')
             l.obj <- nrow(object@data)
@@ -71,7 +71,7 @@ setMethod("show", "DeponsDyn",
             if(!is.null(l.obj)) {
               cat("   end:  \t",  object@data$tick[l.obj], "    \t", object@data$count[l.obj],
                   "    \t", rnd(object@data$energy[l.obj]), "   \t", rnd(object@data$lenergy[l.obj]),
-                  "\t", as.character((object@data$simtime[l.obj])))
+                  "\t", as.character((object@data$real.time[l.obj])))
             }
           }
 )
@@ -84,28 +84,29 @@ setMethod("show", "DeponsDyn",
 #' not the current working directory.
 #' @param title Optional character string giving name of simulation
 #' @param landscape The landscape used in the simulation
-#' @param simdate Optional POSIXlt object with date of simulation. If
-#' not provided this is obtained from name of input file
+#' @param simtime Optional POSIXlt object with the date and time when the
+#' simulation finished. If not provided this is obtained from name of input file
 #' @param simstart The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object.
 #' @export read.DeponsDyn
-read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
+read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
                            simstart="NA") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
-  if (simdate=="NA")  simdate <- get.simdate(fname)
+  if (simtime=="NA")  simtime <- get.simtime(fname)
   if (simstart=="NA")  simstart <- NA
   all.data <- new("DeponsDyn")
   all.data@title <- title
   all.data@landscape <- landscape
-  all.data@simdate <- as.POSIXlt(simdate)
+  all.data@simtime <- as.POSIXlt(simtime)
   all.data@simstart <- as.POSIXlt(simstart)
   the.data <- utils::read.csv(fname, sep=";")
   names(the.data) <- c("tick", "count", "energy", "lenergy")
-  the.data$simtime <- as.POSIXlt(the.data$tick*30*60,
-                                 origin=as.POSIXlt(simstart))
+  tick.1.secs <- as.numeric(tick.to.date(1))
+  secs.since.start <- the.data$tick-tick.1.secs
+  the.data$real.time <- as.POSIXct(simstart)+secs.since.start
   all.data@data <- the.data
   return(all.data)
 }
@@ -127,7 +128,6 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simdate="NA",
 #' data("porpoisedyn")
 #'
 #' # Plot for specific range of years
-#' the.range <- c(as.POSIXct("2010-01-01"), as.POSIXct("2014-01-01"))
 #' rg <- c(as.POSIXlt("2011-01-01"), as.POSIXlt("2018-12-31"))
 #' plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
 #'
@@ -195,7 +195,7 @@ setMethod("plot", signature("DeponsDyn", "missing"),
               } else {
                 xlab <- list(...)[["xlab"]]
               }
-              plot(x@data$simtime[use.row], x@data$count[use.row],
+              plot(x@data$real.time[use.row], x@data$count[use.row],
                    xlab=xlab, ylab=ylab, main=main, col=col, type=type,
                    xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
             } else {

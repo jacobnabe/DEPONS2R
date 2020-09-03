@@ -11,7 +11,7 @@
 #' tracks generated with DEPONS.
 #' @slot title Name of the object (character)
 #' @slot landscape Name of the object (character)
-#' @slot simdate POSIXlt object with the date and time when the simulation was
+#' @slot simtime POSIXlt object with the date and time when the simulation was
 #' finished. This is read from the name of the imput file.
 #' @slot crs CRS object providing the coordinate reference system used; see
 #' \code{\link[sp]{CRS}} for details
@@ -21,7 +21,7 @@
 #' @seealso \code{\link[DEPONS2R]{plot.DeponsTrack}} and
 #' \code{\link[DEPONS2R]{read.DeponsTrack}}
 setClass(Class="DeponsTrack",
-         slots=list(title="character", landscape="character", simdate="POSIXlt",
+         slots=list(title="character", landscape="character", simtime="POSIXlt",
                     crs="character", tracks="list")
 )
 
@@ -30,7 +30,7 @@ setMethod("initialize", "DeponsTrack",
           function(.Object) {
             .Object@title <- "NA"
             .Object@landscape <- "NA"
-            .Object@simdate <- as.POSIXlt(NA)
+            .Object@simtime <- as.POSIXlt(NA)
             .Object@crs <- "NA"
             one.track <- sp::SpatialPointsDataFrame(as.matrix(data.frame("x"=0,
                           "y"=0), ncol=2), proj4string=sp::CRS(as.character(NA)),
@@ -46,7 +46,7 @@ setMethod("show", "DeponsTrack",
             cat("class:    \t", "DeponsTrack \n")
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
-            cat("simdate:  \t", as.character(object@simdate), "\n")
+            cat("simtime:  \t", as.character(object@simtime), "\n")
             cat("crs:      \t", object@crs, "\n")
             cat("N tracks: \t", length(object@tracks), "\n")
           }
@@ -69,12 +69,12 @@ setMethod("show", "DeponsTrack",
 #' @param title Optional character string giving name of simulation
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
-#' @param simdate Optional POSIXlt object with date of simulation. If
+#' @param simtime Optional POSIXlt object with date of simulation. If
 #' not provided this is obtained from name of input file
 #' @param crs Character, coordinate reference system (map projection)
 #' @param tz Time zone used in simulations. Defaults to UTC/GMT.
 #' #'
-#' @return Returns an object with the elements \code{title}, \code{simdate},
+#' @return Returns an object with the elements \code{title}, \code{simtime},
 #' \code{crs}, and \code{tracks}. The \code{date} is extracted from input data
 #' if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
 #' element \code{tracks} is a list of objects of class
@@ -99,11 +99,11 @@ setMethod("show", "DeponsTrack",
 #' # Plot the first of the simulated tracks
 #' plot(porpoisetrack)
 #' @export read.DeponsTrack
-read.DeponsTrack <- function(fname, title="NA", landscape="NA", simdate="NA",
+read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
                              crs=CRS(as.character(NA)), tz="UTC") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
-  if (simdate=="NA")  simdate <- get.simdate(fname)
+  if (simtime=="NA")  simtime <- get.simtime(fname)
   tracks <- list()
   ids <- sort(unique(raw.data$Id))
   for (i in length(ids)) {
@@ -122,7 +122,7 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simdate="NA",
   all.data <- new("DeponsTrack")
   all.data@title <- title
   all.data@landscape <- landscape
-  all.data@simdate <- as.POSIXlt(simdate, tz=tz)
+  all.data@simtime <- as.POSIXlt(simtime, tz=tz)
   all.data@crs <- crs
   all.data@tracks <- tracks
   return(all.data)
