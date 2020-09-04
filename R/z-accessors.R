@@ -204,6 +204,7 @@ setMethod("startday", signature=("DeponsDyn"), function(x) { return(x@startday) 
 assign.startday <- function(x, value) {
   if(is.na(value)) value <- as.POSIXlt(value)
   if(any(class(value)=="character")) value <- as.POSIXlt(value)
+  if(value=="NA") value <- as.POSIXlt(NA)
   x@startday <- value
   # Calc real time corresponding to new startday
   if (!is.na(value)) {
@@ -216,7 +217,9 @@ assign.startday <- function(x, value) {
       x@dyn$real.time[i] <- as.POSIXct(value) + secs.since.start
     }
   } else {
-    x$real.time <- rep(value, length(x$real.time))
+    for(i in 1:nrow(x@dyn)) {
+      x@dyn$real.time[i] <- as.POSIXct(NA)
+    }
   }
   validObject(x)
   x
