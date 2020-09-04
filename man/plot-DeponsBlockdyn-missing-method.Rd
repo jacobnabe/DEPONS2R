@@ -21,3 +21,12 @@ the following values.}
 \description{
 Plot population dynamics simulated with DEPONS
 }
+\examples{
+data("porpoisebdyn")
+my.col <- c("red", "darkgreen", "orange")
+plot(porpoisebdyn, col=my.col)
+legend("bottomright", bty="n", fill=my.col, legend=paste("Block", 0:2))
+
+# Show all data points for small range of x-values
+plot(porpoisebdyn, xlim=c(1950, 2050), ylim=c(4850, 5050), type="p", dilute=1, col=my.col)
+}

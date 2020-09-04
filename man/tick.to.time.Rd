@@ -13,6 +13,10 @@ tick.to.time(tick, ...)
 }
 \description{
 Converts the number of ticks since the start of the simulation
-to a specific data while taking into account that DEPONS assumes that there
+to a specific date while taking into account that DEPONS assumes that there
 is 30 days per month. Returns an object of class \code{\link{as.POSIXlt}}
+}
+\note{
+The conversion from ticks to date is problematic in February, with <30
+days. Here time is forced to 'stands still'.
 }

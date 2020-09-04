@@ -25,10 +25,19 @@ not the current working directory.}
 simulation finished. If not provided this is obtained from name of input file}
 
 \item{startday}{The start of the period that the  simulation represents, i.e.
-the real-world equivalent of 'tick 1' (POSIXlt)}
+the real-world equivalent of 'tick 1' (character string of the
+form 'yyyy-mm-dd', or POSIXlt)}
 }
 \description{
 Function  for reading simulation output produced by DEPONS.
+}
+\examples{
+\dontrun{
+dyn.file <- "/Applications/DEPONS 2.1/DEPONS/Statistics.2020.Sep.02.20_24_17.csv"
+file.exists(dyn.file)
+porpoisedyn <- read.DeponsDyn(fname, startday=as.POSIXlt("2010-01-01"))
+porpoisedyn
+}
 }
 \seealso{
 See \code{\link{DeponsDyn-class}} for details on what is stored in

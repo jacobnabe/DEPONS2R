@@ -2,9 +2,9 @@
 % Please edit documentation in R/z-accessors.R
 \name{landscape<-}
 \alias{landscape<-}
+\alias{landscape<-,DeponsTrack-method}
 \alias{landscape}
 \alias{landscape,DeponsTrack-method}
-\alias{landscape<-,DeponsTrack-method}
 \alias{landscape,DeponsDyn-method}
 \alias{landscape<-,DeponsDyn-method}
 \alias{landscape,DeponsBlockdyn-method}
@@ -13,20 +13,20 @@
 \usage{
 \S4method{landscape}{DeponsTrack}(x) <- value
 
-\S4method{landscape}{DeponsTrack}(x, value)
+\S4method{landscape}{DeponsTrack}(x)
 
 \S4method{landscape}{DeponsDyn}(x) <- value
 
-\S4method{landscape}{DeponsDyn}(x, value)
+\S4method{landscape}{DeponsDyn}(x)
 
 \S4method{landscape}{DeponsBlockdyn}(x) <- value
 
-\S4method{landscape}{DeponsBlockdyn}(x, value)
+\S4method{landscape}{DeponsBlockdyn}(x)
 }
 \arguments{
 \item{x}{Object of class \code{DeponsBlockdyn}.}
 
-\item{value}{Character string}
+\item{value}{Name of the landscape (character)}
 }
 \description{
 Get or set the landscape name

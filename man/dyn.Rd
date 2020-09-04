@@ -4,19 +4,15 @@
 \alias{dyn}
 \alias{dyn,DeponsDyn-method}
 \alias{dyn,DeponsBlockdyn-method}
-\title{Extract the dynamics data from DeponsDyn objects}
+\title{Extract population dynamics from objects}
 \usage{
-\S4method{dyn}{DeponsDyn}(x, value)
+\S4method{dyn}{DeponsDyn}(x)
 
-\S4method{dyn}{DeponsBlockdyn}(x, value)
+\S4method{dyn}{DeponsBlockdyn}(x)
 }
 \arguments{
 \item{x}{Object of class \code{DeponsBlockdyn}.}
-
-\item{value}{Character string}
 }
 \description{
-Extract the dynamics data from DeponsDyn objects
-
-Extract the dynamics dyn from DeponsDyn objects
+Extract population dynamics from objects
 }

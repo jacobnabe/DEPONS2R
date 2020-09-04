@@ -87,9 +87,16 @@ setMethod("show", "DeponsDyn",
 #' @param simtime Optional POSIXlt object with the date and time when the
 #' simulation finished. If not provided this is obtained from name of input file
 #' @param startday The start of the period that the  simulation represents, i.e.
-#' the real-world equivalent of 'tick 1' (POSIXlt)
+#' the real-world equivalent of 'tick 1' (character string of the
+#' form 'yyyy-mm-dd', or POSIXlt)
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object.
+#' @examples \dontrun{
+#' dyn.file <- "/Applications/DEPONS 2.1/DEPONS/Statistics.2020.Sep.02.20_24_17.csv"
+#' file.exists(dyn.file)
+#' porpoisedyn <- read.DeponsDyn(fname, startday=as.POSIXlt("2010-01-01"))
+#' porpoisedyn
+#' }
 #' @export read.DeponsDyn
 read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
                            startday="NA") {
@@ -101,7 +108,9 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
   all.data@title <- title
   all.data@landscape <- landscape
   all.data@simtime <- as.POSIXlt(simtime)
-  all.data@startday <- as.POSIXlt(startday)
+  if(class(all.data@startday)=="character") {
+    all.data@startday <- as.POSIXlt(startday)
+  }
   the.data <- utils::read.csv(fname, sep=";")
   names(the.data) <- c("tick", "count", "energy", "lenergy")
   tick.1.secs <- as.numeric(tick.to.time(1))
@@ -191,7 +200,7 @@ setMethod("plot", signature("DeponsDyn", "missing"),
                 xlim <- list(...)[["xlim"]]
               }
               if(!hasArg("xlab")) {
-                xlab <- "year"
+                xlab <- "time"
               } else {
                 xlab <- list(...)[["xlab"]]
               }

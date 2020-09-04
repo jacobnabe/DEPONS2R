@@ -9,7 +9,7 @@
 \S4method{plot}{DeponsRaster,ANY}(
   x,
   y,
-  maxpixels = 5e+05,
+  maxpixels = 500000,
   col,
   alpha = NULL,
   colNA = NA,

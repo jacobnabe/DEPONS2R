@@ -5,8 +5,8 @@
 \alias{title}
 \alias{title,DeponsTrack-method}
 \alias{title<-,DeponsTrack-method}
-\alias{title,DeponsDyn-method}
 \alias{title<-,DeponsDyn-method}
+\alias{title,DeponsDyn-method}
 \title{Get or set the title of DeponsTrack objects}
 \usage{
 \S4method{title}{DeponsTrack}(x) <- value

@@ -88,6 +88,13 @@ setMethod("show", "DeponsBlockdyn",
 #' @seealso See \code{\link{DeponsBlockdyn-class}} for details on what is stored in
 #' the output object.
 #' @export read.DeponsBlockdyn
+#' @examples \dontrun{
+#' the.file <- "../DEPONS2R_extras/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
+#' file.exists(the.file)
+#' porpoise.blockdyn <- read.DeponsBlockdyn(fname,
+#'   title="Test simulation with two blocks", landscape="North Sea")
+#' porpoise.blockdyn
+#' }
 read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
                            startday="NA") {
   raw.data <- utils::read.csv(fname, sep=";")
@@ -101,6 +108,7 @@ read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
   all.data@startday <- as.POSIXlt(startday)
   the.data <- utils::read.csv(fname, sep=",")
   names(the.data) <- c("tick", "block", "count")
+  # Add "real time" if startday is not NA
   tick.1.secs <- as.numeric(tick.to.time(1))
   secs.since.start <- the.data$tick-tick.1.secs
   the.data$real.time <- as.POSIXct(startday)+secs.since.start
@@ -119,12 +127,31 @@ read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' 5, which yields a plot of the first simulated value and one in every five of
 #' the following values.
 #' @param ... Optional plotting parameters
+#' @examples data("porpoisebdyn")
+#' my.col <- c("red", "darkgreen", "orange")
+#' plot(porpoisebdyn, col=my.col)
+#' legend("bottomright", bty="n", fill=my.col, legend=paste("Block", 0:2))
+#'
+#' # Show all data points for small range of x-values
+#' plot(porpoisebdyn, xlim=c(1950, 2050), ylim=c(4850, 5050), type="p", dilute=1, col=my.col)
+#' @importFrom graphics points
 setMethod("plot", signature("DeponsBlockdyn", "missing"),
           function(x, y, dilute=5, ...)  {
             if (!(dilute %% 1 == 0)) stop("'dilute' must be an integer")
             use.row <- x@dyn$tick %% dilute == 0
+            z <- x@dyn[use.row ,] # use only every X rows
             use.row[1] <- TRUE
             graphics::par(mar=c(4.2, 4.2, 4, 4.2))
+            if(!hasArg(pch)) {
+              pch <- 16
+            } else {
+              pch <- list(...)[["pch"]]
+            }
+            if(!hasArg(cex)) {
+              cex <- 0.8
+            } else {
+              cex <- list(...)[["cex"]]
+            }
             if(!hasArg(ylab)) {
               ylab <- "count"
             } else {
@@ -142,8 +169,10 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
             }
             if(!hasArg(col)) {
               col <- "blue"
+              col <- grDevices::rainbow(length(unique(x@dyn$block)))
             } else {
               col <- as.character(list(...)[["col"]])
+              if(length(col) != length(unique(x@dyn$block))) stop("The nunber of colours must match the number of blocks in the landscape")
             }
             if(!hasArg(type)) {
               type <- "l"
@@ -166,6 +195,7 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
               main <- x@title
             }
             # Make plot with either date or tick on x-axis
+            the.blocknos <- sort(unique(x@dyn$block))
             if (!is.na(x@startday)) {
               if(!hasArg("xlim")) {
                 xlim <- NULL
@@ -173,13 +203,25 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
                 xlim <- list(...)[["xlim"]]
               }
               if(!hasArg("xlab")) {
-                xlab <- "year"
+                xlab <- "time"
               } else {
                 xlab <- list(...)[["xlab"]]
               }
-              plot(x@dyn$real.time[use.row], x@dyn$count[use.row],
-                   xlab=xlab, ylab=ylab, main=main, col=col, type=type,
+              plot(z$real.time, z$count,
+                   xlab=xlab, ylab=ylab, main=main, col=col, type="n",
                    xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
+
+              for (i in 1:length(the.blocknos)) {
+                b <- the.blocknos[i]
+                if(sum(z$count[z$block==b])==0) {
+                  message(paste("No obs in block", b))
+                  next
+                }
+                if(type=="l") lines(z$real.time[z$block==b], z$count[z$block==b],
+                                    col=col[i], lty=lty, lwd=lwd)
+                if(type=="p") graphics::points(z$real.time[z$block==b], z$count[z$block==b],
+                                     col=col[i], pch=pch, cex=cex)
+              }
             } else {
               if(!hasArg("xlim")) {
                 xlim <- c(min(x@dyn$tick), max(x@dyn$tick))
@@ -191,9 +233,20 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
               } else {
                 xlab <- list(...)[["xlab"]]
               }
-              plot(x@dyn$tick[use.row], x@dyn$count[use.row],
-                   xlab=xlab, ylab=ylab, main=main, col=col, type=type,
+              plot(z$tick, z$count,
+                   xlab=xlab, ylab=ylab, main=main, col=col, type="n",
                    xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
+              for (i in 1:length(the.blocknos)) {
+                b <- the.blocknos[i]
+                if(sum(z$count[z$block==b])==0) {
+                  message(paste("No obs in block", b))
+                  next
+                }
+                if(type=="l") lines(z$tick[z$block==b], z$count[z$block==b],
+                                    col=col[i], lty=lty, lwd=lwd)
+                if(type=="p") points(z$tick[z$block==b], z$count[z$block==b],
+                                     col=col[i], pch=pch, cex=cex)
+              }
             }
           }
 )
@@ -201,3 +254,4 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
 
 
 
+# plot(x@dyn$tick, x@dyn$count)

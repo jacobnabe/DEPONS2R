@@ -46,10 +46,11 @@ data("coastline")
 #' @docType data
 #' @description An object of class \code{DeponsDyn} with output from a DEPONS
 #' simulation based on the Kattegat landscape, assuming that the simulation
-#' represents the period 2010-01-01 onward in the real world.
+#' represents the period 2010-01-01 onward in the real world. Number of animals
+#' and energy availability is recorded for the entire landscape.
 #' @format DeponsDyn
 #' @keywords datasets
-#' @seealso \code{\link{DeponsDyn-class}}
+#' @seealso \code{\link{DeponsDyn-class}}, \code{\link{porpoisebdyn}}
 data("porpoisedyn")
 
 #' @name porpoisebdyn
@@ -57,10 +58,10 @@ data("porpoisedyn")
 #' @docType data
 #' @description An object of class \code{DeponsBlockdyn} with output from a DEPONS
 #' simulation based on the North Sea landscape, using a landscape divided into
-#' two blocks.
+#' two blocks. Numbers of animals are counted per block.
 #' @format DeponsBlockdyn
 #' @keywords datasets
-#' @seealso \code{\link{DeponsBlockdyn-class}}
+#' @seealso \code{\link{DeponsBlockdyn-class}}, \code{\link{porpoisedyn}}
 data("porpoisebdyn")
 
 

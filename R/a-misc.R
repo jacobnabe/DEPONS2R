@@ -78,8 +78,10 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @title Convert tick number to date
 #' @name tick.to.time
 #' @description Converts the number of ticks since the start of the simulation
-#' to a specific data while taking into account that DEPONS assumes that there
+#' to a specific date while taking into account that DEPONS assumes that there
 #' is 30 days per month. Returns an object of class \code{\link{as.POSIXlt}}
+#' @note The conversion from ticks to date is problematic in February, with <30
+#' days. Here time is forced to 'stands still'.
 #' @param tick Numeric; tick number
 #' @param ... Time zone (tz) and other parameters
 #' @export tick.to.time
@@ -89,22 +91,32 @@ tick.to.time <- function(tick, ...) {
   day <- floor(hour/24)
   month <- floor(day/30)
   year <- floor(month/12)
-  mi <- substr(as.character((minute %% 60)+10000), 4, 5)
-  hh <- substr(as.character((hour %% 24)+10000), 4, 5)
-  dd <- substr(as.character((day %% 30)+10000+1), 4, 5)
-  mm <- substr(as.character((month %% 12)+10000+1), 4, 5)
-  yy <- substr(as.character(year+10000), 2, 5)
+  options(scipen=999) # Avoid sci notation
+  mi <- substr(as.character((minute %% 60)+1000000), 6, 7)
+  hh <- substr(as.character((hour %% 24)+1000000), 6, 7)
+  dd <- substr(as.character((day %% 30)+1000000+1), 6, 7)
+  mm <- substr(as.character((month %% 12)+1000000+1), 6, 7)
+  yy <- substr(as.character(year+1000000), 4, 7)
   str <- paste0(yy, "-", mm, "-", dd, " ", hh, ":", mi, ":00")
-  if(!hasArg(tz)) {
-    tz <- ""
-  } else {
-    tz <- as.character(list(...)[["tz"]])
-    tz <- tz
+  # Handle February
+  if((mm=="02") && ((day %% 30 +1) >28)) {
+    str <- paste0(yy, "-", mm, "-28 23:59:00")
   }
-  return(as.POSIXlt(str, tz=tz))
+    if(!hasArg(tz)) {
+      tz <- ""
+    } else {
+      tz <- as.character(list(...)[["tz"]])
+      tz <- tz
+    }
+  out <- try(as.POSIXlt(str, tz=tz), silent=TRUE)
+  if(any(class(out)=="try-error")) {
+    stop(paste(" Error in conversion of tick =", tick))
+  }
+  return(out)
 }
 
 
+for (i in 1:100000) toto <- tick.to.time(i)
 
 #####
 
