@@ -34,3 +34,6 @@ is supposed to represent.
 The start date indicates the start of the period that the simulation
 is supposed to represent.
 }
+\note{
+The assignment of a new start time is currently quite time consuming.
+}

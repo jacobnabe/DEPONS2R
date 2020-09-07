@@ -202,9 +202,9 @@ setMethod("startday", signature=("DeponsDyn"), function(x) { return(x@startday) 
 
 
 assign.startday <- function(x, value) {
-  if(is.na(value)) value <- as.POSIXlt(value)
+  if(as.character(value)=="NA" || is.na(value)) value <- as.POSIXlt(NA)
   if(any(class(value)=="character")) value <- as.POSIXlt(value)
-  if(value=="NA") value <- as.POSIXlt(NA)
+  if(!any(class(value)=="POSIXlt")) stop("The input value could not be converted to POSIXlt")
   x@startday <- value
   # Calc real time corresponding to new startday
   if (!is.na(value)) {
@@ -231,6 +231,7 @@ setGeneric("startday<-", assign.startday)
 #' @name startday<-
 #' @rdname startday
 #' @aliases startday<-,DeponsBlockdyn-method
+#' @note The assignment of a new start time is currently quite time consuming.
 #' @exportMethod startday<-
 setMethod("startday<-", "DeponsBlockdyn", assign.startday)
 

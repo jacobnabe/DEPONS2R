@@ -6,8 +6,10 @@
 
 # devtools::document()  # Make rd files based on roxygen comments.
 
-# TO DO -- accessor fct for 'startdate'
-# plot porpoisebdyn + make stats
+# TO DO -- accessor fct for 'startdate' must be tested further
+# interchange landscape and porpoise energetics, and align y-axes in plot
+
+
 
 
 #' @title Get simulation date
