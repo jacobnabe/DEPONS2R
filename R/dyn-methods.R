@@ -59,7 +59,7 @@ setMethod("show", "DeponsDyn",
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
             cat("simtime:  \t", as.character(object@simtime), "\n\n")
-            cat("Dynamics:  \n     \t tick    \t count \t\t anim.e   \t lands.e\ttime \n" )
+            cat("Dynamics:  \n  \t\t tick    \t count \t\t anim.e   \t lands.e\t time \n" )
             rnd <- function(n) sprintf(n, fmt='%#.3f')
             l.obj <- nrow(object@dyn)
             cat("   start:\t",  object@dyn$tick[1], "\t\t", object@dyn$count[1],
@@ -221,16 +221,32 @@ setMethod("plot", signature("DeponsDyn", "missing"),
                    xlim=xlim, ylim=ylim, axes=axes, lwd=lwd, lty=lty)
             }
             if(plot.energy) {
-              graphics::par(new=TRUE)
-              plot(x@dyn$tick[use.row], x@dyn$anim.e[use.row],
-                   col="red", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
-              graphics::par(new=TRUE)
-              plot(x@dyn$tick[use.row], x@dyn$lands.e[use.row],
-                   col="grey", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
-              graphics::axis(4)
+              # Scale energetics to match max(count) - use for extra y-axis
+              max.count <- max(max(x@dyn$count, na.rm=TRUE), ylim[2])
+              min.count <- min(min(x@dyn$count, na.rm=TRUE), ylim[1])
+              diff.count <- max.count - min.count
+              max.e <- max(max(x@dyn$anim.e, na.rm=TRUE), max(x@dyn$lands.e, na.rm=TRUE))
+              min.e <- min(min(x@dyn$anim.e, na.rm=TRUE), min(x@dyn$lands.e, na.rm=TRUE))
+              diff.e <- max.e - min.e
+              sc <- diff.count / diff.e
+              if (!is.na(x@startday)) {
+                graphics::lines(x@dyn$real.time[use.row], ylim[1] + sc*(x@dyn$anim.e[use.row]-min.e),
+                                col="red", lwd=lwd)
+                graphics::lines(x@dyn$real.time[use.row], ylim[1] + sc*(x@dyn$lands.e[use.row]-min.e),
+                                col="grey", lwd=lwd)
+              } else {
+                graphics::lines(x@dyn$tick[use.row], sc*x@dyn$anim.e[use.row],
+                                col="red", lwd=lwd)
+                graphics::lines(x@dyn$tick[use.row], sc*x@dyn$lands.e[use.row],
+                                col="grey", lwd=lwd)
+
+              }
+              the.labels <- seq(round(min.e/500)*500, round(max.e/100)*100, 500)
+              the.at <- (the.labels - min.e) * sc + ylim[1]
+              graphics::axis(4, at=the.at, labels=the.labels)
               graphics::mtext("energy level", side=4, line=2.6)
               if (plot.legend) graphics::legend("bottomright", fill=c(col, "red", "grey"),
-                     legend=c("population count", "animal energy level", "landscape energy"))
+                                                legend=c("Population count", "Animal energy level", "Landscape energy"))
             }
           }
 )
