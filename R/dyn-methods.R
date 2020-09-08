@@ -23,8 +23,8 @@
 #' @details The following columns are included in the simulation output data
 #' frame: 'tick', which indicates the number of half-hourly time steps since the
 #' start of the simulation; 'count', which indicates the population size at a
-#' given time; 'energy', showing the average amount of energy stored by simulated
-#' animals; 'lenergy', which shows the total amount of energy in the landscape,
+#' given time; 'anim.e', showing the average amount of energy stored by simulated
+#' animals; 'lands.e', which shows the total amount of energy in the landscape,
 #' and 'real.time' which shows the time relative to 'startday'.
 #' @exportClass DeponsDyn
 #' @examples a.DeponsDyn <- new("DeponsDyn")
@@ -46,7 +46,7 @@ setMethod("initialize", "DeponsDyn",
             .Object@landscape <- "NA"
             .Object@simtime <- as.POSIXlt(NA)
             .Object@startday <- as.POSIXlt(NA)
-            .Object@dyn <- data.frame("tick"=NA, "count"=NA, "energy"=NA, "lenergy"=NA,
+            .Object@dyn <- data.frame("tick"=NA, "count"=NA, "anim.e"=NA, "lands.e"=NA,
                                        "real.time"=NA)
             return((.Object))
           }
@@ -58,19 +58,19 @@ setMethod("show", "DeponsDyn",
             cat("class:    \t", "DeponsDyn \n")
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
-            cat("simtime:  \t", as.character(object@simtime), "\n")
-            cat("dyn     \t tick    \t count \t\t energy   \t lenergy\ttime \n" )
+            cat("simtime:  \t", as.character(object@simtime), "\n\n")
+            cat("Dynamics:  \n     \t tick    \t count \t\t anim.e   \t lands.e\ttime \n" )
             rnd <- function(n) sprintf(n, fmt='%#.3f')
             l.obj <- nrow(object@dyn)
             cat("   start:\t",  object@dyn$tick[1], "\t\t", object@dyn$count[1],
-                "       \t" , rnd(object@dyn$energy[1]), "     \t" , rnd(object@dyn$lenergy[1]),
+                "       \t" , rnd(object@dyn$anim.e[1]), "     \t" , rnd(object@dyn$lands.e[1]),
                 "\t", as.character(object@startday), "\n")
             cat("   mean:\t",  rnd(mean(object@dyn$tick)), "  \t", rnd(mean(object@dyn$count)),
-                "\t", rnd(mean(object@dyn$energy)), "\t", rnd(mean(object@dyn$lenergy)),
+                "\t", rnd(mean(object@dyn$anim.e)), "\t", rnd(mean(object@dyn$lands.e)),
                 "\t NA \n")
             if(!is.null(l.obj)) {
               cat("   end:  \t",  object@dyn$tick[l.obj], "    \t", object@dyn$count[l.obj],
-                  "    \t", rnd(object@dyn$energy[l.obj]), "   \t", rnd(object@dyn$lenergy[l.obj]),
+                  "    \t", rnd(object@dyn$anim.e[l.obj]), "   \t", rnd(object@dyn$lands.e[l.obj]),
                   "\t", as.character((object@dyn$real.time[l.obj])))
             }
           }
@@ -100,19 +100,16 @@ setMethod("show", "DeponsDyn",
 #' @export read.DeponsDyn
 read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
                            startday="NA") {
-  raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simtime=="NA")  simtime <- get.simtime(fname)
-  if (startday=="NA")  startday <- NA
+  if (startday=="NA" || is.na(startday))  startday <- NA
   all.data <- new("DeponsDyn")
   all.data@title <- title
   all.data@landscape <- landscape
   all.data@simtime <- as.POSIXlt(simtime)
-  if(class(all.data@startday)=="character") {
-    all.data@startday <- as.POSIXlt(startday)
-  }
+  all.data@startday <- as.POSIXlt(startday)
   the.data <- utils::read.csv(fname, sep=";")
-  names(the.data) <- c("tick", "count", "energy", "lenergy")
+  names(the.data) <- c("tick", "count", "lands.e", "anim.e")
   tick.1.secs <- as.numeric(tick.to.time(1))
   secs.since.start <- the.data$tick-tick.1.secs
   the.data$real.time <- as.POSIXct(startday)+secs.since.start
@@ -130,9 +127,10 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' @param dilute Integer. Plot only one in every 'dilute' values. Defaults to
 #' 5, which yields a plot of the first simulated value and one in every five of
 #' the following values.
-#' @param ... Optional plotting parameters
 #' @param plot.energy If set to TRUE it plots the amount of energy stored in
 #' simulated and in the landscape in addition to the population count
+#' @param plot.legend If set to TRUE, a legend is plotted
+#' @param ... Optional plotting parameters
 #' @examples
 #' data("porpoisedyn")
 #'
@@ -147,7 +145,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' plot(new.sim.out)
 #' }
 setMethod("plot", signature("DeponsDyn", "missing"),
-          function(x, y, dilute=5, plot.energy=FALSE, ...)  {
+          function(x, y, dilute=5, plot.energy=TRUE, plot.legend=TRUE, ...)  {
             if (!(dilute %% 1 == 0)) stop("'dilute' must be an integer")
             use.row <- x@dyn$tick %% dilute == 0
             use.row[1] <- TRUE
@@ -224,14 +222,14 @@ setMethod("plot", signature("DeponsDyn", "missing"),
             }
             if(plot.energy) {
               graphics::par(new=TRUE)
-              plot(x@dyn$tick[use.row], x@dyn$energy[use.row],
+              plot(x@dyn$tick[use.row], x@dyn$anim.e[use.row],
                    col="red", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
               graphics::par(new=TRUE)
-              plot(x@dyn$tick[use.row], x@dyn$lenergy[use.row],
+              plot(x@dyn$tick[use.row], x@dyn$lands.e[use.row],
                    col="orange", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
               graphics::axis(4)
               graphics::mtext("energy level", side=4, line=2.6)
-              graphics::legend("bottomright", fill=c(col, "red", "orange"),
+              if (plot.legend) graphics::legend("bottomright", fill=c(col, "red", "orange"),
                      legend=c("population count", "animal energy level", "landscape energy"))
             }
           }

@@ -12,8 +12,8 @@ DEPONS model.
 The following columns are included in the simulation output data
 frame: 'tick', which indicates the number of half-hourly time steps since the
 start of the simulation; 'count', which indicates the population size at a
-given time; 'energy', showing the average amount of energy stored by simulated
-animals; 'lenergy', which shows the total amount of energy in the landscape,
+given time; 'anim.e', showing the average amount of energy stored by simulated
+animals; 'lands.e', which shows the total amount of energy in the landscape,
 and 'real.time' which shows the time relative to 'startday'.
 }
 \section{Slots}{
