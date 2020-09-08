@@ -168,7 +168,7 @@ for (i in 1:100000) toto <- tick.to.time(i)
 # fname <- "../DEPONS2R_extras/Statistics.2020.Aug.27.10_55_36.csv"
 # file.exists(fname)
 # porpoisedyn <- read.DeponsDyn(fname, landscape="Kattegat")
-# porpoisedyn@dyn <- porpoisedyn@dyn[1:100000 ,]
+# porpoisedyn@dyn <- porpoisedyn@dyn[1:(2*360*48) ,]
 # porpoisedyn
 # save(porpoisedyn, file="porpoisedyn.RData")
 

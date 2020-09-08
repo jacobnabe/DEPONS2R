@@ -5,7 +5,7 @@
 \alias{plot.DeponsDyn}
 \title{Plot a DeponsDyn object}
 \usage{
-\S4method{plot}{DeponsDyn,missing}(x, y, dilute = 5, plot.energy = FALSE, ...)
+\S4method{plot}{DeponsDyn,missing}(x, y, dilute = 5, plot.energy = TRUE, plot.legend = TRUE, ...)
 }
 \arguments{
 \item{x}{DeponsDyn object}
@@ -18,6 +18,8 @@ the following values.}
 
 \item{plot.energy}{If set to TRUE it plots the amount of energy stored in
 simulated and in the landscape in addition to the population count}
+
+\item{plot.legend}{If set to TRUE, a legend is plotted}
 
 \item{...}{Optional plotting parameters}
 }

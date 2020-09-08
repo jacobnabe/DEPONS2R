@@ -226,10 +226,10 @@ setMethod("plot", signature("DeponsDyn", "missing"),
                    col="red", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
               graphics::par(new=TRUE)
               plot(x@dyn$tick[use.row], x@dyn$lands.e[use.row],
-                   col="orange", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
+                   col="grey", axes=FALSE, xlab="", ylab="", type=type, lwd=lwd)
               graphics::axis(4)
               graphics::mtext("energy level", side=4, line=2.6)
-              if (plot.legend) graphics::legend("bottomright", fill=c(col, "red", "orange"),
+              if (plot.legend) graphics::legend("bottomright", fill=c(col, "red", "grey"),
                      legend=c("population count", "animal energy level", "landscape energy"))
             }
           }
