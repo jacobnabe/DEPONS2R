@@ -33,8 +33,6 @@ grid cell and the integer value used to represent missing data.}
 \note{
 DeponsRaster-objects are typically read in from ascii raster files that
 have been used for DEPONS simulations.
-
-Use data(bathymetry) to load example data.
 }
 \examples{
 a.deponsraster <- new("DeponsRaster")
@@ -42,5 +40,6 @@ a.deponsraster
 }
 \seealso{
 \code{\link[DEPONS2R]{plot.DeponsRaster}}, \code{\link[DEPONS2R]{read.DeponsRaster}} and
-\code{\link[DEPONS2R]{make.blocksraster}}
+\code{\link[DEPONS2R]{make.blocksraster}}. \code{\link{bathymetry}} is an example
+of a \code{DeponsRaster}-object.
 }

@@ -14,9 +14,9 @@
 #' where each grid cell corresponds to 400 m x 400 m. Cells on land are
 #' assigned a missing data value of -9999.
 #'
-#' DEPONS simulations based on the Kattegat area are based on the UTM zone 32
-#' projection, (EPSG:32632) as in the study by Nabe-Nielsen et al (2014). The
-#' corresponding proj4string is "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
+#' The Kattegat landscapes use the UTM zone 32 projection, (EPSG:32632) as in
+#' the study by Nabe-Nielsen et al (2014). The corresponding proj4string is
+#' "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
 #' (see \url{https://epsg.io/32632}).
 #' @format DeponsRaster
 #' @seealso \code{\link{DeponsRaster-class}}
@@ -68,9 +68,11 @@ data("porpoisebdyn")
 #' @name porpoisetrack
 #' @title Simulated porpoise track
 #' @docType data
-#' @description An object with four elements: \code{title}, \code{simtime}, \code{crs},
-#'  and \code{tracks}. The \code{tracks} elemet is a list of objects of class
-#' \code{\link[sp]{SpatialPointsDataFrame}}, each of which corresponds to one
+#' @description An object with five elements: \code{title}, \code{landscape},
+#' \code{simtime}, \code{crs}, and \code{tracks}. The \code{crs} stores information
+#' about the map projection used ("+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs").
+#' The \code{tracks} element is a list of objects of class
+#' \code{\link[sp]{SpatialPointsDataFrame}}, each ofwhich corresponds to one
 #' simulated animal. \code{simtime} is the simulation date.
 #' @format DeponsTrack
 #' @keywords datasets

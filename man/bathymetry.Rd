@@ -13,9 +13,9 @@ simulations. It is based on a raster file with 1000 rows and 600 columns
 where each grid cell corresponds to 400 m x 400 m. Cells on land are
 assigned a missing data value of -9999.
 
-DEPONS simulations based on the Kattegat area are based on the UTM zone 32
-projection, (EPSG:32632) as in the study by Nabe-Nielsen et al (2014). The
-corresponding proj4string is "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
+The Kattegat landscapes use the UTM zone 32 projection, (EPSG:32632) as in
+the study by Nabe-Nielsen et al (2014). The corresponding proj4string is
+"+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
 (see \url{https://epsg.io/32632}).
 }
 \references{

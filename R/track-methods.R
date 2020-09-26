@@ -134,7 +134,8 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' @aliases plot.DeponsTrack
 #' @param x DeponsTrack object
 #' @param y Not used
-#' @param trackToPlot Integer; indicates which track to plot if there more than
+#' @param trackToPlot Integer; indicates which track to plot if there is more
+#' than one track in the object. Defaults to 1
 #' @param add Logical, whether to add the track to an existing plot
 #' one animal was tracked during the simulation.
 #' @param ... Optional plotting parameters

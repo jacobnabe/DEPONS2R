@@ -7,9 +7,14 @@
 # devtools::document()  # Make rd files based on roxygen comments.
 
 # TO DO -- accessor fct for 'startdate' must be tested further
-# interchange landscape and porpoise energetics, and align y-axes in plot
+# read the parameter file and the ship track files.
 
 
+#' @title  Package for analyzing data simulated using the DEPONS model
+#' @name DEPONS2R
+#' @description Classes and methods for analyzing and plotting changes in
+#' population size for different parts of the landscape (i.e. different 'blocks')
+NULL
 
 
 #' @title Get simulation date

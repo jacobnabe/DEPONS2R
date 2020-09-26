@@ -1,7 +1,7 @@
 Package: DEPONS2R
 Type: Package
 Title: Read, plot and analyse output from DEPONS
-Version: 0.9.3
+Version: 0.9.5
 Author: Jacob Nabe-Nielsen
 Maintainer: Jacob Nabe-Nielsen <jnn@bios.au.dk>
 Description: Classes and methods for manipulating and plotting raster landscapes,
