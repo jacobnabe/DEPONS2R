@@ -12,5 +12,5 @@ Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.5.0)
 Suggests: rgdal
-Imports: raster, methods, sp, utils, grDevices
+Imports: raster, methods, sp, utils, grDevices, xml2
 RoxygenNote: 7.1.1

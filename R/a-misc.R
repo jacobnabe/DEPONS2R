@@ -10,10 +10,21 @@
 # read the parameter file and the ship track files.
 
 
-#' @title  Package for analyzing data simulated using the DEPONS model
+#' @title  Package for analyzing DEPONS simulation output
 #' @name DEPONS2R
-#' @description Classes and methods for analyzing and plotting changes in
-#' population size for different parts of the landscape (i.e. different 'blocks')
+#' @description Classes and methods for analyzing and plotting movement tracks
+#' and population dynamics simulated using the DEPONS model (\url{http://www.depons.dk}).
+#'
+#' The types of simulated data include:
+#' \itemize{
+#' \item \code{\linkS4class{DeponsTrack}} movement tracks, read from "RandomPorpoise.XXX.csv" files
+#' \item \code{\linkS4class{DeponsDyn}} population dynamics data, from "Statistics.XXX.csv" files
+#' \item \code{\linkS4class{DeponsBlockdyn}} data from "PorpoisePerBlock.XXX.csv" files
+#' }
+#' Here the \code{DeponsDyn} data include both changes in population size and energetics
+#' through time for the entire landscape, whereas \code{DeponsBlockdyn} data include
+#' variations in population size in different parts (or 'blocks') of the landscape.
+#' XXX is the date and time when the simulation was finished.
 NULL
 
 
