@@ -231,9 +231,9 @@ setMethod("plot", signature("DeponsRaster", "ANY"),
 
 setGeneric("crs")
 
-#' Get map projection
+#' Get or set map projection
 #' @name crs
-#' @description Get the map projection (also known as coordinate reference
+#' @description Get or set the map projection (also known as coordinate reference
 #' system, crs) of DeponsRaster and DeponsTrack objects. For {sp} objects the
 #' text string defining the crs is called the \code{\link[sp]{proj4string}}.
 #' @aliases crs,DeponsRaster-method

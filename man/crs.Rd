@@ -6,7 +6,7 @@
 \alias{crs,DeponsTrack-method}
 \alias{crs<-,DeponsTrack-method}
 \alias{crs<-}
-\title{Get map projection}
+\title{Get or set map projection}
 \usage{
 \S4method{crs}{DeponsRaster}(x)
 
@@ -20,7 +20,7 @@
 \item{value}{\code{\link{proj4string}} identifying the map projection}
 }
 \description{
-Get the map projection (also known as coordinate reference
+Get or set the map projection (also known as coordinate reference
 system, crs) of DeponsRaster and DeponsTrack objects. For {sp} objects the
 text string defining the crs is called the \code{\link[sp]{proj4string}}.
 }
