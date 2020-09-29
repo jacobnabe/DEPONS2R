@@ -25,7 +25,7 @@
 #' Sveegaard, S. (2014). Effects of noise and by-catch on a Danish harbour
 #' porpoise population. Ecological Modelling, 272, 242–251.
 #' \url{https://doi.org/10.1016/j.ecolmodel.2013.09.025}
-data("bathymetry")       # uncomment line to trigger roxygen
+# data("bathymetry")       # uncomment line to trigger roxygen
 
 
 #' @name coastline
@@ -38,7 +38,7 @@ data("bathymetry")       # uncomment line to trigger roxygen
 #' +y_0=3210000 +datum=WGS84 +units=m +no_defs".
 #' @format SpatialPolygonsDataFrame
 #' @keywords datasets
-data("coastline")
+# data("coastline")
 
 
 #' @name porpoisedyn
@@ -51,7 +51,7 @@ data("coastline")
 #' @format DeponsDyn
 #' @keywords datasets
 #' @seealso \code{\link{DeponsDyn-class}}, \code{\link{porpoisebdyn}}
-data("porpoisedyn")
+# data("porpoisedyn")
 
 #' @name porpoisebdyn
 #' @title Simulated porpoise population dynamics
@@ -62,7 +62,7 @@ data("porpoisedyn")
 #' @format DeponsBlockdyn
 #' @keywords datasets
 #' @seealso \code{\link{DeponsBlockdyn-class}}, \code{\link{porpoisedyn}}
-data("porpoisebdyn")
+# data("porpoisebdyn")
 
 
 #' @name porpoisetrack
@@ -77,4 +77,4 @@ data("porpoisebdyn")
 #' @format DeponsTrack
 #' @keywords datasets
 #' @seealso \code{\link{DeponsTrack-class}}
-data("porpoisetrack")
+# data("porpoisetrack")

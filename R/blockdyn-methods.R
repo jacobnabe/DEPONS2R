@@ -19,10 +19,12 @@
 #' the first day in the period that the simulations are intended to represent in
 #' the real world.
 #' @slot dyn Data frame with simulation output.
-#' @details The data frame with simulation output includes the columns 'tick',
+#' @details The \code{dyn} slot contains a data frame with the columns 'tick',
 #' which indicates the number of half-hourly time steps since the start of the
-#' simulation; a column 'count.X' with the number of animals in each block at
-#' each tick, and 'real.time', which shows the real-world equivalent to 'tick.
+#' simulation; a column 'block' indicating the region of the landscape where
+#' animals were counted, a 'count' column with the number of animals in that block
+#' and tick. The 'real.time' column shows the real-world equivalent to 'tick, i.e.
+#' the time that has passed since 'startday'.
 #' @exportClass DeponsBlockdyn
 #' @examples a.DeponsBlockdyn <- new("DeponsBlockdyn")
 #' a.DeponsBlockdyn
@@ -86,14 +88,19 @@ setMethod("show", "DeponsBlockdyn",
 #' @param startday The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
 #' @seealso See \code{\link{DeponsBlockdyn-class}} for details on what is stored in
-#' the output object.
+#' the output object and \code{\link{read.DeponsParam}} for reading the parameters
+#' used in the simulation.
 #' @export read.DeponsBlockdyn
 #' @examples \dontrun{
 #' the.file <- "../DEPONS2R_extras/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
 #' file.exists(the.file)
-#' porpoise.blockdyn <- read.DeponsBlockdyn(fname,
+#' porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file,
 #'   title="Test simulation with two blocks", landscape="North Sea")
 #' porpoise.blockdyn
+#'
+#' # Get the latest simulation
+#' the.file <- get.latest.sim(type="blockdyn", dir="/Applications/DEPONS 2.1/DEPONS")
+#' porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file)
 #' }
 read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
                            startday="NA") {

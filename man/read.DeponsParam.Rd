@@ -18,14 +18,14 @@ simulation
 \details{
 The parameter file can be generated from within DEPONS by pressing the
 'Save' icon after modifying the user settings on the 'Parameters' tab within
-the main DEPONS model window. It is strongly recommended that the parameter
+the main DEPONS model window. See TRACE document for details regarding the
+parameters in the model: \url{https://github.com/jacobnabe/DEPONS}. It is strongly recommended that the parameter
 list is stored with the simulation output.
 }
 \examples{
 \dontrun{
 the.file <- "/Applications/DEPONS 2.1/DEPONS/DEPONS.rs/parameters.xml"
-pfile <- read.DeponsParam
-pfile
+pfile <- read.DeponsParam(the.file)
 
 # Store with simulation output
 all.sim.out <- list(porpoisebdyn, pfile)

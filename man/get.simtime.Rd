@@ -14,3 +14,6 @@ date from, including the path}
 Returns the date and time when a specific simulation was finished
 (a \code{\link{POSIXlt}} object)
 }
+\seealso{
+\code{\link{get.latest.sim}}
+}

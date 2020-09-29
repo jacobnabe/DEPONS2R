@@ -5,6 +5,7 @@
 # roxygen2::roxygenize()  # for creating namespace
 
 # devtools::document()  # Make rd files based on roxygen comments.
+# devtools::build_manual()
 
 # TO DO -- accessor fct for 'startdate' must be tested further
 # read the parameter file and the ship track files.
@@ -13,7 +14,7 @@
 #' @title  Package for analyzing DEPONS simulation output
 #' @name DEPONS2R
 #' @description Classes and methods for analyzing and plotting movement tracks
-#' and population dynamics simulated using the DEPONS model (\url{http://www.depons.dk}).
+#' and population dynamics simulated using the DEPONS model (\url{http://www.depons.eu}).
 #'
 #' The types of simulated data include:
 #' \itemize{
@@ -34,6 +35,7 @@ NULL
 #' (a \code{\link{POSIXlt}} object)
 #' @param fname Character string with name of the file to extract the simulation
 #' date from, including the path
+#' @seealso \code{\link{get.latest.sim}}
 #' @export get.simtime
 get.simtime <- function(fname=NULL) {
   ncf <- nchar(fname)
@@ -66,21 +68,26 @@ get.simtime <- function(fname=NULL) {
 
 #' @title Get name of newest file
 #' @name get.latest.sim
-#' @description Returns the name of the newest simulation output within the
-#' specified directory as extracted from the file name
+#' @description Returns the name of the newest simulation output of a particular
+#' type within the specified directory. The date and time are extracted from the
+#' file name.
 #' @param type Type of simulation output to check; can be one of:
-#' "dyn" (for looking in "Statistics.XX.csv" files)
+#' "dyn" (for looking in "Statistics.XX.csv" files),
 #' "blockdyn" (for looking in "PorpoisePerBlock.XX.csv" files)
 #' "track" (for looking in "RandomPorpoise.XX.csv" files)
 #' @param dir Directory to look for simulation output in (character string)
+#' @seealso \code{\link{read.DeponsBlockdyn}} for example.
 #' @export get.latest.sim
 get.latest.sim <- function(type="dyn", dir) {
   if (!(type %in% c("dyn", "blockdyn", "track"))) {
     stop ("type must be either 'dyn', 'blockdyn', or 'track'")
   }
   the.dir <- dir
-  outfiles <- grep(type, dir(the.dir))
-  if(length(outfiles)==0) stop("No sim output of type 'Statistics' found in dir")
+  if(type=="dyn") typenm <- "Statistics"
+  if(type=="blockdyn") typenm <- "PorpoisePerBlock"
+  if(type=="track") typenm <- "RandomPorpoise"
+  outfiles <- grep(typenm, dir(the.dir))
+  if(length(outfiles)==0) stop(paste0("No '", typenm, "' output found in directory"))
   fnms <- dir(the.dir)[outfiles]
   fnms2 <- as.list(fnms)
   ftime <- lapply(fnms2, FUN="get.simtime")

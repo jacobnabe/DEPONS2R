@@ -10,12 +10,12 @@
 #' directory if this is not the current working directory.
 #' @details The parameter file can be generated from within DEPONS by pressing the
 #' 'Save' icon after modifying the user settings on the 'Parameters' tab within
-#' the main DEPONS model window. It is strongly recommended that the parameter
+#' the main DEPONS model window. See TRACE document for details regarding the
+#' parameters in the model: \url{https://github.com/jacobnabe/DEPONS}. It is strongly recommended that the parameter
 #' list is stored with the simulation output.
 #' @examples \dontrun{
 #' the.file <- "/Applications/DEPONS 2.1/DEPONS/DEPONS.rs/parameters.xml"
-#' pfile <- read.DeponsParam
-#' pfile
+#' pfile <- read.DeponsParam(the.file)
 #'
 #' # Store with simulation output
 #' all.sim.out <- list(porpoisebdyn, pfile)
@@ -23,7 +23,8 @@
 #' }
 #' @export read.DeponsParam
 read.DeponsParam <- function(fname) {
-  tmp <- xml2::read_xml("parameters.xml")
+  if(!(file.exists(fname))) stop(paste0("The file ", fname, " does not exist"))
+  tmp <- xml2::read_xml(fname)
   recs2 <- xml2::xml_find_all(tmp, "//parameter")
   # the xml_text function doesn't work as it shoul, using grep instead
   all.param <- data.frame()
@@ -38,4 +39,25 @@ read.DeponsParam <- function(fname) {
     one.line <- data.frame("parameter"=pnm, "value"=pval)
     all.param <- rbind(all.param, one.line)
   }
+  default.param <- c("Euse", "tdisp", "b0", "b1", "b2", "b3", "simYears",
+                     "Elact", "tmating", "bycatchProb", "alpha_hat", "tmature",
+                     "dmax_mov", "R1", "rR", "tgest", "R2", "rS", "wdisp", "rU",
+                     "trackedPorpoiseCount", "Einit", "tnurs", "tdeter",
+                     "randomSeed", "ships", "beta_hat", "PSM_angle", "ddisp",
+                     "PSM_tol", "RT", "dispersal", "PSM_dist", "Ewarm", "wmin",
+                     "PSM_log", "beta", "dmax_deter", "q1", "porpoiseCount",
+                     "Psi_deter", "debug", "c", "turbines", "h", "k", "tmaxage",
+                     "a0", "a1", "a2", "Umin", "wrapBorderHomo", "landscape")
+  param.nms <- all.param$param
+  if(!all(param.nms %in% default.param)) {
+    nm.not.default <- param.nms[which(!(param.nms %in% default.param))]
+    nm2 <- paste(nm.not.default, collapse=", ")
+    warning(paste("Following parameter(s) are not derault:", nm2))
+  }
+  if(!all(default.param %in% param.nms)) {
+    defaults.missing <- default.param[which(!(default.param %in% param.nms))]
+    def2 <- paste(defaults.missing, collapse=", ")
+    warning(paste("Following default parameter(s) are missing:", def2))
+  }
+  return(all.param)
 }

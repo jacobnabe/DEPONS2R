@@ -35,12 +35,17 @@ animals per block for each time step.
 \dontrun{
 the.file <- "../DEPONS2R_extras/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
 file.exists(the.file)
-porpoise.blockdyn <- read.DeponsBlockdyn(fname,
+porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file,
   title="Test simulation with two blocks", landscape="North Sea")
 porpoise.blockdyn
+
+# Get the latest simulation
+the.file <- get.latest.sim(type="blockdyn", dir="/Applications/DEPONS 2.1/DEPONS")
+porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file)
 }
 }
 \seealso{
 See \code{\link{DeponsBlockdyn-class}} for details on what is stored in
-the output object.
+the output object and \code{\link{read.DeponsParam}} for reading the parameters
+used in the simulation.
 }

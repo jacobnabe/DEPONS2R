@@ -9,10 +9,12 @@ Classes and methods for analyzing and plotting changes in
 population size for different parts of the landscape (i.e. different 'blocks')
 }
 \details{
-The data frame with simulation output includes the columns 'tick',
+The \code{dyn} slot contains a data frame with the columns 'tick',
 which indicates the number of half-hourly time steps since the start of the
-simulation; a column 'count.X' with the number of animals in each block at
-each tick, and 'real.time', which shows the real-world equivalent to 'tick.
+simulation; a column 'block' indicating the region of the landscape where
+animals were counted, a 'count' column with the number of animals in that block
+and tick. The 'real.time' column shows the real-world equivalent to 'tick, i.e.
+the time that has passed since 'startday'.
 }
 \section{Slots}{
 

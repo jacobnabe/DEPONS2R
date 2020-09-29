@@ -8,13 +8,17 @@ get.latest.sim(type = "dyn", dir)
 }
 \arguments{
 \item{type}{Type of simulation output to check; can be one of:
-"dyn" (for looking in "Statistics.XX.csv" files)
+"dyn" (for looking in "Statistics.XX.csv" files),
 "blockdyn" (for looking in "PorpoisePerBlock.XX.csv" files)
 "track" (for looking in "RandomPorpoise.XX.csv" files)}
 
 \item{dir}{Directory to look for simulation output in (character string)}
 }
 \description{
-Returns the name of the newest simulation output within the
-specified directory as extracted from the file name
+Returns the name of the newest simulation output of a particular
+type within the specified directory. The date and time are extracted from the
+file name.
+}
+\seealso{
+\code{\link{read.DeponsBlockdyn}} for example.
 }
