@@ -28,12 +28,14 @@ data(porpoisetrack)
 data("porpoisetrack")
 plot(porpoisetrack)
 
+\dontrun{
+# Optional: Transform and plot coastline if rgdal is installed
 data("coastline")
 library(rgdal)
 coast2 <- sp::spTransform(coastline, CRS("+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"))
 # Check that the coastline-map is projected the same way as the track before
 # plotting:
 as.character(crs(porpoisetrack)) == as.character(crs(coast2))
-
 plot(coast2, col="lightyellow2", add=TRUE)
+}
 }

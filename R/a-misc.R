@@ -1,15 +1,8 @@
 # DEPONS2R helper functions (related to multiple classes)
 
-# roxygen2::update_collate('.')
-# devtools::check()    # r cmd check
-# roxygen2::roxygenize()  # for creating namespace
-
 # devtools::document()  # Make rd files based on roxygen comments.
 # devtools::build_manual()
-
-# TO DO -- accessor fct for 'startdate' must be tested further
-# read the parameter file and the ship track files.
-
+# devtools::check(cleanup=FALSE) # check timings of examples: read log
 
 #' @title  Package for analyzing DEPONS simulation output
 #' @name DEPONS2R

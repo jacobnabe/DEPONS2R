@@ -184,6 +184,8 @@ setGeneric("plot")
 #' @param legend Whether to plot the colour legend
 #' @param ... Other optional plotting parameters
 #' @examples
+#' \dontrun{
+#' # Plotting is relatively slow, so not done here.
 #' data("bathymetry")
 #' plot(bathymetry)
 #' data("coastline")
@@ -191,6 +193,7 @@ setGeneric("plot")
 #' # Change projection of coastline to match that of bathymetry data
 #' coastline2 <- spTransform(coastline, crs(bathymetry))
 #' plot(coastline2, add=TRUE, col="lightyellow2")
+#' }
 #' text(512000, 6240000, 'Denmark')
 #' text(800000, 6300000, 'Sweden')
 #'

@@ -82,6 +82,8 @@ Plot the values in a DeponsRaster object. Porpoisetracks or
 other kinds of lines, poits etc. can be drawn on top of the plot by adding
 }
 \examples{
+\dontrun{
+# Plotting is relatively slow, so not done here.
 data("bathymetry")
 plot(bathymetry)
 data("coastline")
@@ -89,6 +91,7 @@ library(rgdal)
 # Change projection of coastline to match that of bathymetry data
 coastline2 <- spTransform(coastline, crs(bathymetry))
 plot(coastline2, add=TRUE, col="lightyellow2")
+}
 text(512000, 6240000, 'Denmark')
 text(800000, 6300000, 'Sweden')
 
