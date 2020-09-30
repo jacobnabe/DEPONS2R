@@ -35,5 +35,8 @@ coast2 <- sp::spTransform(coastline, CRS("+proj=utm +zone=32 +datum=WGS84 +units
 # plotting:
 as.character(crs(porpoisetrack)) == as.character(crs(coast2))
 
+\dontrun{
 plot(coast2, col="lightyellow2", add=TRUE)
+# (plotting of coastline is slow, so not done here)
+}
 }

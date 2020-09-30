@@ -150,7 +150,10 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' # plotting:
 #' as.character(crs(porpoisetrack)) == as.character(crs(coast2))
 #'
+#' \dontrun{
 #' plot(coast2, col="lightyellow2", add=TRUE)
+#' # (plotting of coastline is slow, so not done here)
+#' }
 setMethod("plot", signature("DeponsTrack", "missing"),
           function(x, y, trackToPlot=1, add=FALSE, ...)  {
             the.main <- ifelse(x@title=="NA", "DEPONS track", x@title)

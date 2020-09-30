@@ -4,9 +4,7 @@ Title: Read, Plot and Analyse Output from DEPONS
 Version: 1.0.0
 Author: Jacob Nabe-Nielsen
 Maintainer: Jacob Nabe-Nielsen <jnn@bios.au.dk>
-Description: Classes and methods for manipulating and plotting raster landscapes,
-    animal movement tracks and population dynamics data simulated using the DEPONS 
-    model (www.depons.eu).
+Description: Methods for analyzing simulated population dynamics and movement tracks from the DEPONS model (www.depons.eu), and for manipulating input raster files.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
