@@ -3,10 +3,10 @@
 \docType{class}
 \name{DeponsRaster-class}
 \alias{DeponsRaster-class}
-\title{DeponsRaster-class and methods}
+\title{DeponsRaster-class}
 \description{
-Classes and methods for manipulating and plotting DEPONS raster
-landscapes.
+Stores objects containing raster landscapes used as input in
+DEPONS simulations.
 }
 \section{Slots}{
 

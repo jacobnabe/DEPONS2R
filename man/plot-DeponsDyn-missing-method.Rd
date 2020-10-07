@@ -34,6 +34,7 @@ rg <- c(as.POSIXlt("2011-01-01"), as.POSIXlt("2018-12-31"))
 plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
 
 \dontrun{
+# Read data from default DEPONS simulation directory:
 sim.dir <- "/Applications/DEPONS 2.1/DEPONS"
 new.sim.name <- get.latest.sim(dir=sim.dir)
 new.sim.out <- read.DeponsDyn(fname=paste(sim.dir, new.sim.name, sep="/"))

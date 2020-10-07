@@ -6,8 +6,10 @@
 #   objects
 
 
-#' @title DeponsTrack-class and methods
-#' @description Classes and methods for manipulating and plotting movement
+#' @title DeponsTrack-class
+#' @description Stores objects containing animal movement tracks simulated using
+#' the DEPONS model
+#' @description Classes for manipulating and plotting movement
 #' tracks generated with DEPONS.
 #' @slot title Name of the object (character)
 #' @slot landscape Name of the object (character)
@@ -41,7 +43,12 @@ setMethod("initialize", "DeponsTrack",
 )
 
 
-setMethod("show", "DeponsTrack",
+#' @name summary
+#' @title Summary
+#' @rdname summary
+#' @aliases summary,DeponsTrack-method
+#' @exportMethod summary
+setMethod("summary", "DeponsTrack",
           function(object) {
             cat("class:    \t", "DeponsTrack \n")
             cat("title:    \t", object@title, "\n")
@@ -143,7 +150,7 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' data("porpoisetrack")
 #' plot(porpoisetrack)
 #'
-#' \dontrun{
+#' \donttest{
 #' # Optional: Transform and plot coastline if rgdal is installed
 #' data("coastline")
 #' library(rgdal)
@@ -155,6 +162,8 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' }
 setMethod("plot", signature("DeponsTrack", "missing"),
           function(x, y, trackToPlot=1, add=FALSE, ...)  {
+            oldpar <- graphics::par(no.readonly = TRUE)
+            on.exit(graphics::par(oldpar))
             the.main <- ifelse(x@title=="NA", "DEPONS track", x@title)
             trk <- x@tracks[[trackToPlot]]
             if (!add) plot(sp::coordinates(trk), type="l", asp=1, main=the.main)
@@ -172,9 +181,8 @@ setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
             if (missing(main)) {
               main <- paste(x@landscape, x@type, sep=" - ")
             }
-            # if(!identical(x@crs, y@crs)) stop("Projections of track and landscape
-            #                                   not identical")
-
+            oldpar <- graphics::par(no.readonly = TRUE)
+            on.exit(graphics::par(oldpar))
             plot(y@tracks[[trackToPlot]], col="white")
             plot(x, col=col, main=main, add=TRUE, legend=FALSE)
             y.coords <- y@tracks[[trackToPlot]]@coords

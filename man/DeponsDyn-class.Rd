@@ -3,10 +3,10 @@
 \docType{class}
 \name{DeponsDyn-class}
 \alias{DeponsDyn-class}
-\title{DeponsDyn-class and methods}
+\title{DeponsDyn-class}
 \description{
-Classes and methods for analyzing and plotting output from the
-DEPONS model.
+Stores objects containing population dynamics output and energetic
+output simulated using the DEPONS model.
 }
 \details{
 The following columns are included in the simulation output data

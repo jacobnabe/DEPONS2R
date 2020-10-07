@@ -24,11 +24,8 @@ list is stored with the simulation output.
 }
 \examples{
 \dontrun{
+# Parameters read from file created by DEPONS run in interactive mode
 the.file <- "/Applications/DEPONS 2.1/DEPONS/DEPONS.rs/parameters.xml"
 pfile <- read.DeponsParam(the.file)
-
-# Store with simulation output
-all.sim.out <- list(porpoisebdyn, pfile)
-save(all.sim.out, file="AllSimOut_yyyy-mm-dd.RData")
 }
 }

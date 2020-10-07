@@ -104,6 +104,8 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @param ... Time zone (tz) and other parameters
 #' @export tick.to.time
 tick.to.time <- function(tick, ...) {
+  old <- options()
+  on.exit(options(old))  # Reset user options on exit
   minute <- tick*30
   hour <- floor(minute/60)
   day <- floor(hour/24)
@@ -135,83 +137,3 @@ tick.to.time <- function(tick, ...) {
 
 
 for (i in 1:100000) toto <- tick.to.time(i)
-
-#####
-
-
-# MAKE track FILE
-
-# fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Jul.31.09_43_10.csv"
-# fname <- "/Applications/DEPONS 2.1/DEPONS/RandomPorpoise.2020.Aug.19.11_28_36.csv"
-# file.exists(fname)
-# porpoisetrack <- read.DeponsTrack(fname, title="Porpoise track simulated with DEPONS 2.1", landscape="Kattegat",
-#                                 crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs"
-# )
-# porpoisetrack
-# save(porpoisetrack, file="porpoisetrack.RData", compress="xz")
-
-
-
-#####
-
-
-# MAKE bathymetry FILE
-# fname <- "/Applications/DEPONS 2.1/DEPONS/data/Kattegat/bathy.asc"
-# file.exists(fname)
-# bathymetry <- read.DeponsRaster(fname,
-#                                 crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs",
-#                                 type="bathymetry", landscape="Kattegat"
-# )
-# bathymetry
-# save(bathymetry, file="bathymetry.RData", compress="xz")
-
-
-# MAKE bathymetry FILE
-
-# fname <- "/Applications/DEPONS 2.1/DEPONS/data/NorthSea/bathy.asc"
-# bathymetry <- read.DeponsRaster(fname,
-#                                 crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +datum=WGS84 +units=m +no_defs",
-#                                 type="bathymetry", landscape="North Sea"
-# )
-# save(bathymetry, file="bathymetry.RData", compress="xz")
-
-
-#######
-
-
-# MAKE porpoisedyn FILE
-
-# fname <- "../DEPONS2R_extras/Statistics.2020.Aug.27.10_55_36.csv"
-# file.exists(fname)
-# porpoisedyn <- read.DeponsDyn(fname, landscape="Kattegat")
-# porpoisedyn@dyn <- porpoisedyn@dyn[1:(2*360*48) ,]
-# porpoisedyn
-# save(porpoisedyn, file="porpoisedyn.RData")
-
-
-####
-
-# MAKE North Sea blockraster
-
-# the.crs <- crs(coastline)
-# templ <- read.DeponsRaster("blocks.asc", type="blocks", crs=the.crs, landscape="North Sea")
-# plot(templ)
-# x <- c(3700000, 4000000)
-# y <- c(3400000, 3700000)
-# points(x,y)
-# new.blocks <- list()
-# new.blocks[[1]] <- cbind(x,y)
-# make.blocksraster(template = templ, new.blocks, plot=TRUE)
-# plot(coastline, add=TRUE)
-# make.blocksraster(template = templ, new.blocks, fname="NS2blocks.asc")
-
-
-
-#####
-
-# MAKE porpoisebdyn file
-
-# fname <- "../DEPONS2R_extras/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
-# file.exists(fname)
-# porpoisebdyn <- read.DeponsBlockdyn(fname, title="Test simulation with two blocks", landscape="North Sea")
-# save(porpoisebdyn, file="porpoisebdyn.RData")

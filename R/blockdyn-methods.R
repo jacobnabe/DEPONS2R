@@ -6,9 +6,9 @@
 #    parts of the landscape.
 
 
-#' @title  DeponsBlockdyn-class and methods
-#' @description Classes and methods for analyzing and plotting changes in
-#' population size for different parts of the landscape (i.e. different 'blocks')
+#' @title  DeponsBlockdyn-class
+#' @description Stores objects containing population size for different parts of
+#' the landscape (i.e. different 'blocks')
 #' @slot title Character. Name of the object or simulation
 #' @slot landscape Character. Identifier for the landscape used in the DEPONS
 #' simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
@@ -50,8 +50,19 @@ setMethod("initialize", "DeponsBlockdyn",
           }
 )
 
-
-setMethod("show", "DeponsBlockdyn",
+#' @name Summary-methods
+#' @aliases summary
+#' @aliases summary,DeponsBlockdyn-method
+#' @rdname summary
+#' @title Summary
+#' @description Summarizes different kinds of objects created based on output
+#'   from the DEPONS model
+#' @param object Depons* object
+#' @details The summary method is available for \code{\link{DeponsTrack-class}},
+#' \code{\link{DeponsDyn-class}}, \code{\link{DeponsRaster-class}},
+#' and \code{\link{DeponsBlockdyn-class}}-objects.
+#' @exportMethod summary
+setMethod("summary", "DeponsBlockdyn",
           function(object) {
             cat("class:    \t", "DeponsBlockdyn \n")
             cat("title:    \t", object@title, "\n")
@@ -92,7 +103,8 @@ setMethod("show", "DeponsBlockdyn",
 #' used in the simulation.
 #' @export read.DeponsBlockdyn
 #' @examples \dontrun{
-#' the.file <- "../DEPONS2R_extras/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
+#' # File loaded from default location
+#' the.file <- "/Applications/DEPONS 2.1/DEPONS/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
 #' file.exists(the.file)
 #' porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file,
 #'   title="Test simulation with two blocks", landscape="North Sea")
@@ -142,8 +154,12 @@ read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' # Show all data points for small range of x-values
 #' plot(porpoisebdyn, xlim=c(1950, 2050), ylim=c(4850, 5050), type="p", dilute=1, col=my.col)
 #' @importFrom graphics points
+#' @note The function returns a data frame with numbers of blocks with no agents.
 setMethod("plot", signature("DeponsBlockdyn", "missing"),
           function(x, y, dilute=5, ...)  {
+            oldpar <- graphics::par(no.readonly = TRUE)
+            on.exit(graphics::par(oldpar))
+            all.messages <- data.frame()
             if (!(dilute %% 1 == 0)) stop("'dilute' must be an integer")
             use.row <- x@dyn$tick %% dilute == 0
             z <- x@dyn[use.row ,] # use only every X rows
@@ -221,7 +237,8 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
               for (i in 1:length(the.blocknos)) {
                 b <- the.blocknos[i]
                 if(sum(z$count[z$block==b])==0) {
-                  message(paste("No obs in block", b))
+                  all.messages <- rbind(all.messages, paste("No obs in block", b))
+                  names(all.messages) <- "messages"
                   next
                 }
                 if(type=="l") lines(z$real.time[z$block==b], z$count[z$block==b],
@@ -246,7 +263,8 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
               for (i in 1:length(the.blocknos)) {
                 b <- the.blocknos[i]
                 if(sum(z$count[z$block==b])==0) {
-                  message(paste("No obs in block", b))
+                  all.messages <- rbind(all.messages, paste("No obs in block", b))
+                  names(all.messages) <- "messages"
                   next
                 }
                 if(type=="l") lines(z$tick[z$block==b], z$count[z$block==b],
@@ -255,10 +273,9 @@ setMethod("plot", signature("DeponsBlockdyn", "missing"),
                                      col=col[i], pch=pch, cex=cex)
               }
             }
+            invisible(all.messages)
           }
 )
 
 
 
-
-# plot(x@dyn$tick, x@dyn$count)

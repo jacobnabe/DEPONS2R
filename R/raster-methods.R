@@ -7,9 +7,9 @@
 #   objects
 
 
-#' @title  DeponsRaster-class and methods
-#' @description Classes and methods for manipulating and plotting DEPONS raster
-#' landscapes.
+#' @title  DeponsRaster-class
+#' @description Stores objects containing raster landscapes used as input in
+#' DEPONS simulations.
 #' @slot type Character. Identifies the kind of data stored in the raster; should
 #' be 'food', 'patches', bathymetry', 'dtc', 'salinity', 'blocks' or 'NA'.
 #' @slot landscape Character  Identifier for the landscape used in the DEPONS
@@ -70,8 +70,12 @@ setMethod("initialize", "DeponsRaster",
           }
 )
 
-
-setMethod("show", "DeponsRaster",
+#' @name summary
+#' @title Summary
+#' @rdname summary
+#' @aliases summary,DeponsRaster-method
+#' @exportMethod summary
+setMethod("summary", "DeponsRaster",
           function(object) {
             cat("class:\t", "DeponsRaster \n")
             cat("type:\t", object@type, "\n")
@@ -184,8 +188,7 @@ setGeneric("plot")
 #' @param legend Whether to plot the colour legend
 #' @param ... Other optional plotting parameters
 #' @examples
-#' \dontrun{
-#' # Plotting is relatively slow, so not done here.
+#' \donttest{
 #' data("bathymetry")
 #' plot(bathymetry)
 #' data("coastline")
@@ -208,7 +211,8 @@ setMethod("plot", signature("DeponsRaster", "ANY"),
                    ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,
                    nc, nr, maxnl=16, main, npretty=0, axes=TRUE,
                    legend=TRUE, trackToPlot=1, ...)  {
-
+            oldpar <- graphics::par(no.readonly = TRUE)
+            on.exit(graphics::par(oldpar))
             if (missing(main)) {
               main <- paste(x@landscape, x@type, sep=" - ")
             }
@@ -362,8 +366,9 @@ setGeneric("make.blocksraster", make.br)
 #' points(new.blocks[[1]])
 #' plot(new.blocks[[2]], add=TRUE)
 #'
-#' \dontrun{
-#' make.blocksraster(bathymetry, new.blocks, fname="test.asc")
+#' \donttest{
+#' the.dir <- tempdir()
+#' make.blocksraster(bathymetry, new.blocks, fname=paste0(the.dir, "/test.asc"))
 #' }
 #' @exportMethod make.blocksraster
 setMethod("make.blocksraster", signature("DeponsRaster"), make.br)

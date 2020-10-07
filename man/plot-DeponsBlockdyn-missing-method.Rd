@@ -21,6 +21,9 @@ the following values.}
 \description{
 Plot population dynamics simulated with DEPONS
 }
+\note{
+The function returns a data frame with numbers of blocks with no agents.
+}
 \examples{
 data("porpoisebdyn")
 my.col <- c("red", "darkgreen", "orange")

@@ -9,7 +9,7 @@
 \S4method{plot}{DeponsRaster,ANY}(
   x,
   y,
-  maxpixels = 500000,
+  maxpixels = 5e+05,
   col,
   alpha = NULL,
   colNA = NA,
@@ -82,8 +82,7 @@ Plot the values in a DeponsRaster object. Porpoisetracks or
 other kinds of lines, poits etc. can be drawn on top of the plot by adding
 }
 \examples{
-\dontrun{
-# Plotting is relatively slow, so not done here.
+\donttest{
 data("bathymetry")
 plot(bathymetry)
 data("coastline")

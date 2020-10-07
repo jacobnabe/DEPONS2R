@@ -69,7 +69,8 @@ make.blocksraster(bathymetry, new.blocks, plot=TRUE)
 points(new.blocks[[1]])
 plot(new.blocks[[2]], add=TRUE)
 
-\dontrun{
-make.blocksraster(bathymetry, new.blocks, fname="test.asc")
+\donttest{
+the.dir <- tempdir()
+make.blocksraster(bathymetry, new.blocks, fname=paste0(the.dir, "/test.asc"))
 }
 }

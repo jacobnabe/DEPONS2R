@@ -1,15 +1,14 @@
 
 # Author: Jacob Nabe-Nielsen
 # Date: 27 August 2020
-# Version 0.9
 # Licence GPL v3
 # Description: Methods and classes for reading and summarizing DEPONS raster
 #   objects
 
 
-#' @title  DeponsDyn-class and methods
-#' @description Classes and methods for analyzing and plotting output from the
-#' DEPONS model.
+#' @title  DeponsDyn-class
+#' @description Stores objects containing population dynamics output and energetic
+#' output simulated using the DEPONS model.
 #' @slot title Character. Name of the object or simulation
 #' @slot landscape Character. Identifier for the landscape used in the DEPONS
 #' simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
@@ -52,8 +51,12 @@ setMethod("initialize", "DeponsDyn",
           }
 )
 
-
-setMethod("show", "DeponsDyn",
+#' @name summary
+#' @title Summary
+#' @rdname summary
+#' @aliases summary,DeponsDyn-method
+#' @exportMethod summary
+setMethod("summary", "DeponsDyn",
           function(object) {
             cat("class:    \t", "DeponsDyn \n")
             cat("title:    \t", object@title, "\n")
@@ -139,6 +142,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
 #'
 #' \dontrun{
+#' # Read data from default DEPONS simulation directory:
 #' sim.dir <- "/Applications/DEPONS 2.1/DEPONS"
 #' new.sim.name <- get.latest.sim(dir=sim.dir)
 #' new.sim.out <- read.DeponsDyn(fname=paste(sim.dir, new.sim.name, sep="/"))
@@ -146,6 +150,8 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' }
 setMethod("plot", signature("DeponsDyn", "missing"),
           function(x, y, dilute=5, plot.energy=TRUE, plot.legend=TRUE, ...)  {
+            oldpar <- graphics::par(no.readonly = TRUE)
+            on.exit(graphics::par(oldpar))
             if (!(dilute %% 1 == 0)) stop("'dilute' must be an integer")
             use.row <- x@dyn$tick %% dilute == 0
             use.row[1] <- TRUE

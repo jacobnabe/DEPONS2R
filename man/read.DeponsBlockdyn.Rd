@@ -33,7 +33,8 @@ animals per block for each time step.
 }
 \examples{
 \dontrun{
-the.file <- "../DEPONS2R_extras/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
+# File loaded from default location
+the.file <- "/Applications/DEPONS 2.1/DEPONS/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
 file.exists(the.file)
 porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file,
   title="Test simulation with two blocks", landscape="North Sea")

@@ -28,7 +28,7 @@ data(porpoisetrack)
 data("porpoisetrack")
 plot(porpoisetrack)
 
-\dontrun{
+\donttest{
 # Optional: Transform and plot coastline if rgdal is installed
 data("coastline")
 library(rgdal)

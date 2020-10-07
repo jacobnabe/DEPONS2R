@@ -3,9 +3,12 @@
 \docType{class}
 \name{DeponsTrack-class}
 \alias{DeponsTrack-class}
-\title{DeponsTrack-class and methods}
+\title{DeponsTrack-class}
 \description{
-Classes and methods for manipulating and plotting movement
+Stores objects containing animal movement tracks simulated using
+the DEPONS model
+
+Classes for manipulating and plotting movement
 tracks generated with DEPONS.
 }
 \section{Slots}{

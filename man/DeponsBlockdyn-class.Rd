@@ -3,10 +3,10 @@
 \docType{class}
 \name{DeponsBlockdyn-class}
 \alias{DeponsBlockdyn-class}
-\title{DeponsBlockdyn-class and methods}
+\title{DeponsBlockdyn-class}
 \description{
-Classes and methods for analyzing and plotting changes in
-population size for different parts of the landscape (i.e. different 'blocks')
+Stores objects containing population size for different parts of
+the landscape (i.e. different 'blocks')
 }
 \details{
 The \code{dyn} slot contains a data frame with the columns 'tick',
