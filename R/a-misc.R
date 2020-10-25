@@ -93,6 +93,85 @@ get.latest.sim <- function(type="dyn", dir) {
 }
 
 
+# area.file <- "wfAreas.tif"
+# area.def <- 255
+# n.wf <- 10
+# n.turb <- 99
+# turb.dist <- 500
+# min.wf.dist <- 10000
+
+#' @title Make wind farm scenario
+#' @name make.windfarms
+#' @description Produce a hypothetical wind farm construction scenario, specifying
+#' the position and timing of individual piling events, as well as the sound
+#' source level. All wind farms are assumed to consist of the same number of
+#' turbines, laid out in a rectangular grid.
+#' @param area.file Name of the raster file specifying where the wind farms
+#' should be constructed.
+#' @param area.def Value in \code{area.file} for the areas were wind farms can
+#' be located
+#' @param n.wf Number of wind farms to construct
+#' @param n.turb Total number of turbines to construct
+#' @param turb.dist Distance between turbines within a wind farm (meters)
+#' @param min.wf.dist Minimum distance between wind farms (meters)
+#' @export make.windfarms
+make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
+                           min.wf.dist) {
+  wf.area <- raster::raster(area.file)
+  wf.area[wf.area[,]!=area.def] <- NA
+  wf.area <- raster::trim(wf.area)
+  wf.ext <- raster::extent(wf.area)
+  # Select coords for bottom-left corner of wind farm
+  get.start.pos <- function(the.wf.ext=wf.ext, the.wf.area=wf.area) {
+    i <- 1000
+    while(i>0) {
+      x.pos <- runif(1, min=the.wf.ext[1], max=the.wf.ext[2])
+      y.pos <- runif(1, min=the.wf.ext[3], max=the.wf.ext[4])
+      the.pos <- data.frame("x"=x.pos, "y"=y.pos)
+      xy.val <- raster::extract(the.wf.area, the.pos)
+      if(!is.na(xy.val)) return(the.pos)
+      i <- i-1
+    }
+  }
+  get.turb.pos <- function(n.turb=n.turb, n.wf=n.wf, start.pos) {
+    n.turb.per.wf <- ceiling(n.turb / n.wf)
+    n.cols <- floor(sqrt(n.turb.per.wf))
+    n.rows <- ceiling(n.turb.per.wf/n.cols)
+    x.vals <- start.pos$x + seq(from=0, to=(n.cols-1)*turb.dist, by=turb.dist)
+    x.vals <- rep(x.vals, n.rows)
+    y.vals <- start.pos$y + seq(from=0, to=(n.rows-1)*turb.dist, by=turb.dist)
+    y.vals <- rep(y.vals, each=n.cols)
+    turb.pos <- data.frame("x"=x.vals, "y"=y.vals)
+    turb.pos <- turb.pos[1:n.turb.per.wf ,]
+    return(turb.pos)
+  }
+  make.one.wf <- function() {
+    cont.trying <- TRUE
+    while(cont.trying) {
+      start.pos <- get.start.pos()
+      turb.pos <- get.turb.pos(n.turb, n.wf, start.pos)
+      xy.val <- raster::extract(wf.area, turb.pos)
+
+      ### Check distance to other wind farms here
+
+      if(all(!is.na(xy.val))) cont.trying <- FALSE
+    }
+    return(turb.pos)
+  }
+
+  make.one.wf()
+
+
+  plot(turb.pos, asp=1)
+
+  plot(wf.area)
+  points(start.pos, pch=16)
+  points(turb.pos, pch=16, cex=0.5, col="red")
+
+}
+
+
+
 #' @title Convert tick number to date
 #' @name tick.to.time
 #' @description Converts the number of ticks since the start of the simulation

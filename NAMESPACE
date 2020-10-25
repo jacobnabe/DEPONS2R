@@ -2,6 +2,7 @@
 
 export(get.latest.sim)
 export(get.simtime)
+export(make.windfarms)
 export(read.DeponsBlockdyn)
 export(read.DeponsDyn)
 export(read.DeponsParam)
