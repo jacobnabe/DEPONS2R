@@ -93,19 +93,15 @@ get.latest.sim <- function(type="dyn", dir) {
 }
 
 
-# area.file <- "wfAreas.tif"
-# area.def <- 255
-# n.wf <- 10
-# n.turb <- 99
-# turb.dist <- 500
-# min.wf.dist <- 10000
-
 #' @title Make wind farm scenario
 #' @name make.windfarms
 #' @description Produce a hypothetical wind farm construction scenario, specifying
 #' the position and timing of individual piling events, as well as the sound
 #' source level. All wind farms are assumed to consist of the same number of
-#' turbines, laid out in a rectangular grid.
+#' turbines, laid out in a rectangular grid. The start and end tick (i.e. the
+#' number of half-hour intervals since simulation start) is generated based on
+#' provided values for the time it required for each piling and the time between
+#' piling events.
 #' @param area.file Name of the raster file specifying where the wind farms
 #' should be constructed.
 #' @param area.def Value in \code{area.file} for the areas were wind farms can
@@ -114,9 +110,30 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @param n.turb Total number of turbines to construct
 #' @param turb.dist Distance between turbines within a wind farm (meters)
 #' @param min.wf.dist Minimum distance between wind farms (meters)
+#' @param impact Sound source level (dB); sound emitted from turbines during
+#' construction, i.e. from tick.start to tick.end (including both start and end)
+#' @param constr.start The tick at which construction of the first turbine starts.
+#' @param constr.end The tick at which construction of the very last turbine in
+#' the last wind farm ends.
+#' @param constr.time The time it takes to construct a single wind turbine
+#' (number of ticks).
+#' @param constr.break Break between individual pilings within a wind farm,
+#' counted in number of half-hour 'ticks'.
+#' @note The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
+#' and \code{constr.break} are truncated to nearest integer value. Construction
+#' of wind farms starts in WF001 at tick \code{constr.start}. Each turbine
+#' foundation is piled over a period of \code{constr.time}, followed by a
+#' noise-free period of \code{constr.break}. Several pile driving operations may
+#' take place at the same time, to ensure that the last piling ends before \code{constr.end}.
 #' @export make.windfarms
 make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
-                           min.wf.dist) {
+                           min.wf.dist, impact, constr.start, constr.end,
+                           constr.time, constr.break) {
+  # Check parameters
+  ncf <- nchar(area.file)
+  af.ext <- substr(area.file, ncf-2, ncf)
+  if(af.ext != "tif" && af.ext != "asc") stop("'area.file' does not appear to be a raster")
+  # Get extent of wind farm zone
   wf.area <- raster::raster(area.file)
   wf.area[wf.area[,]!=area.def] <- NA
   wf.area <- raster::trim(wf.area)
@@ -125,8 +142,8 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   get.start.pos <- function(the.wf.ext=wf.ext, the.wf.area=wf.area) {
     i <- 1000
     while(i>0) {
-      x.pos <- runif(1, min=the.wf.ext[1], max=the.wf.ext[2])
-      y.pos <- runif(1, min=the.wf.ext[3], max=the.wf.ext[4])
+      x.pos <- stats::runif(1, min=the.wf.ext[1], max=the.wf.ext[2])
+      y.pos <- stats::runif(1, min=the.wf.ext[3], max=the.wf.ext[4])
       the.pos <- data.frame("x"=x.pos, "y"=y.pos)
       xy.val <- raster::extract(the.wf.area, the.pos)
       if(!is.na(xy.val)) return(the.pos)
@@ -145,31 +162,89 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     turb.pos <- turb.pos[1:n.turb.per.wf ,]
     return(turb.pos)
   }
-  make.one.wf <- function() {
+  make.one.wf <- function(wf.no) {
     cont.trying <- TRUE
+    j <- 0  # safety break
     while(cont.trying) {
       start.pos <- get.start.pos()
       turb.pos <- get.turb.pos(n.turb, n.wf, start.pos)
       xy.val <- raster::extract(wf.area, turb.pos)
-
-      ### Check distance to other wind farms here
-
+      # Check that all turbs are within wf.area
       if(all(!is.na(xy.val))) cont.trying <- FALSE
+      # Check distance to existing wind farms
+      xy.centre <- data.frame("x"=mean(turb.pos$x), "y"=mean(turb.pos$y))
+      dist.centre.to.corner <- sqrt((turb.pos$x[1]-xy.centre$x)^2 +
+                                      (turb.pos$y[1]-xy.centre$y)^2)
+      if(!exists("all.wfs")) break
+      if(nrow(all.wfs)==0) break # don't check dist to existing if there aren't any
+      dist.to.existing <- sqrt((all.wfs$x-xy.centre$x)^2 +
+                                 (all.wfs$y-xy.centre$y)^2) + dist.centre.to.corner
+      if(min(dist.to.existing) < min.wf.dist) cont.trying <- TRUE
+      j <- j+1
+      if(j==10000) stop(paste("Failed to generate wind farm", wf.no))
     }
+    t <- row(turb.pos)[,1]
+    turb.no <- substr(as.character(t + 1000), 2, 5)
+    wf.n <- wf.no
+    wf.no <- substr(as.character(wf.no + 1000), 2, 5)
+    turb.names <- paste0("WF", wf.no, "_", turb.no)
+    turb.pos <- cbind(wf.n, t, "id"=turb.names, turb.pos)
+    names(turb.pos) <- c("wf", "t", "id", "x.coordinate", "y.coordinate")
     return(turb.pos)
   }
-
-  make.one.wf()
-
-
-  plot(turb.pos, asp=1)
-
-  plot(wf.area)
-  points(start.pos, pch=16)
-  points(turb.pos, pch=16, cex=0.5, col="red")
-
+  ## Run the code above
+  all.wfs <- data.frame()
+  for (i in 1:n.wf) {
+    one.wf <- make.one.wf(wf.no=i)
+    all.wfs <- rbind(all.wfs, one.wf)
+  }
+  all.wfs <- all.wfs[1:n.turb ,] # make sure total n turbs isn't too big
+  # Add sound source level (=impact) to the wf data frame
+  all.wfs <- cbind(all.wfs, impact)
+  # Add piling schedule
+  constr.start <- floor(constr.start)
+  constr.end <- floor(constr.end)
+  constr.time <- floor(constr.time)
+  constr.break <- floor(constr.break)
+  all.wfs$tick.start <- NA
+  all.wfs$tick.end <- NA
+  # Add start and end time for one turbine at a time
+  current.tick <- constr.start
+  for (w in 1:max(all.wfs$wf)) {
+    sel.wf <- all.wfs[all.wfs$wf==w,]
+    expected.end.tick <- current.tick + max(sel.wf$t)*(constr.time+constr.break)
+    # If construction is expected to last beyond after desired end time, introduce
+    # a new pile driving machine to work from start of construction
+    if(expected.end.tick > constr.end) current.tick <- constr.start
+    for (tt in 1:max(sel.wf$t)) {
+      sel.row <- which(all.wfs$wf==w & all.wfs$t==tt)
+      all.wfs[sel.row,]$tick.start <- current.tick
+      all.wfs[sel.row,]$tick.end <- current.tick+constr.time
+      current.tick <- current.tick + constr.time + constr.break
+    }
+  }
+  return(all.wfs[, 3:8])
 }
 
+
+## Test 'make.windfarms'
+# area.file <- "wfAreas.tif"
+# area.def <- 255
+# n.wf <- 10
+# n.turb <- 99
+# turb.dist <- 500
+# min.wf.dist <- 10000
+# impact <-  300
+# constr.start <- 361*48
+# constr.end <- constr.start + 5*360*48  # stop 5 yrs after start
+# constr.time <- 4
+# constr.break <- 48
+
+# ?make.windfarms
+# wfs <- make.windfarms(area.file="wfAreas.tif", area.def=255, n.wf=14,
+#   n.turb=420, turb.dist=300, min.wf.dist=10000, impact=250,
+#   constr.start=10*360*48+1, constr.end=15*360*48, constr.time=4, constr.break=48)
+# dim(wfs)
 
 
 #' @title Convert tick number to date

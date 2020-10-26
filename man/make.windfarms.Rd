@@ -4,7 +4,19 @@
 \alias{make.windfarms}
 \title{Make wind farm scenario}
 \usage{
-make.windfarms(area.file, area.def, n.wf, n.turb, turb.dist, min.wf.dist)
+make.windfarms(
+  area.file,
+  area.def,
+  n.wf,
+  n.turb,
+  turb.dist,
+  min.wf.dist,
+  impact,
+  constr.start,
+  constr.end,
+  constr.time,
+  constr.break
+)
 }
 \arguments{
 \item{area.file}{Name of the raster file specifying where the wind farms
@@ -20,10 +32,35 @@ be located}
 \item{turb.dist}{Distance between turbines within a wind farm (meters)}
 
 \item{min.wf.dist}{Minimum distance between wind farms (meters)}
+
+\item{impact}{Sound source level (dB); sound emitted from turbines during
+construction, i.e. from tick.start to tick.end (including both start and end)}
+
+\item{constr.start}{The tick at which construction of the first turbine starts.}
+
+\item{constr.end}{The tick at which construction of the very last turbine in
+the last wind farm ends.}
+
+\item{constr.time}{The time it takes to construct a single wind turbine
+(number of ticks).}
+
+\item{constr.break}{Break between individual pilings within a wind farm,
+counted in number of half-hour 'ticks'.}
 }
 \description{
 Produce a hypothetical wind farm construction scenario, specifying
 the position and timing of individual piling events, as well as the sound
 source level. All wind farms are assumed to consist of the same number of
-turbines, laid out in a rectangular grid.
+turbines, laid out in a rectangular grid. The start and end tick (i.e. the
+number of half-hour intervals since simulation start) is generated assuming
+that construction of wind farms start in the order of their naming and continue
+uninterrupted once started.
+}
+\note{
+The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
+and \code{constr.break} are truncated to nearest integer value. Construction
+of wind farms starts in WF001 at tick \code{constr.start}. Each turbine
+foundation is piled over a period of \code{constr.time}, followed by a
+noise-free period of \code{constr.break}. Several pile driving operations may
+take place at the same time, to ensure that the last piling ends before \code{constr.end}.
 }
