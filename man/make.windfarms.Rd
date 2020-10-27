@@ -16,7 +16,9 @@ make.windfarms(
   constr.end,
   constr.time,
   constr.break,
-  iterate = 100
+  iterate = 10000,
+  verbose = FALSE,
+  wf.coords = "random"
 )
 }
 \arguments{
@@ -51,6 +53,12 @@ counted in number of half-hour 'ticks'.}
 \item{iterate}{Number of times to try finding a spot for a new wind farm that
 is sufficiently far from the nearest neighbouring wind farm (>min.wf.dist).
 The number also defines the number of random positions to search through.}
+
+\item{verbose}{Logical; whether messages should be printed to console.}
+
+\item{wf.coords}{Possible location of the south-western corner of the wind
+farms. Defaults to the text "random", but can also be a data frame with
+coordinates in the columns x and y.}
 }
 \description{
 Produce a hypothetical wind farm construction scenario, specifying
