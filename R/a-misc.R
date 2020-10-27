@@ -122,6 +122,9 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @param iterate Number of times to try finding a spot for a new wind farm that
 #' is sufficiently far from the nearest neighbouring wind farm (>min.wf.dist).
 #' The number also defines the number of random positions to search through.
+#' @param wf.coords Possible location of the south-western corner of the wind
+#' farms. Defaults to the text "random", but can also be a data frame with
+#' coordinates in the columns x and y.
 #' @note The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
 #' and \code{constr.break} are truncated to nearest integer value. Construction
 #' of wind farms starts in WF001 at tick \code{constr.start}. Each turbine
@@ -131,7 +134,8 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @export make.windfarms
 make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
                            min.wf.dist, impact, constr.start, constr.end,
-                           constr.time, constr.break, iterate=100) {
+                           constr.time, constr.break, iterate=10000, verbose=FALSE,
+                           wf.coords="random") {
   # Check parameters
   ncf <- nchar(area.file)
   af.ext <- substr(area.file, ncf-2, ncf)
@@ -148,7 +152,7 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     xy.pos <- data.frame(x,y)
     xy.val <- raster::extract(the.wf.area, xy.pos)
     # Use only pos within the wf area
-    sel.rows <- which(xy.val==1)
+    sel.rows <- which(xy.val==area.def)
     xy.pos <- xy.pos[sel.rows, ]
     row.names(xy.pos) <- NULL
     return(xy.pos)
@@ -165,12 +169,23 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     turb.pos <- turb.pos[1:n.turb.per.wf ,]
     return(turb.pos)
   }
-
   # Make df with possible start pos; shrink list to make sure that each
   # value is only used once
-  start.pos <- get.start.pos()
+  if(is.character(wf.coords)) {
+    if (wf.coords=="random") start.pos <- get.start.pos()
+  }
+  if (!is.character(wf.coords)) {
+    if (class(wf.coords)!="data.frame") stop("wf.coords must be a data frame")
+    xy.val <- raster::extract(the.wf.area, wf.coords)
+    sel.rows <- which(xy.val==area.def)
+    start.pos <- wf.coords[sel.rows, ]
+    row.names(start.pos) <- NULL
+  }
+  if(verbose) message(paste("Number of potential wind farm sites:", length(start.pos[,1])))
   all.wfs <- data.frame()
-  for (wf.no in 1:n.wf) {
+  wf.no <- 1
+  k <- 0 # safety break
+  while (wf.no <= n.wf) {
     cont.trying <- TRUE
     j <- 0  # safety break
     while(cont.trying) { # keep trying till all turbines are within wf.area
@@ -191,7 +206,8 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
       if(!exists("all.wfs")) break
       if(nrow(all.wfs)==0) break # don't check dist to existing if there aren't any
       dist.to.existing <- sqrt((all.wfs$x-xy.centre$x)^2 +
-                                 (all.wfs$y-xy.centre$y)^2) + dist.centre.to.corner
+                                 (all.wfs$y-xy.centre$y)^2) - dist.centre.to.corner
+      # if(verbose) message(paste("   Dist to closest neighbour:", min(dist.to.existing), "m"))
       if(min(dist.to.existing) < min.wf.dist) cont.trying <- TRUE
       j <- j+1
       if(j==iterate) stop(paste("Failed to generate wind farm", wf.no))
@@ -204,6 +220,10 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     names(turb.pos) <- c("wf", "t", "id", "x.coordinate", "y.coordinate")
     all.wfs <- rbind(all.wfs, turb.pos)
     rm(turb.pos, xy.val, pos.to.use)
+    if(verbose) message(paste("Wind farm", wf.no))
+    wf.no <- wf.no+1
+    k <- k+1
+    if (k > iterate) stop(paste("Couldn't assign wind farm", wf.no))
   }
   all.wfs <- all.wfs[1:n.turb ,] # make sure total n turbs isn't too big
   # Add sound source level (=impact) to the wf data frame
@@ -236,8 +256,8 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
 ## Test 'make.windfarms'
 # area.file <- "WFraster.tif"
 # area.def <- 1
-# n.wf <- 10
-# n.turb <- 99
+# n.wf <- 40
+# n.turb <- 999
 # turb.dist <- 500
 # min.wf.dist <- 10000
 # impact <-  300
@@ -250,11 +270,57 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
 # wfs <- make.windfarms(area.file="WFraster.tif", area.def=1, n.wf=40,
 #   n.turb=420, turb.dist=300, min.wf.dist=10000, impact=250,
 #   constr.start=10*360*48+1, constr.end=15*360*48, constr.time=4, constr.break=48,
-#   iterate=10000)
-# dim(wfs)
-# wf.area <- raster::raster(area.file)
-# plot(wf.area)
-# points(wfs$x.coordinate, wfs$y.coordinate, cex=0.6, pch=16, col="blue")
+#   iterate=10000, verbose=TRUE)
+#
+
+xx <- seq(3900000, 4200000, 8000)
+yy <- seq(3400000, 3700000, 8000)
+x <- rep(xx, each=length(yy))
+y <- rep(yy, length(xx))
+wf.c <- data.frame(x,y)
+points(wf.c, cex=0.1)
+
+
+wfs <- make.windfarms(area.file="WFraster.tif",
+                      area.def=1,  # label for areas assigned to wind farms
+                      n.wf=33, # 66,
+                      n.turb=825, # 1650,  # 1650 / 66 turb per wf
+                      turb.dist=1500,
+                      min.wf.dist=2000,
+                      impact=300,
+                      constr.start=345601,
+                      constr.end=691200,
+                      constr.time=6,
+                      constr.break=96,
+                      iterate=10000000,
+                      verbose=TRUE,
+                      wf.coords=wf.c
+)
+
+# wfs <- make.windfarms(area.file="WFraster.tif",
+#                           area.def=1,  # label for areas assigned to wind farms
+#                           n.wf=83,
+#                           n.turb=2062,  # 2062 / 83 turb per wf
+#                           turb.dist=1550,
+#                           min.wf.dist=3000,
+#                           impact=300,
+#                           constr.start=345601,
+#                           constr.end=691200,
+#                           constr.time=6,
+#                           constr.break=96,
+#                           iterate=10000000,
+#                           verbose=TRUE
+# )
+
+dim(wfs)
+wfs[length(wfs[,1]) ,]
+wf.area <- raster::raster(area.file)
+plot(wf.area)
+points(wfs$x.coordinate, wfs$y.coordinate, cex=0.3, pch=16, col="blue")
+
+all.wfs[nrow(all.wfs) ,]
+
+
 
 
 #' @title Convert tick number to date
