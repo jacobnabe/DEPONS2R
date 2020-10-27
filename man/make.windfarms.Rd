@@ -2,7 +2,7 @@
 % Please edit documentation in R/a-misc.R
 \name{make.windfarms}
 \alias{make.windfarms}
-\title{Make wind farm scenario}
+\title{Make wind farm construction scenario}
 \usage{
 make.windfarms(
   area.file,
@@ -15,7 +15,8 @@ make.windfarms(
   constr.start,
   constr.end,
   constr.time,
-  constr.break
+  constr.break,
+  iterate = 100
 )
 }
 \arguments{
@@ -46,15 +47,19 @@ the last wind farm ends.}
 
 \item{constr.break}{Break between individual pilings within a wind farm,
 counted in number of half-hour 'ticks'.}
+
+\item{iterate}{Number of times to try finding a spot for a new wind farm that
+is sufficiently far from the nearest neighbouring wind farm (>min.wf.dist).
+The number also defines the number of random positions to search through.}
 }
 \description{
 Produce a hypothetical wind farm construction scenario, specifying
 the position and timing of individual piling events, as well as the sound
 source level. All wind farms are assumed to consist of the same number of
 turbines, laid out in a rectangular grid. The start and end tick (i.e. the
-number of half-hour intervals since simulation start) is generated assuming
-that construction of wind farms start in the order of their naming and continue
-uninterrupted once started.
+number of half-hour intervals since simulation start) is generated based on
+provided values for the time it required for each piling and the time between
+piling events.
 }
 \note{
 The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
