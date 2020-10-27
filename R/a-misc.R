@@ -93,7 +93,7 @@ get.latest.sim <- function(type="dyn", dir) {
 }
 
 
-#' @title Make wind farm scenario
+#' @title Make wind farm construction scenario
 #' @name make.windfarms
 #' @description Produce a hypothetical wind farm construction scenario, specifying
 #' the position and timing of individual piling events, as well as the sound
@@ -119,6 +119,9 @@ get.latest.sim <- function(type="dyn", dir) {
 #' (number of ticks).
 #' @param constr.break Break between individual pilings within a wind farm,
 #' counted in number of half-hour 'ticks'.
+#' @param iterate Number of times to try finding a spot for a new wind farm that
+#' is sufficiently far from the nearest neighbouring wind farm (>min.wf.dist).
+#' The number also defines the number of random positions to search through.
 #' @note The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
 #' and \code{constr.break} are truncated to nearest integer value. Construction
 #' of wind farms starts in WF001 at tick \code{constr.start}. Each turbine
@@ -128,7 +131,7 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @export make.windfarms
 make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
                            min.wf.dist, impact, constr.start, constr.end,
-                           constr.time, constr.break) {
+                           constr.time, constr.break, iterate=100) {
   # Check parameters
   ncf <- nchar(area.file)
   af.ext <- substr(area.file, ncf-2, ncf)
@@ -140,15 +143,15 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   wf.ext <- raster::extent(wf.area)
   # Select coords for bottom-left corner of wind farm
   get.start.pos <- function(the.wf.ext=wf.ext, the.wf.area=wf.area) {
-    i <- 1000
-    while(i>0) {
-      x.pos <- stats::runif(1, min=the.wf.ext[1], max=the.wf.ext[2])
-      y.pos <- stats::runif(1, min=the.wf.ext[3], max=the.wf.ext[4])
-      the.pos <- data.frame("x"=x.pos, "y"=y.pos)
-      xy.val <- raster::extract(the.wf.area, the.pos)
-      if(!is.na(xy.val)) return(the.pos)
-      i <- i-1
-    }
+    x <- stats::runif(iterate, min=the.wf.ext[1], max=the.wf.ext[2])
+    y <- stats::runif(iterate, min=the.wf.ext[3], max=the.wf.ext[4])
+    xy.pos <- data.frame(x,y)
+    xy.val <- raster::extract(the.wf.area, xy.pos)
+    # Use only pos within the wf area
+    sel.rows <- which(xy.val==1)
+    xy.pos <- xy.pos[sel.rows, ]
+    row.names(xy.pos) <- NULL
+    return(xy.pos)
   }
   get.turb.pos <- function(n.turb=n.turb, n.wf=n.wf, start.pos) {
     n.turb.per.wf <- ceiling(n.turb / n.wf)
@@ -162,12 +165,22 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     turb.pos <- turb.pos[1:n.turb.per.wf ,]
     return(turb.pos)
   }
-  make.one.wf <- function(wf.no) {
+
+  # Make df with possible start pos; shrink list to make sure that each
+  # value is only used once
+  start.pos <- get.start.pos()
+  all.wfs <- data.frame()
+  for (wf.no in 1:n.wf) {
     cont.trying <- TRUE
     j <- 0  # safety break
-    while(cont.trying) {
-      start.pos <- get.start.pos()
-      turb.pos <- get.turb.pos(n.turb, n.wf, start.pos)
+    while(cont.trying) { # keep trying till all turbines are within wf.area
+      if(nrow(start.pos)==0) stop(paste("No possible start pos for wind farm", wf.no))
+      pos.to.use <- sample(1:length(start.pos[,1]), 1)
+      turb.pos <- get.turb.pos(n.turb, n.wf, start.pos[pos.to.use,])
+      # Remove 'pos.to.use' from 'start.pos'
+      new.rows <- which(!(1:length(start.pos[,1]) %in% pos.to.use))
+      start.pos <-start.pos[new.rows ,]
+      # Check that turb pos are all withing wind farm area
       xy.val <- raster::extract(wf.area, turb.pos)
       # Check that all turbs are within wf.area
       if(all(!is.na(xy.val))) cont.trying <- FALSE
@@ -181,22 +194,16 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
                                  (all.wfs$y-xy.centre$y)^2) + dist.centre.to.corner
       if(min(dist.to.existing) < min.wf.dist) cont.trying <- TRUE
       j <- j+1
-      if(j==10000) stop(paste("Failed to generate wind farm", wf.no))
+      if(j==iterate) stop(paste("Failed to generate wind farm", wf.no))
     }
     t <- row(turb.pos)[,1]
     turb.no <- substr(as.character(t + 1000), 2, 5)
-    wf.n <- wf.no
-    wf.no <- substr(as.character(wf.no + 1000), 2, 5)
-    turb.names <- paste0("WF", wf.no, "_", turb.no)
-    turb.pos <- cbind(wf.n, t, "id"=turb.names, turb.pos)
+    the.wf.no <- substr(as.character(wf.no + 1000), 2, 5)
+    turb.names <- paste0("WF", the.wf.no, "_", turb.no)
+    turb.pos <- cbind(wf.no, t, "id"=turb.names, turb.pos)
     names(turb.pos) <- c("wf", "t", "id", "x.coordinate", "y.coordinate")
-    return(turb.pos)
-  }
-  ## Run the code above
-  all.wfs <- data.frame()
-  for (i in 1:n.wf) {
-    one.wf <- make.one.wf(wf.no=i)
-    all.wfs <- rbind(all.wfs, one.wf)
+    all.wfs <- rbind(all.wfs, turb.pos)
+    rm(turb.pos, xy.val, pos.to.use)
   }
   all.wfs <- all.wfs[1:n.turb ,] # make sure total n turbs isn't too big
   # Add sound source level (=impact) to the wf data frame
@@ -226,10 +233,9 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   return(all.wfs[, 3:8])
 }
 
-
 ## Test 'make.windfarms'
-# area.file <- "wfAreas.tif"
-# area.def <- 255
+# area.file <- "WFraster.tif"
+# area.def <- 1
 # n.wf <- 10
 # n.turb <- 99
 # turb.dist <- 500
@@ -239,12 +245,16 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
 # constr.end <- constr.start + 5*360*48  # stop 5 yrs after start
 # constr.time <- 4
 # constr.break <- 48
-
-# ?make.windfarms
-# wfs <- make.windfarms(area.file="wfAreas.tif", area.def=255, n.wf=14,
+# iterate <- 10000
+#
+# wfs <- make.windfarms(area.file="WFraster.tif", area.def=1, n.wf=40,
 #   n.turb=420, turb.dist=300, min.wf.dist=10000, impact=250,
-#   constr.start=10*360*48+1, constr.end=15*360*48, constr.time=4, constr.break=48)
+#   constr.start=10*360*48+1, constr.end=15*360*48, constr.time=4, constr.break=48,
+#   iterate=10000)
 # dim(wfs)
+# wf.area <- raster::raster(area.file)
+# plot(wf.area)
+# points(wfs$x.coordinate, wfs$y.coordinate, cex=0.6, pch=16, col="blue")
 
 
 #' @title Convert tick number to date
