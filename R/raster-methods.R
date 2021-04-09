@@ -188,17 +188,20 @@ setGeneric("plot")
 #' @param legend Whether to plot the colour legend
 #' @param ... Other optional plotting parameters
 #' @examples
-#' \donttest{
 #' data("bathymetry")
+#' \donttest{
 #' plot(bathymetry)
 #' data("coastline")
+#' old <- options()
+#' on.exit(options(old))  # Reset user options on exit
+#' options("rgdal_show_exportToProj4_warnings"="none")
 #' library(rgdal)
 #' # Change projection of coastline to match that of bathymetry data
 #' coastline2 <- spTransform(coastline, crs(bathymetry))
 #' plot(coastline2, add=TRUE, col="lightyellow2")
-#' }
 #' text(512000, 6240000, 'Denmark')
 #' text(800000, 6300000, 'Sweden')
+#' }
 #'
 #' plot(bathymetry, axes=FALSE, legend=FALSE, main="Simulated porpoise track")
 #' data("porpoisetrack")

@@ -147,11 +147,11 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   wf.area <- raster::trim(wf.area)
   wf.ext <- raster::extent(wf.area)
   # Select coords for bottom-left corner of all wind farms
-  get.start.pos <- function(the.wf.ext=wf.ext, the.wf.area=wf.area) {
+  get.start.pos <- function(the.wf.ext=wf.ext, wf.area=wf.area) {
     x <- stats::runif(iterate, min=the.wf.ext[1], max=the.wf.ext[2])
     y <- stats::runif(iterate, min=the.wf.ext[3], max=the.wf.ext[4])
     xy.pos <- data.frame(x,y)
-    xy.val <- raster::extract(the.wf.area, xy.pos)
+    xy.val <- raster::extract(wf.area, xy.pos)
     # Use only pos within the wf area
     sel.rows <- which(xy.val==area.def)
     xy.pos <- xy.pos[sel.rows, ]
@@ -178,7 +178,7 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   }
   if (!is.character(wf.coords)) {
     if (class(wf.coords)!="data.frame") stop("wf.coords must be a data frame")
-    xy.val <- raster::extract(the.wf.area, wf.coords)
+    xy.val <- raster::extract(wf.area, wf.coords)
     sel.rows <- which(xy.val==area.def)
     start.pos <- wf.coords[sel.rows, ]
     # points(start.pos, col="red", cex=0.2)
@@ -222,7 +222,7 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     turb.names <- paste0("WF", the.wf.no, "_", turb.no)
     turb.pos <- cbind(wf.no, t, "id"=turb.names, turb.pos)
     names(turb.pos) <- c("wf", "t", "id", "x.coordinate", "y.coordinate")
-    points(turb.pos, cex=0.8, col="blue")
+    # points(turb.pos, cex=0.8, col="blue")
     all.wfs <- rbind(all.wfs, turb.pos)
     rm(turb.pos, xy.val, pos.to.use)
     if(verbose) message(paste("Wind farm", wf.no))
@@ -260,16 +260,29 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
 
 ## Test 'make.windfarms'
 
-# xx <- seq(3900000, 4200000, 8000)
-# yy <- seq(3400000, 3700000, 8000)
+# xx <- seq(3900000, 4200000, 1500)
+# yy <- seq(3400000, 3700000, 1500)
 # x <- rep(xx, each=length(yy))
 # y <- rep(yy, length(xx))
 # wf.c <- data.frame(x,y)
-# # wf.area <- raster::raster(area.file)
 #
-# plot(wf.area)
-# points(wf.c, cex=0.1)
 #
+# wfs <- make.windfarms(area.file="WFraster.tif",
+#                       area.def=1,  # label for areas assigned to wind farms
+#                       n.wf=1650,
+#                       n.turb=1650,
+#                       turb.dist=1500,
+#                       min.wf.dist=1500,
+#                       impact=300,
+#                       constr.start=345601,
+#                       constr.end=691200,
+#                       constr.time=6,
+#                       constr.break=96,
+#                       iterate=10000000,
+#                       verbose=TRUE,
+#                       wf.coords=wf.c
+# )
+
 #
 # wfs <- make.windfarms(area.file="WFraster.tif",
 #                       area.def=1,  # label for areas assigned to wind farms
