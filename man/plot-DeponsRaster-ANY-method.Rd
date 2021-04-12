@@ -86,9 +86,6 @@ data("bathymetry")
 \donttest{
 plot(bathymetry)
 data("coastline")
-old <- options()
-on.exit(options(old))  # Reset user options on exit
-options("rgdal_show_exportToProj4_warnings"="none")
 library(rgdal)
 # Change projection of coastline to match that of bathymetry data
 coastline2 <- spTransform(coastline, crs(bathymetry))
@@ -103,5 +100,6 @@ plot(porpoisetrack, add=TRUE)
 }
 \seealso{
 See method for \code{\link[raster]{plot}} in the
-\code{raster} package for details.
+\code{raster} package for details and \code{\link{plot.DeponsTrack}} for
+plotting of DeponsRasters cropped to the extent of tracks.
 }

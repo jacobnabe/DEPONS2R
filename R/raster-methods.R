@@ -192,9 +192,6 @@ setGeneric("plot")
 #' \donttest{
 #' plot(bathymetry)
 #' data("coastline")
-#' old <- options()
-#' on.exit(options(old))  # Reset user options on exit
-#' options("rgdal_show_exportToProj4_warnings"="none")
 #' library(rgdal)
 #' # Change projection of coastline to match that of bathymetry data
 #' coastline2 <- spTransform(coastline, crs(bathymetry))
@@ -207,7 +204,8 @@ setGeneric("plot")
 #' data("porpoisetrack")
 #' plot(porpoisetrack, add=TRUE)
 #' @seealso See method for \code{\link[raster]{plot}} in the
-#' \code{raster} package for details.
+#' \code{raster} package for details and \code{\link{plot.DeponsTrack}} for
+#' plotting of DeponsRasters cropped to the extent of tracks.
 #' @exportMethod plot
 setMethod("plot", signature("DeponsRaster", "ANY"),
           function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,
@@ -228,13 +226,15 @@ setMethod("plot", signature("DeponsRaster", "ANY"),
             if(x@crs=="NA") {
               crs2 <- sp::CRS(as.character(NA))
             } else {
-              crs2 <- sp::CRS(x@crs)
+              crs2 <- raster::crs(x@crs)
             }
             rdata <- raster::raster(x=x@data, xmn=x@ext$xleft, xmx=x@ext$xright,
                                     ymn=x@ext$ybottom, ymx=x@ext$ytop,
                                     crs=crs2)
             raster::plot(rdata, col=col, main=main,
                          alpha=alpha, add=add, ext=ext, axes=axes, legend=legend)
+
+            return(invisible(NULL))
           }
 )
 

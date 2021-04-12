@@ -38,4 +38,11 @@ coast2 <- sp::spTransform(coastline, CRS("+proj=utm +zone=32 +datum=WGS84 +units
 as.character(crs(porpoisetrack)) == as.character(crs(coast2))
 plot(coast2, col="lightyellow2", add=TRUE)
 }
+
+# Plot track on top of bathymetry map
+data(bathymetry)
+plot(bathymetry, porpoisetrack, col="red")
+\donttest{
+plot(coast2, col="lightyellow2", add=TRUE)
+}
 }

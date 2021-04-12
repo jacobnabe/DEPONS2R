@@ -160,17 +160,30 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' as.character(crs(porpoisetrack)) == as.character(crs(coast2))
 #' plot(coast2, col="lightyellow2", add=TRUE)
 #' }
+#'
+#' # Plot track on top of bathymetry map
+#' data(bathymetry)
+#' plot(bathymetry, porpoisetrack, col="red")
+#' \donttest{
+#' plot(coast2, col="lightyellow2", add=TRUE)
+#' }
 setMethod("plot", signature("DeponsTrack", "missing"),
           function(x, y, trackToPlot=1, add=FALSE, ...)  {
             oldpar <- graphics::par(no.readonly = TRUE)
             on.exit(graphics::par(oldpar))
+            dots <- list(...)
+            col <- "black"
+            if("col" %in% names(dots)) col <- dots$col
+            lwd <- 1
+            if("lwd" %in% names(dots)) lwd <- dots$lwd
+            lty <- 1
+            if("lty" %in% names(dots)) lty <- dots$lty
             the.main <- ifelse(x@title=="NA", "DEPONS track", x@title)
             trk <- x@tracks[[trackToPlot]]
-            if (!add) plot(sp::coordinates(trk), type="l", asp=1, main=the.main)
-            else lines(sp::coordinates(trk), type="l", asp=1, main=the.main)
+            if (!add) plot(sp::coordinates(trk), type="l", asp=1, main=the.main, col=col, lwd=lwd, lty=lty)
+            else lines(sp::coordinates(trk), type="l", asp=1, main=the.main, col=col, lwd=lwd, lty=lty)
           }
 )
-
 
 
 # Don't move following method to file 'raster-methods' -- classes defined
@@ -178,15 +191,21 @@ setMethod("plot", signature("DeponsTrack", "missing"),
 ### @describeIn plot-DeponsRaster-ANY-method Plots a DeponsRaster object
 setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
           function(x, y, trackToPlot=1, ...)  {
-            if (missing(main)) {
-              main <- paste(x@landscape, x@type, sep=" - ")
-            }
+            dots <- list(...)
+            col <- "black"
+            if("col" %in% names(dots)) col <- dots$col
+            lwd <- 1
+            if("lwd" %in% names(dots)) lwd <- dots$lwd
+            lty <- 1
+            if("lty" %in% names(dots)) lty <- dots$lty
+            main <- y@title
+            if("main" %in% names(dots)) main <- dots$main
             oldpar <- graphics::par(no.readonly = TRUE)
             on.exit(graphics::par(oldpar))
-            plot(y@tracks[[trackToPlot]], col="white")
-            plot(x, col=col, main=main, add=TRUE, legend=FALSE)
+            plot(y@tracks[[trackToPlot]], col="white", main=main)
+            plot(x, main=main, add=TRUE, legend=FALSE)
             y.coords <- y@tracks[[trackToPlot]]@coords
-            lines(y.coords)
+            lines(y.coords, lwd=lwd, lty=lty, col=col)
           }
 )
 
