@@ -7,7 +7,8 @@
 #' @title  Package for analyzing DEPONS simulation output
 #' @name DEPONS2R
 #' @description Classes and methods for analyzing and plotting movement tracks
-#' and population dynamics simulated using the DEPONS model (\url{http://www.depons.eu}).
+#' and population dynamics simulated using the DEPONS model
+#' (\url{http://www.depons.eu}).
 #'
 #' The types of simulated data include:
 #' \itemize{
@@ -24,39 +25,72 @@ NULL
 
 #' @title Get simulation date
 #' @name get.simtime
-#' @description Returns the date and time when a specific simulation was finished
+#' @description Returns the date and time when a specific simulation was finished,
+#' obtained from the date stored as part of the file name. The date format is system
+#' dependent, but the function attemts to extract the data assuming that either
+#' the English or the local language is used.
 #' (a \code{\link{POSIXlt}} object)
 #' @param fname Character string with name of the file to extract the simulation
 #' date from, including the path
+#' @param tz Time zone
+#' @return Returns a \code{POSIXlt} object
 #' @seealso \code{\link{get.latest.sim}}
 #' @export get.simtime
-get.simtime <- function(fname=NULL) {
-  ncf <- nchar(fname)
-  tmp <- substr(fname, ncf-23, ncf-4)
-  tmp <- gsub("_", ":", tmp)
-  tmp <- gsub("Jan", "01", tmp)
-  tmp <- gsub("Feb", "02", tmp)
-  tmp <- gsub("Mar", "03", tmp)
-  tmp <- gsub("Apr", "04", tmp)
-  tmp <- gsub("May", "05", tmp)
-  tmp <- gsub("Jun", "06", tmp)
-  tmp <- gsub("Jul", "07", tmp)
-  tmp <- gsub("Aug", "08", tmp)
-  tmp <- gsub("Sep", "09", tmp)
-  tmp <- gsub("Oct", "10", tmp)
-  tmp <- gsub("Nov", "11", tmp)
-  tmp <- gsub("11", "12", tmp)
-  substr(tmp, 5, 5) <- "-"
-  substr(tmp, 8, 8) <- "-"
-  substr(tmp, 11, 11) <- " "
-  tmp <- (as.POSIXlt(tmp))
-  if (any(class(tmp)=="POSIXlt")) {
-    date <- tmp
-  } else {
-    date <- (as.POSIXlt(date))
-  }
-  return(date)
+get.simtime <- function(fname=NULL, tz="GMT") {
+  # chg double-dots to _
+  fn <- gsub("..", "_", fname, fixed=TRUE)
+  ncf <- nchar(fn)
+  time.string <- substr(fn, ncf-23, ncf-4)
+  time.string <- gsub("_", ":", time.string)
+  # Convert text months to numbers
+  template.months <- substr(100+(1:12), 2, 3)
+  template.dates <- paste0("2000-", template.months, "-01")
+  system.months <- months(as.POSIXlt(template.dates, tz="GMT"), abbreviate=TRUE)
+  time.string <- gsub("Jan", "01", time.string)
+  time.string <- gsub("jan", "01", time.string)
+  time.string <- gsub(system.months[1], "01", time.string)
+  time.string <- gsub("Feb", "02", time.string)
+  time.string <- gsub("feb", "02", time.string)
+  time.string <- gsub(system.months[2], "02", time.string)
+  time.string <- gsub("Mar", "03", time.string)
+  time.string <- gsub("mar", "03", time.string)
+  time.string <- gsub(system.months[3], "03", time.string)
+  time.string <- gsub("Apr", "04", time.string)
+  time.string <- gsub("apr", "04", time.string)
+  time.string <- gsub(system.months[4], "04", time.string)
+  time.string <- gsub("May", "05", time.string)
+  time.string <- gsub("maj", "05", time.string)
+  time.string <- gsub(system.months[5], "05", time.string)
+  time.string <- gsub("Jun", "06", time.string)
+  time.string <- gsub("jun", "06", time.string)
+  time.string <- gsub(system.months[6], "06", time.string)
+  time.string <- gsub("Jul", "07", time.string)
+  time.string <- gsub("jul", "07", time.string)
+  time.string <- gsub(system.months[7], "07", time.string)
+  time.string <- gsub("Aug", "08", time.string)
+  time.string <- gsub("aug", "08", time.string)
+  time.string <- gsub(system.months[8], "08", time.string)
+  time.string <- gsub("Sep", "09", time.string)
+  time.string <- gsub("sep", "09", time.string)
+  time.string <- gsub(system.months[9], "09", time.string)
+  time.string <- gsub("Oct", "10", time.string)
+  time.string <- gsub("okt", "10", time.string)
+  time.string <- gsub(system.months[10], "10", time.string)
+  time.string <- gsub("Nov", "11", time.string)
+  time.string <- gsub("nov", "11", time.string)
+  time.string <- gsub(system.months[11], "11", time.string)
+  time.string <- gsub("Dec", "12", time.string)
+  time.string <- gsub("dec", "12", time.string)
+  time.string <- gsub(system.months[12], "12", time.string)
+  substr(time.string, 5, 5) <- "-"
+  substr(time.string, 8, 8) <- "-"
+  substr(time.string, 11, 11) <- " "
+  time.posix <- as.POSIXlt(time.string, tz=tz)
+  if (any(class(time.posix)=="POSIXlt"))
+    return(time.posix)
+  stop(paste0("Could not extract date correctly from ", fname), ". Got ", time.string)
 }
+
 
 
 #' @title Get name of newest file

@@ -5,7 +5,8 @@
 \title{Package for analyzing DEPONS simulation output}
 \description{
 Classes and methods for analyzing and plotting movement tracks
-and population dynamics simulated using the DEPONS model (\url{http://www.depons.eu}).
+and population dynamics simulated using the DEPONS model
+(\url{http://www.depons.eu}).
 
 The types of simulated data include:
 \itemize{

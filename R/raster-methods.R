@@ -164,29 +164,10 @@ setGeneric("plot")
 #' @param y A \code{DeponsTrack} object or missing
 #' @param trackToPlot Integer indicating which track to plot if the DeponsTrack
 #' object contains more than one track. Ignored if \code{y} is missing
-#' @param maxpixels integer > 0. Maximum number of cells to use for the plot.
-#' If maxpixels < ncell(x), sampleRegular is used before plotting.
 #' @param col A color palette, i.e. a vector of n contiguous colors. Reasonable
 #' defaults are provided.
-#' @param alpha Number between 0 and 1 to set transparency. 0 is entirely
-#' transparent, 1 is not transparent (NULL is equivalent to 1)
-#' @param colNA The color to use for the background (default is transparent)
-#' @param add Logical. Whether to add map to the current plot
-#' @param ext An extent object allowing to plot only part of the map
-#' @param useRaster If TRUE, the rasterImage function is used for plotting.
-#' Otherwise the image function is used
-#' @param interpolate Logical. Should the image be interpolated (smoothed)?
-#' Only used when useRaster = TRUE
-#' @param addfun Function to add additional items such as points or polygons
-#' to the plot
-#' @param nc Not used for plotting DeponsRaster objects
-#' @param nr Not used for plotting DeponsRaster objects
-#' @param maxnl Not used for plotting DeponsRaster objects
-#' @param main Character. Plot title
-#' @param npretty Integer. Number of decimals for pretty lables on the axes
-#' @param axes Whether to plot tick marks
-#' @param legend Whether to plot the colour legend
-#' @param ... Other optional plotting parameters
+#' @param ... Other optional plotting parameters, including 'axes', 'legend',
+#' and 'main'.
 #' @examples
 #' data("bathymetry")
 #' \donttest{
@@ -198,25 +179,52 @@ setGeneric("plot")
 #' plot(coastline2, add=TRUE, col="lightyellow2")
 #' text(512000, 6240000, 'Denmark')
 #' text(800000, 6300000, 'Sweden')
-#' }
 #'
 #' plot(bathymetry, axes=FALSE, legend=FALSE, main="Simulated porpoise track")
 #' data("porpoisetrack")
 #' plot(porpoisetrack, add=TRUE)
-#' @seealso See method for \code{\link[raster]{plot}} in the
-#' \code{raster} package for details and \code{\link{plot.DeponsTrack}} for
+#' }
+#' @seealso See method for \code{\link[raster]{plot}} in the \code{raster}
+#' package for plotting parameters and \code{\link{plot.DeponsTrack}} for
 #' plotting of DeponsRasters cropped to the extent of tracks.
 #' @exportMethod plot
 setMethod("plot", signature("DeponsRaster", "ANY"),
-          function(x, y, maxpixels=500000, col, alpha=NULL, colNA=NA, add=FALSE,
-                   ext=NULL, useRaster=TRUE, interpolate=FALSE, addfun=NULL,
-                   nc, nr, maxnl=16, main, npretty=0, axes=TRUE,
-                   legend=TRUE, trackToPlot=1, ...)  {
+          function(x, y, col, trackToPlot=1, ...)  {
+            # Define plotting parameters
             oldpar <- graphics::par(no.readonly = TRUE)
             on.exit(graphics::par(oldpar))
-            if (missing(main)) {
-              main <- paste(x@landscape, x@type, sep=" - ")
-            }
+            dots <- list(...)
+            maxpixels <- 500000
+            if("maxpixels" %in% names(dots)) maxpixels <- dots$maxpixels
+            alpha <- NULL
+            if("alpha" %in% names(dots)) alpha <- dots$alpha
+            colNA <- NA
+            if("colNA" %in% names(dots)) colNA <- dots$colNA
+            add <- FALSE
+            if("add" %in% names(dots)) add <- dots$add
+            useRaster <- TRUE
+            if("useRaster" %in% names(dots)) useRaster <- dots$useRaster
+            ext <- NULL
+            if("ext" %in% names(dots)) ext <- dots$ext
+            interpolate <- FALSE
+            if("interpolate" %in% names(dots)) interpolate <- dots$interpolate
+            nr <- NA
+            nc <- NA
+            interpolate <- FALSE
+            if("interpolate" %in% names(dots)) interpolate <- dots$interpolate
+            addfun <- NULL
+            if("addfun" %in% names(dots)) addfun <- dots$addfun
+            maxnl <- 16
+            if("maxnl" %in% names(dots)) maxnl <- dots$maxnl
+            npretty <- 0
+            if("npretty" %in% names(dots)) npretty <- dots$npretty
+            axes <- TRUE
+            if("axes" %in% names(dots)) axes <- dots$axes
+            legend <- TRUE
+            if("legend" %in% names(dots)) legend <- dots$legend
+            # Define colours specific or 'type'
+            main <- paste(x@landscape, x@type, sep=" - ")
+            if("main" %in% names(dots)) main <- dots$main
             # Define colours specific or 'type'
             if(missing(col) && x@type=="bathymetry") {
               tmp.col <- grDevices::rainbow(1000)[501:800]
@@ -224,7 +232,7 @@ setMethod("plot", signature("DeponsRaster", "ANY"),
             }
             # Use {raster}-package for plotting
             if(x@crs=="NA") {
-              crs2 <- sp::CRS(as.character(NA))
+              crs2 <- raster::crs(as.character(NA))
             } else {
               crs2 <- raster::crs(x@crs)
             }

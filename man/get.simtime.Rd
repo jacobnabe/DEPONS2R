@@ -4,14 +4,22 @@
 \alias{get.simtime}
 \title{Get simulation date}
 \usage{
-get.simtime(fname = NULL)
+get.simtime(fname = NULL, tz = "GMT")
 }
 \arguments{
 \item{fname}{Character string with name of the file to extract the simulation
 date from, including the path}
+
+\item{tz}{Time zone}
+}
+\value{
+Returns a \code{POSIXlt} object
 }
 \description{
-Returns the date and time when a specific simulation was finished
+Returns the date and time when a specific simulation was finished,
+obtained from the date stored as part of the file name. The date format is system
+dependent, but the function attemts to extract the data assuming that either
+the English or the local language is used.
 (a \code{\link{POSIXlt}} object)
 }
 \seealso{

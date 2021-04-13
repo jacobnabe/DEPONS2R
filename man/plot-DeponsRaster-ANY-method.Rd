@@ -6,76 +6,21 @@
 \alias{plot,DeponsRaster,DeponsTrack-method}
 \title{Plot a DeponsRaster object}
 \usage{
-\S4method{plot}{DeponsRaster,ANY}(
-  x,
-  y,
-  maxpixels = 5e+05,
-  col,
-  alpha = NULL,
-  colNA = NA,
-  add = FALSE,
-  ext = NULL,
-  useRaster = TRUE,
-  interpolate = FALSE,
-  addfun = NULL,
-  nc,
-  nr,
-  maxnl = 16,
-  main,
-  npretty = 0,
-  axes = TRUE,
-  legend = TRUE,
-  trackToPlot = 1,
-  ...
-)
+\S4method{plot}{DeponsRaster,ANY}(x, y, col, trackToPlot = 1, ...)
 }
 \arguments{
 \item{x}{\code{DeponsRaster} object}
 
 \item{y}{A \code{DeponsTrack} object or missing}
 
-\item{maxpixels}{integer > 0. Maximum number of cells to use for the plot.
-If maxpixels < ncell(x), sampleRegular is used before plotting.}
-
 \item{col}{A color palette, i.e. a vector of n contiguous colors. Reasonable
 defaults are provided.}
-
-\item{alpha}{Number between 0 and 1 to set transparency. 0 is entirely
-transparent, 1 is not transparent (NULL is equivalent to 1)}
-
-\item{colNA}{The color to use for the background (default is transparent)}
-
-\item{add}{Logical. Whether to add map to the current plot}
-
-\item{ext}{An extent object allowing to plot only part of the map}
-
-\item{useRaster}{If TRUE, the rasterImage function is used for plotting.
-Otherwise the image function is used}
-
-\item{interpolate}{Logical. Should the image be interpolated (smoothed)?
-Only used when useRaster = TRUE}
-
-\item{addfun}{Function to add additional items such as points or polygons
-to the plot}
-
-\item{nc}{Not used for plotting DeponsRaster objects}
-
-\item{nr}{Not used for plotting DeponsRaster objects}
-
-\item{maxnl}{Not used for plotting DeponsRaster objects}
-
-\item{main}{Character. Plot title}
-
-\item{npretty}{Integer. Number of decimals for pretty lables on the axes}
-
-\item{axes}{Whether to plot tick marks}
-
-\item{legend}{Whether to plot the colour legend}
 
 \item{trackToPlot}{Integer indicating which track to plot if the DeponsTrack
 object contains more than one track. Ignored if \code{y} is missing}
 
-\item{...}{Other optional plotting parameters}
+\item{...}{Other optional plotting parameters, including 'axes', 'legend',
+and 'main'.}
 }
 \description{
 Plot the values in a DeponsRaster object. Porpoisetracks or
@@ -92,14 +37,14 @@ coastline2 <- spTransform(coastline, crs(bathymetry))
 plot(coastline2, add=TRUE, col="lightyellow2")
 text(512000, 6240000, 'Denmark')
 text(800000, 6300000, 'Sweden')
-}
 
 plot(bathymetry, axes=FALSE, legend=FALSE, main="Simulated porpoise track")
 data("porpoisetrack")
 plot(porpoisetrack, add=TRUE)
 }
+}
 \seealso{
-See method for \code{\link[raster]{plot}} in the
-\code{raster} package for details and \code{\link{plot.DeponsTrack}} for
+See method for \code{\link[raster]{plot}} in the \code{raster}
+package for plotting parameters and \code{\link{plot.DeponsTrack}} for
 plotting of DeponsRasters cropped to the extent of tracks.
 }
