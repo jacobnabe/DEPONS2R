@@ -94,8 +94,8 @@ setMethod("summary", "DeponsBlockdyn",
 #' not the current working directory.
 #' @param title Optional character string giving name of simulation
 #' @param landscape The landscape used in the simulation
-#' @param simtime Optional POSIXlt object with date of simulation. If
-#' not provided this is obtained from name of input file
+#' @param simtime Optional text string with date of simulation (format:
+#' yyyy-mm-dd). If not provided this is obtained from name of input file
 #' @param startday The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (POSIXlt)
 #' @seealso See \code{\link{DeponsBlockdyn-class}} for details on what is stored in

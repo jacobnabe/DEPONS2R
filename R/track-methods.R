@@ -211,3 +211,28 @@ setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
           }
 )
 
+
+#' @name bbox
+#' @title Get bbox from DeponsTrack object
+#' @description Retrieves spatial bounding box from object. When the object
+#' contains multiple track, the box bounds all tracks.
+#' @aliases bbox,DeponsTrack-method
+#' @param obj DeponsTrack object
+#' @exportMethod bbox
+setMethod("bbox", signature("DeponsTrack"),
+          function(obj) {
+            xmin <- ymin <- 99999999999999999999999
+            xmax <- ymax <- -99999999999999999999999
+            for(i in 1:length(obj@tracks)) {
+              one.track <- obj@tracks[[i]]
+              if(one.track@bbox["x", "min"] < xmin) xmin <- one.track@bbox["x", "min"]
+              if(one.track@bbox["y", "min"] < ymin) ymin <- one.track@bbox["y", "min"]
+              if(one.track@bbox["x", "max"] > xmax) xmax <- one.track@bbox["x", "max"]
+              if(one.track@bbox["y", "max"] > ymax) ymax <- one.track@bbox["y", "max"]
+            }
+            x <- c(xmin, xmax)
+            y <- c(ymin, ymax)
+            extremes <- sp::SpatialPoints(cbind(x,y))
+            return(sp::bbox(extremes))
+          }
+)

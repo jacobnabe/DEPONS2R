@@ -9,6 +9,5 @@ License: GPL-3
 Encoding: UTF-8
 LazyDataCompression: true
 Depends: R (>= 3.5.0)
-Suggests: rgdal
-Imports: raster, methods, sp, utils, grDevices, xml2
+Imports: raster, methods, sp, utils, grDevices, xml2, rgdal
 RoxygenNote: 7.1.1

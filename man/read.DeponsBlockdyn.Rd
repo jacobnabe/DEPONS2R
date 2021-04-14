@@ -21,8 +21,8 @@ not the current working directory.}
 
 \item{landscape}{The landscape used in the simulation}
 
-\item{simtime}{Optional POSIXlt object with date of simulation. If
-not provided this is obtained from name of input file}
+\item{simtime}{Optional text string with date of simulation (format:
+yyyy-mm-dd). If not provided this is obtained from name of input file}
 
 \item{startday}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (POSIXlt)}

@@ -187,6 +187,7 @@ setGeneric("plot")
 #' @seealso See method for \code{\link[raster]{plot}} in the \code{raster}
 #' package for plotting parameters and \code{\link{plot.DeponsTrack}} for
 #' plotting of DeponsRasters cropped to the extent of tracks.
+#' @import rgdal
 #' @exportMethod plot
 setMethod("plot", signature("DeponsRaster", "ANY"),
           function(x, y, col, trackToPlot=1, ...)  {
@@ -385,5 +386,22 @@ setGeneric("make.blocksraster", make.br)
 setMethod("make.blocksraster", signature("DeponsRaster"), make.br)
 
 
+
+setGeneric("bbox", function(obj){})
+
+#' @name bbox
+#' @title Get bbox from DeponsRaster object
+#' @description Retrieves spatial bounding box from object.
+#' @aliases bbox,DeponsRaster-method
+#' @param obj DeponsRaster object
+#' @exportMethod bbox
+setMethod("bbox", signature("DeponsRaster"),
+          function(obj) {
+            x <- c(obj@ext$xleft, obj@ext$xright)
+            y <- c(obj@ext$ybottom, obj@ext$ytop)
+            extremes <- sp::SpatialPoints(cbind(x, y), proj4string=sp::CRS(obj@crs))
+            return(sp::bbox(extremes))
+          }
+)
 
 
