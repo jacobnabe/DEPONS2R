@@ -129,7 +129,9 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
   all.data <- new("DeponsTrack")
   all.data@title <- title
   all.data@landscape <- landscape
-  all.data@simtime <- as.POSIXlt(simtime, tz=tz)
+  if ("POSIXlt" %in% class(simtime)) all.data@simtime <- simtime
+  else if ("character" %in% class(simtime)) all.data@simtime <- as.POSIXlt(simtime, tz=tz)
+  else stop("Couldn't read the simtime")
   all.data@crs <- crs
   all.data@tracks <- tracks
   return(all.data)
