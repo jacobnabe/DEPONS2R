@@ -388,4 +388,35 @@ tick.to.time <- function(tick, ...) {
 }
 
 
-for (i in 1:100000) toto <- tick.to.time(i)
+
+setGeneric("make.clip.poly", function(bbox, ...){})
+
+#' @name make.clip.poly
+#' @title Make clipping polygon from bbox
+#' @description Makes a polygon from a bounding box to use for
+#' clipping the coastline, or other SpatialPolygons objects
+#' @aliases make.clip.poly
+#' @aliases make.clip.poly,matrix-method
+#' @param bbox 2x2 matrix
+#' @param crs CRS object defining the projection of the SpatialPolygons object
+#' to be clipped
+#' @seealso \code{\link{bbox}} for creation of bbox matrix from DeponsRaster
+#' @import rgeos
+#' @exportMethod make.clip.poly
+setMethod("make.clip.poly", signature("matrix"),
+          function(bbox, crs) {
+            if(class(crs)!="CRS") stop("crs must be a 'CRS' object")
+            if(dim(bbox)[1]!=2 || dim(bbox)[2]!=2) stop("bbox must be a 2x2 matrix")
+            if(bbox["x", "min"] >= bbox["x", "max"]) stop("Ensure that bbox[1,1] < bbox[1,2]")
+            if(bbox["y", "min"] >= bbox["y", "max"]) stop("Ensure that bbox[2,1] < bbox[2,2]")
+            bbox.x <- c(bbox["x", "min"], bbox["x", "max"], bbox["x", "max"], bbox["x", "min"],
+                        bbox["x", "min"])
+            bbox.y <- c(bbox["y", "min"], bbox["y", "min"], bbox["y", "max"], bbox["y", "max"],
+                        bbox["y", "min"])
+            sp <- sp::Polygon(cbind(bbox.x, bbox.y))
+            sps <- sp::Polygons(list(sp), "ID")
+            clip.poly <- sp::SpatialPolygons(list(sps), proj4string = crs)
+            return(clip.poly)
+          }
+)
+

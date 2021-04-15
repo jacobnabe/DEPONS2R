@@ -16,5 +16,6 @@
 \description{
 Retrieves spatial bounding box from object.
 
-Retrieves spatial bounding box from object.
+Retrieves spatial bounding box from object. When the object
+contains multiple track, the box bounds all tracks.
 }
