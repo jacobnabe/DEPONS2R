@@ -28,21 +28,20 @@ data(porpoisetrack)
 data("porpoisetrack")
 plot(porpoisetrack)
 
-\donttest{
-# Optional: Transform and plot coastline if rgdal is installed
-data("coastline")
-library(rgdal)
-coast2 <- sp::spTransform(coastline, CRS("+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"))
-# Check that the coastline-map is projected the same way as the track before
-# plotting:
-as.character(crs(porpoisetrack)) == as.character(crs(coast2))
-plot(coast2, col="lightyellow2", add=TRUE)
-}
-
-# Plot track on top of bathymetry map
+data(coastline)
 data(bathymetry)
-plot(bathymetry, porpoisetrack, col="red")
+coastline2 <- sp::spTransform(coastline, crs(bathymetry))
+
+data(porpoisetrack)
+bbox <- bbox(porpoisetrack)
+clip.poly <- make.clip.poly(bbox, crs(bathymetry))
+if(!identical(crs(bathymetry), crs(coastline2))) stop("Non-matching CRSs")
+new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
+    drop_lower_td = TRUE)
+
 \donttest{
-plot(coast2, col="lightyellow2", add=TRUE)
+plot(new.coastline, col="lightyellow2")
+plot(porpoisetrack, col="blue", add=TRUE)
+plot(clip.poly, add=TRUE)
 }
 }

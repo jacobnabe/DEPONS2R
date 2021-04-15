@@ -112,6 +112,7 @@ setMethod("summary", "DeponsBlockdyn",
 #'
 #' # Get the latest simulation
 #' the.file <- get.latest.sim(type="blockdyn", dir="/Applications/DEPONS 2.1/DEPONS")
+#' setwd("/Applications/DEPONS 2.1/DEPONS)
 #' porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file)
 #' }
 read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",

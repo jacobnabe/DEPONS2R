@@ -4,18 +4,18 @@
 \alias{bbox}
 \alias{bbox,DeponsRaster-method}
 \alias{bbox,DeponsTrack-method}
-\title{Get bbox from DeponsRaster object}
+\title{Get bbox from Depons* object}
 \usage{
 \S4method{bbox}{DeponsRaster}(obj)
 
 \S4method{bbox}{DeponsTrack}(obj)
 }
 \arguments{
-\item{obj}{DeponsTrack object}
+\item{obj}{DeponsRaster or DeponsTrack object}
 }
 \description{
 Retrieves spatial bounding box from object.
 
-Retrieves spatial bounding box from object. When the object
-contains multiple track, the box bounds all tracks.
+Retrieves spatial bounding box from object. If a Depons* object
+is a DeonsTrack object containing multiple track, the box bounds all tracks.
 }
