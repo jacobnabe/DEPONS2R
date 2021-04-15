@@ -28,19 +28,20 @@ other kinds of lines, poits etc. can be drawn on top of the plot by adding
 }
 \examples{
 data("bathymetry")
+data(coastline)
 \donttest{
-plot(bathymetry)
-data("coastline")
-library(rgdal)
-# Change projection of coastline to match that of bathymetry data
+library(sp)
 coastline2 <- spTransform(coastline, crs(bathymetry))
-plot(coastline2, add=TRUE, col="lightyellow2")
-text(512000, 6240000, 'Denmark')
-text(800000, 6300000, 'Sweden')
+bbox <- bbox(bathymetry)
+clip.poly <- make.clip.poly(bbox, crs(bathymetry))
+if(!identical(crs(bathymetry), crs(coastline2))) stop("Non-matching CRSs")
+new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE, drop_lower_td = TRUE)
 
-plot(bathymetry, axes=FALSE, legend=FALSE, main="Simulated porpoise track")
-data("porpoisetrack")
-plot(porpoisetrack, add=TRUE)
+plot(new.coastline, lwd=0.001)
+plot(bathymetry, add=TRUE)
+plot(new.coastline, add=TRUE, col="lightyellow2")
+plot(clip.poly, add=TRUE)
+
 }
 }
 \seealso{
