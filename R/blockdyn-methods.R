@@ -102,7 +102,8 @@ setMethod("summary", "DeponsBlockdyn",
 #' the output object and \code{\link{read.DeponsParam}} for reading the parameters
 #' used in the simulation.
 #' @export read.DeponsBlockdyn
-#' @examples \dontrun{
+#' @examples
+#' \dontrun{
 #' # File loaded from default location
 #' the.file <- "/Applications/DEPONS 2.1/DEPONS/PorpoisePerBlock.2020.Sep.02.20_24_17.csv"
 #' file.exists(the.file)

@@ -13,6 +13,7 @@ The types of simulated data include:
 \item \code{\linkS4class{DeponsTrack}} movement tracks, read from "RandomPorpoise.XXX.csv" files
 \item \code{\linkS4class{DeponsDyn}} population dynamics data, from "Statistics.XXX.csv" files
 \item \code{\linkS4class{DeponsBlockdyn}} data from "PorpoisePerBlock.XXX.csv" files
+\item \code{\linkS4class{DeponsShips}} data from "ships.json" files
 }
 Here the \code{DeponsDyn} data include both changes in population size and energetics
 through time for the entire landscape, whereas \code{DeponsBlockdyn} data include

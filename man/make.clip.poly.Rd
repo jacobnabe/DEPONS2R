@@ -17,6 +17,12 @@ to be clipped}
 Makes a polygon from a bounding box to use for
 clipping the coastline, or other SpatialPolygons objects
 }
+\examples{
+data(bathymetry)
+bbox <- cbind("min"=c(549517, 6155000), "max"=c(636000, 6210000))
+rownames(bbox) <- c("x", "y")
+clip.poly <- make.clip.poly(bbox, crs(bathymetry))
+}
 \seealso{
 \code{\link{bbox}} for creation of bbox matrix from DeponsRaster
 }

@@ -15,6 +15,7 @@
 #' \item \code{\linkS4class{DeponsTrack}} movement tracks, read from "RandomPorpoise.XXX.csv" files
 #' \item \code{\linkS4class{DeponsDyn}} population dynamics data, from "Statistics.XXX.csv" files
 #' \item \code{\linkS4class{DeponsBlockdyn}} data from "PorpoisePerBlock.XXX.csv" files
+#' \item \code{\linkS4class{DeponsShips}} data from "ships.json" files
 #' }
 #' Here the \code{DeponsDyn} data include both changes in population size and energetics
 #' through time for the entire landscape, whereas \code{DeponsBlockdyn} data include
@@ -403,6 +404,11 @@ setGeneric("make.clip.poly", function(bbox, ...){})
 #' @seealso \code{\link{bbox}} for creation of bbox matrix from DeponsRaster
 #' @import rgeos
 #' @exportMethod make.clip.poly
+#' @examples
+#' data(bathymetry)
+#' bbox <- cbind("min"=c(549517, 6155000), "max"=c(636000, 6210000))
+#' rownames(bbox) <- c("x", "y")
+#' clip.poly <- make.clip.poly(bbox, crs(bathymetry))
 setMethod("make.clip.poly", signature("matrix"),
           function(bbox, crs) {
             if(class(crs)!="CRS") stop("crs must be a 'CRS' object")
