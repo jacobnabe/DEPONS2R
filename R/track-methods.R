@@ -76,8 +76,8 @@ setMethod("summary", "DeponsTrack",
 #' @param title Optional character string giving name of simulation
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
-#' @param simtime Optional POSIXlt object with date of simulation. If
-#' not provided this is obtained from name of input file
+#' @param simtime Character sting with date of simulation (format yyyy-mm-dd).
+#' If not provided this is obtained from name of input file
 #' @param crs Character, coordinate reference system (map projection)
 #' @param tz Time zone used in simulations. Defaults to UTC/GMT.
 #' #'
@@ -107,7 +107,7 @@ setMethod("summary", "DeponsTrack",
 #' plot(porpoisetrack)
 #' @export read.DeponsTrack
 read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
-                             crs=CRS(as.character(NA)), tz="UTC") {
+                             crs=as.character(NA), tz="UTC") {
   raw.data <- utils::read.csv(fname, sep=";")
   # Get sim date and time from file name
   if (simtime=="NA")  simtime <- get.simtime(fname)
@@ -176,6 +176,7 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #'                                       drop_lower_td = TRUE)
 #'                                       plot(new.coastline, col="lightyellow2")
 #'                                       plot(porpoisetrack, col="blue", add=TRUE)
+#' @exportMethod plot
 setMethod("plot", signature("DeponsTrack", "missing"),
           function(x, y, trackToPlot=1, add=FALSE, ...)  {
             oldpar <- graphics::par(no.readonly = TRUE)

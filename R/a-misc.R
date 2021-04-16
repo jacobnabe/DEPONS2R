@@ -10,7 +10,7 @@
 #' and population dynamics simulated using the DEPONS model
 #' (\url{http://www.depons.eu}).
 #'
-#' The types of simulated data include:
+#' The classes used in DEPONS2R include:
 #' \itemize{
 #' \item \code{\linkS4class{DeponsTrack}} movement tracks, read from "RandomPorpoise.XXX.csv" files
 #' \item \code{\linkS4class{DeponsDyn}} population dynamics data, from "Statistics.XXX.csv" files

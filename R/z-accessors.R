@@ -1,7 +1,8 @@
 # DEPONS2R -- Accessor functions
 
 
-setGeneric("crs", function(x) { return(sp::CRS(x@crs)) })
+# setGeneric("crs", function(x) { return(raster::crs(x@crs)) })
+
 
 #' @name crs
 #' @aliases crs,DeponsTrack-method
@@ -11,9 +12,31 @@ setGeneric("crs", function(x) { return(sp::CRS(x@crs)) })
 #' @exportMethod crs
 setMethod("crs", signature("DeponsTrack"),
           function(x) {
+            return(raster::crs(x@crs))
+          }
+)
+
+
+#' Get or set map projection
+#' @name crs
+#' @description Get or set the map projection (also known as coordinate reference
+#' system, crs) of DeponsRaster and DeponsTrack objects. For {sp} objects the
+#' text string defining the crs is called the \code{\link[sp]{proj4string}}.
+#' @aliases crs,DeponsRaster-method
+#' @aliases crs,DeponsTrack-method
+#' @param x Object of class {code{DeponsRaster}}.
+#' @exportMethod crs
+setMethod("crs", signature("DeponsRaster"),
+          function(x) {
             return(sp::CRS(x@crs))
           }
 )
+
+# setGeneric("crs<-", function(x, value) {
+#   x@crs <- value
+#   validObject(x)
+#   x
+# })
 
 
 #' @name crs<-

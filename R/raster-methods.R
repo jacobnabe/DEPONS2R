@@ -249,24 +249,6 @@ setMethod("plot", signature("DeponsRaster", "ANY"),
 )
 
 
-setGeneric("crs")
-
-#' Get or set map projection
-#' @name crs
-#' @description Get or set the map projection (also known as coordinate reference
-#' system, crs) of DeponsRaster and DeponsTrack objects. For {sp} objects the
-#' text string defining the crs is called the \code{\link[sp]{proj4string}}.
-#' @aliases crs,DeponsRaster-method
-#' @aliases crs,DeponsTrack-method
-#' @param x Object of class {code{DeponsRaster}}.
-#' @exportMethod crs
-setMethod("crs", signature("DeponsRaster"),
-          function(x) {
-            return(sp::CRS(x@crs))
-          }
-)
-
-
 make.br <- function(template, blocks=NA, blockvals=NULL, NAvalue=-9999,
                     plot=FALSE, fname=NULL, overwrite=FALSE) {
   # the template is another DeponsRaster file with same size and resolution
