@@ -20,7 +20,8 @@ and ship agents used in DEPONS simulations.
 \item{\code{crs}}{CRS object providing the coordinate reference system used; see
 \code{\link[sp]{CRS}} for details}
 
-\item{\code{routes}}{\code{data.frame} defining one or more ship routs}
+\item{\code{routes}}{\code{data.frame} geographic positions of the virtual 'buoys'
+that define one or more ship routes that ship agents can follow}
 
 \item{\code{ships}}{\code{data.frame} defining each of the ships occurring in DEPONS
 simulations, and the route they occur on}
