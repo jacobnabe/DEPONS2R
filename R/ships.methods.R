@@ -22,6 +22,7 @@ setClass(Class="DeponsShips",
                     routes="data.frame", ships="data.frame")
 )
 
+
 setMethod("initialize", "DeponsShips",
           function(.Object) {
             .Object@title <- "NA"
@@ -34,28 +35,12 @@ setMethod("initialize", "DeponsShips",
 )
 
 
-#' @name summary
-#' @title Summary
-#' @rdname summary
-#' @aliases summary,DeponsShips-method
-#' @exportMethod summary
-setMethod("summary", "DeponsShips",
-          function(object) {
-            cat("class:    \t", "DeponsShips \n")
-            cat("title:    \t", object@title, "\n")
-            cat("landscape:\t", object@landscape, "\n")
-            cat("crs:      \t", object@crs, "\n")
-            cat("routes:  \t", object@routes[[1]], "\n")
-            ships <- object@ships
-            ships$route <- as.factor(ships$route)
-            summary(ships)
-          }
-)
+
 
 
 #' @title Reading DEPONS ship files
-#' @description Function  for reading json-files used for controlling how
-#' ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
+#' @description Function  for reading the json-files that are used for controlling
+#' how ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
 #' time steps. The routes are defined by the fix-points provided in the
 #' json file, and the geographic projection is assumed to match that of the
 #' landscape.
@@ -75,10 +60,59 @@ read.DeponsShips <- function(fname, title="NA", landscape="NA", crs=as.character
   all.data@title <- title
   all.data@landscape <- landscape
   all.data@crs <- crs
-  all.data@routes <- ships.json[["routes"]]
+  all.data@routes <- routes <- ships.json[["routes"]]
   all.data@ships <- ships.json[["ships"]]
   return(all.data)
 }
+
+
+#' @name summary
+#' @title Summary
+#' @rdname summary
+#' @aliases summary,DeponsShips-method
+#' @exportMethod summary
+setMethod("summary", "DeponsShips",
+          function(object) {
+            cat("class:    \t", "DeponsShips \n")
+            cat("title:    \t", object@title, "\n")
+            cat("landscape:\t", object@landscape, "\n")
+            cat("crs:      \t", object@crs, "\n")
+            the.routes <- object@routes
+            cat("routes:  \n")
+            for (i in 1:length(the.routes$route)) {
+              cat("\t", nrow(the.routes[[2]][[i]]), "\t positions on ")
+              cat("  ", the.routes$name[[i]], "     \n")
+            }
+            cat("ships:  \n")
+            ships <- object@ships
+            ships$route <- as.factor(ships$route)
+            summary(ships)
+          }
+)
+
+
+#' @title Writing DEPONS ship files
+#' @aliases write,DeponsShips-method
+#' @description Function  for writing a json-file for controlling
+#' how ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
+#' time steps. The routes are defined by the fix-points provided in the
+#' json file, and the geographic projection is assumed to match that of the
+#' landscape. The projection is not stored as part of the json file.
+#' @param x Name of the DeponsShips object to be exported
+#' @param file Name of the file (character) that defines the ship routes
+#' @export write
+setMethod("write", "DeponsShips",
+          function(x, file) {
+            nc <- nchar(file)
+            if(substr(file, nc-4, nc) != ".json") stop ("'file' must have extension '.json'")
+            ships.json <- list()
+            ships.json[[1]] <- x@routes
+            ships.json[[2]] <- x@ships
+            names(ships.json) <- c("routes", "ships")
+            jout <- jsonlite::toJSON(ships.json)
+            write(jout, file=file)
+          }
+)
 
 
 #' @title Plot a DeponsShips object

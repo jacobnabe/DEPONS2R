@@ -22,8 +22,8 @@ Returns an object with the elements \code{title} \code{landscape},
 \code{crs}, \code{routes} and \code{ships}.
 }
 \description{
-Function  for reading json-files used for controlling how
-ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
+Function  for reading the json-files that are used for controlling
+how ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
 time steps. The routes are defined by the fix-points provided in the
 json file, and the geographic projection is assumed to match that of the
 landscape.
