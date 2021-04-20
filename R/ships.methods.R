@@ -120,7 +120,38 @@ setMethod("write", "DeponsShips",
 #' @aliases plot.DeponsShips
 #' @param x DeponsShips object
 #' @param y Not used
-#' @param ... Optional plotting parameters
+#' @param ... Optional plotting parameters, including 'col', 'main',
+#' 'add.legend', and 'legend.xy' (defaults to 'topright' when add.legend=TRUE)
+#' @examples
+#' data(ships)
+#' plot(ships, col=c("red", "green", "blue"))
+#'
+#' # convert route coordinate units from 'grid squares' to UTM
+#' data(bathymetry)
+#' out <- summary(bathymetry)
+#' left <- out[[4]][1]
+#' bottom <- out[[4]][2]
+#' for (i in 1:3) {
+#'     newroute <- ships@routes[[2]][[i]]*400
+#'     newroute$x <- newroute$x + as.numeric(left)
+#'     newroute$y <- newroute$y + as.numeric(bottom)
+#'     ships@routes[[2]][[i]] <- newroute
+#'     }
+#'
+#' # Reproject coastline and clip to size of Kattegat landscape
+#' library(sp)
+#' data(bathymetry)
+#' data(coastline)
+#' coastline2 <- spTransform(coastline, crs(bathymetry))
+#' bbox <- bbox(bathymetry)
+#' clip.poly <- make.clip.poly(bbox, crs(bathymetry))
+#' new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
+#'   drop_lower_td = TRUE)
+#' \donttest{
+#' plot(new.coastline, col="lightyellow2")
+#' plot(ships, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
+#' plot(clip.poly, add=TRUE)
+#' }
 #' @exportMethod plot
 setMethod("plot", signature("DeponsShips", "missing"),
           function(x, y, ...)  {
@@ -141,9 +172,34 @@ setMethod("plot", signature("DeponsShips", "missing"),
             if("ylab" %in% names(dots)) ylab <- dots$ylab
             axes <- TRUE
             if("axes" %in% names(dots)) axes <- dots$axes
+            add.legend <- FALSE
+            if("add.legend" %in% names(dots)) add.legend <- dots$add.legend
+            legend.xy <- "topright"
+            if("legend.xy" %in% names(dots)) legend.xy <- dots$legend.xy
             main <- ifelse(x@title=="NA", "DEPONS track", x@title)
             if (!add) {
-            } else {
+              # Make empty plot of right size
+              comb.routes <- data.frame()
+              for(r in 1:length(x@routes[[2]])) {
+                comb.routes <- rbind(comb.routes, x@routes[[2]][[r]])
+              }
+              plot(comb.routes, type="n", asp=1, xlab=xlab, ylab=ylab, main=main,
+                   axes=axes)
             }
+            n.routes <- length(x@routes[[2]])
+            if(length(col) != n.routes) col <- "black"
+            if(length(lwd) != n.routes) lwd <- 1
+            if(length(lty) != n.routes) lty <- 1
+            for(r in 1:length(x@routes[[2]])) {
+              one.route <- data.frame(x@routes[[2]][[r]])
+              lines(one.route, col=col[r], lwd=lwd, lty=lty)
+            }
+            if (add.legend) {
+              graphics::legend(legend.xy, fill=col, legend=x@routes[[1]],
+                               bg="white", cex=0.8)
+            }
+
           }
 )
+
+

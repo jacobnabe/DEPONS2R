@@ -77,16 +77,25 @@ setMethod("initialize", "DeponsRaster",
 #' @exportMethod summary
 setMethod("summary", "DeponsRaster",
           function(object) {
-            cat("class:\t", "DeponsRaster \n")
-            cat("type:\t", object@type, "\n")
+            cat("class: \t", "DeponsRaster \n")
+            cat("type:  \t", object@type, "\n")
             cat("landsc:\t", object@landscape, "\n")
-            cat("crs:\t", object@crs, "\n")
+            cat("crs:   \t", object@crs, "\n")
             cat("extent:\t ", object@ext$xleft, ", ", object@ext$ybottom, ", ",
                 object@ext$xright, ", ", object@ext$ytop,
                 " (xleft, ybottom, xright, ytop) \n", sep="")
-            cat("dim: \t", as.character(nrow(object@data), ""))
+            cat("dim:   \t", as.character(nrow(object@data), ""))
             cat(" x", as.character(ncol(object@data)))
             cat(" (nrow, ncol) \n")
+            dim <- data.frame("nrow"=nrow(object@data), "ncol"=ncol(object@data))
+            out <- list(
+              "type" <- object@type,
+              "landscape" <- object@landscape,
+              "crs" <- object@crs,
+              "extent" <- object@ext,
+              "dim" <- dim
+            )
+            return(invisible(out))
           }
 )
 
