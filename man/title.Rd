@@ -2,28 +2,33 @@
 % Please edit documentation in R/z-accessors.R
 \name{title<-}
 \alias{title<-}
+\alias{title<-,DeponsDyn-method}
+\alias{title<-,DeponsShips-method}
 \alias{title}
 \alias{title,DeponsTrack-method}
 \alias{title<-,DeponsTrack-method}
-\alias{title<-,DeponsDyn-method}
 \alias{title,DeponsDyn-method}
-\title{Get or set the title of DeponsTrack objects}
+\alias{title,DeponsShips-method}
+\title{Get or set the title of Depons* objects}
 \usage{
 \S4method{title}{DeponsTrack}(x) <- value
 
-\S4method{title}{DeponsTrack}(x, value)
-
 \S4method{title}{DeponsDyn}(x) <- value
 
+\S4method{title}{DeponsShips}(x) <- value
+
+\S4method{title}{DeponsTrack}(x, value)
+
 \S4method{title}{DeponsDyn}(x, value)
+
+\S4method{title}{DeponsShips}(x, value)
 }
 \arguments{
-\item{x}{Object of class \code{DeponsDyn}.}
+\item{x}{Object of class \code{DeponsTrack}, \code{DeponsDyn},
+\code{DeponsBlockdyn} or \code{DeponsShips}}
 
 \item{value}{Character string}
 }
 \description{
-Get or set the title of DeponsTrack objects
-
-Get or set the title of DeponsDyn objects
+Get or set the title of Depons* objects
 }

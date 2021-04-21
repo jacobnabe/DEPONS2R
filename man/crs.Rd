@@ -4,18 +4,28 @@
 \alias{crs}
 \alias{crs,DeponsTrack-method}
 \alias{crs<-,DeponsTrack-method}
+\alias{crs<-,DeponsShips-method}
 \alias{crs,DeponsRaster-method}
+\alias{crs,DeponsShips-method}
 \alias{crs<-}
-\title{Get or set map projection}
+\alias{crs<-,DeponsRaster-method}
+\title{Get or set map projection in Depons* objects}
 \usage{
 \S4method{crs}{DeponsTrack}(x)
+
+\S4method{crs}{DeponsShips}(x)
 
 \S4method{crs}{DeponsRaster}(x)
 
 \S4method{crs}{DeponsTrack}(x) <- value
+
+\S4method{crs}{DeponsShips}(x) <- value
+
+\S4method{crs}{DeponsRaster}(x) <- value
 }
 \arguments{
-\item{x}{Object of class class {code{DeponsRaster}} or \code{DeponsTrack}}
+\item{x}{Object of class class \code{DeponsRaster}, \code{DeponsShips} or
+\code{DeponsTrack}}
 
 \item{value}{\code{\link{proj4string}} identifying the map projection}
 }

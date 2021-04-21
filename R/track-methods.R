@@ -221,11 +221,13 @@ setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
 
 
 #' @name bbox
+#' @rdname bbox
 #' @title Get bbox from Depons* object
 #' @description Retrieves spatial bounding box from object. If a Depons* object
-#' is a DeonsTrack object containing multiple track, the box bounds all tracks.
+#' is a DeponsTrack object containing multiple track, the box bounds all tracks.
 #' @aliases bbox,DeponsTrack-method
 #' @param obj DeponsRaster or DeponsTrack object
+#' @seealso \code{\link{make.clip.poly}}
 #' @exportMethod bbox
 setMethod("bbox", signature("DeponsTrack"),
           function(obj) {
@@ -244,3 +246,4 @@ setMethod("bbox", signature("DeponsTrack"),
             return(sp::bbox(extremes))
           }
 )
+

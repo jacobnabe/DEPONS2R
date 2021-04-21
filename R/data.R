@@ -6,13 +6,15 @@
 
 # devtools::document()  # Make rd files based on roxygen comments.
 
-#' @name  ships
+#' @name  shipdata
 #' @docType data
 #' @title Ships on  routes through Kattegat
 #' @description The standard ship routes data included with DEPONS, including
-#' the ship routes and ships used in the study by Nabe-Nielsen et al. (2014)
-#' The positions defining the routes assume the UTM zone 32 projection, (EPSG:32632).
-#' The corresponding proj4string is "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
+#' the ship routes and ships used in the study by Nabe-Nielsen et al. (2014).
+#' The coordinates defining the routes use 'grid units' (default for ship routes
+#' in DEPONS 2.1), and must be converted before plotting on a map.
+###' The coordinates defining the routes use the UTM zone 32 projection, (EPSG:32632).
+###' The corresponding proj4string is "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs"
 #' (see \url{https://epsg.io/32632}).
 #' @format DeponsShips
 #' @seealso \code{\link{DeponsShips-class}}
@@ -21,7 +23,7 @@
 #' Sveegaard, S. (2014). Effects of noise and by-catch on a Danish harbour
 #' porpoise population. Ecological Modelling, 272, 242–251.
 #' \url{https://doi.org/10.1016/j.ecolmodel.2013.09.025}
-# data("ships")
+# data("shipdata")
 
 
 #' @name  bathymetry

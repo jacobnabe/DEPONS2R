@@ -1,16 +1,30 @@
 # DEPONS2R -- Accessor functions
 
 
-# setGeneric("crs", function(x) { return(raster::crs(x@crs)) })
+ setGeneric("crs", function(x) { return(raster::crs(x@crs)) })
 
 
 #' @name crs
 #' @aliases crs,DeponsTrack-method
 #' @aliases crs<-,DeponsTrack-method
-#' @title Get or set map projection
-#' @param x Object of class {code{DeponsRaster}} or \code{DeponsTrack}.
+#' @title Get or set map projection in Depons* objects
+#' @param x Object of class \code{DeponsRaster}, \code{DeponsShips} or
+#' \code{DeponsTrack}.
 #' @exportMethod crs
 setMethod("crs", signature("DeponsTrack"),
+          function(x) {
+            return(raster::crs(x@crs))
+          }
+)
+
+
+#' @name crs
+#' @aliases crs<-,DeponsShips-method
+#' @title Get or set map projection in Depons* objects
+#' @param x Object of class \code{DeponsRaster}, \code{DeponsShips} or
+#' \code{DeponsTrack}.
+#' @exportMethod crs
+setMethod("crs", signature("DeponsShips"),
           function(x) {
             return(raster::crs(x@crs))
           }
@@ -23,8 +37,10 @@ setMethod("crs", signature("DeponsTrack"),
 #' system, crs) of DeponsRaster and DeponsTrack objects. For {sp} objects the
 #' text string defining the crs is called the \code{\link[sp]{proj4string}}.
 #' @aliases crs,DeponsRaster-method
+#' @aliases crs,DeponsShips-method
 #' @aliases crs,DeponsTrack-method
-#' @param x Object of class {code{DeponsRaster}}.
+#' @param x Object of class \code{DeponsRaster}, \code{DeponsShips} or
+#' \code{DeponsTrack}.
 #' @exportMethod crs
 setMethod("crs", signature("DeponsRaster"),
           function(x) {
@@ -41,10 +57,38 @@ setMethod("crs", signature("DeponsRaster"),
 
 #' @name crs<-
 #' @rdname crs
-#' @param x Object of class class {code{DeponsRaster}} or \code{DeponsTrack}
+#' @param x Object of class class \code{DeponsRaster}, \code{DeponsShips} or
+#' \code{DeponsTrack}
 #' @param value \code{\link{proj4string}} identifying the map projection
 #' @exportMethod crs<-
 setMethod("crs<-", "DeponsTrack", function(x, value) {
+  x@crs <- value
+  validObject(x)
+  x
+})
+
+
+#' @name crs<-
+#' @rdname crs
+#' @param x Object of class class \code{DeponsRaster}, \code{DeponsShips} or
+#' \code{DeponsTrack}
+#' @param value \code{\link{proj4string}} identifying the map projection
+#' @exportMethod crs<-
+setMethod("crs<-", "DeponsShips", function(x, value) {
+  x@crs <- value
+  validObject(x)
+  x
+})
+
+
+#' @name crs<-
+#' @rdname crs
+#' @aliases crs<-,DeponsRaster-method
+#' @param x Object of class class \code{DeponsRaster}, \code{DeponsShips} or
+#' \code{DeponsTrack}
+#' @param value \code{\link{proj4string}} identifying the map projection
+#' @exportMethod crs<-
+setMethod("crs<-", "DeponsRaster", function(x, value) {
   x@crs <- value
   validObject(x)
   x
@@ -60,7 +104,8 @@ setGeneric("title<-", function(x, value) {
 
 #' @name title<-
 #' @rdname title
-#' @param x Object of class \code{DeponsTrack}
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
 #' @param value Title of the object (text string)
 #' @exportMethod title<-
 setMethod("title<-", "DeponsTrack", function(x, value) {
@@ -70,23 +115,11 @@ setMethod("title<-", "DeponsTrack", function(x, value) {
 })
 
 
-setGeneric("title", function(x, value) { return(x@title) })
-
-#' @name title
-#' @title Get or set the title of DeponsTrack objects
-#' @aliases title,DeponsTrack-method
-#' @aliases title<-,DeponsTrack-method
-#' @rdname title
-#' @param value Character string
-#' @param x Object of class \code{DeponsTrack}.
-#' @exportMethod title
-setMethod("title", signature=("DeponsTrack"), function(x, value) { return(x@title) })
-
-
 #' @name title<-
 #' @rdname title
 #' @aliases title<-,DeponsDyn-method
-#' @param x Object of class \code{DeponsDyn}
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
 #' @param value Title of the object (text string)
 #' @exportMethod title<-
 setMethod("title<-", "DeponsDyn", function(x, value) {
@@ -96,15 +129,52 @@ setMethod("title<-", "DeponsDyn", function(x, value) {
 })
 
 
+#' @name title<-
+#' @rdname title
+#' @aliases title<-,DeponsShips-method
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
+#' @param value Title of the object (text string)
+#' @exportMethod title<-
+setMethod("title<-", "DeponsShips", function(x, value) {
+  x@title <- value
+  validObject(x)
+  x
+})
+
+
+setGeneric("title", function(x, value) { return(x@title) })
+
 #' @name title
-#' @title Get or set the title of DeponsDyn objects
+#' @title Get or set the title of Depons* objects
+#' @aliases title,DeponsTrack-method
+#' @aliases title<-,DeponsTrack-method
+#' @rdname title
+#' @param value Character string
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
+#' @exportMethod title
+setMethod("title", signature=("DeponsTrack"), function(x, value) { return(x@title) })
+
+
+#' @name title
 #' @aliases title,DeponsDyn-method
 #' @rdname title
 #' @param value Character string
-#' @param x Object of class \code{DeponsDyn}.
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
 #' @exportMethod title
 setMethod("title", signature=("DeponsDyn"), function(x, value) { return(x@title) })
 
+
+#' @name title
+#' @aliases title,DeponsShips-method
+#' @rdname title
+#' @param value Character string
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
+#' @exportMethod title
+setMethod("title", signature=("DeponsShips"), function(x, value) { return(x@title) })
 
 
 setGeneric("landscape<-", function(x, value) {
@@ -117,7 +187,8 @@ setGeneric("landscape<-", function(x, value) {
 #' @name landscape<-
 #' @rdname landscape
 #' @aliases landscape<-,DeponsTrack-method
-#' @param x Object of class \code{DeponsTrack}
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
 #' @param value Name of the landscape (character)
 #' @exportMethod landscape<-
 setMethod("landscape<-", "DeponsTrack", function(x, value) {
@@ -139,7 +210,8 @@ setMethod("landscape", signature=("DeponsTrack"), function(x) { return(x@landsca
 
 #' @name landscape<-
 #' @rdname landscape
-#' @param x Object of class \code{DeponsDyn}
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
 #' @param value Name of the landscape (character)
 #' @exportMethod landscape<-
 setMethod("landscape<-", "DeponsDyn", function(x, value) {
@@ -153,7 +225,8 @@ setMethod("landscape<-", "DeponsDyn", function(x, value) {
 #' @title Get or set the landscape name
 #' @aliases landscape,DeponsDyn-method
 #' @rdname landscape
-#' @param x Object of class \code{DeponsDyn}.
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
 #' @exportMethod landscape
 setMethod("landscape", signature=("DeponsDyn"), function(x) { return(x@landscape) })
 
@@ -161,7 +234,8 @@ setMethod("landscape", signature=("DeponsDyn"), function(x) { return(x@landscape
 #' @name landscape<-
 #' @rdname landscape
 #' @aliases landscape<-,DeponsDyn-method
-#' @param x Object of class \code{DeponsBlockdyn}
+#' @param x Object of class \code{DeponsTrack}, \code{DeponsDyn},
+#' \code{DeponsBlockdyn} or \code{DeponsShips}
 #' @param value Name of the landscape (character)
 #' @exportMethod landscape<-
 setMethod("landscape<-", "DeponsBlockdyn", function(x, value) {

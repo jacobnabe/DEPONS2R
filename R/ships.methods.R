@@ -10,13 +10,18 @@
 #' @slot landscape Name of the landscape that the ships occur in (character)
 #' @slot crs CRS object providing the coordinate reference system used; see
 #' \code{\link[sp]{CRS}} for details
-#' @slot routes \code{data.frame} geographic positions of the virtual 'buoys'
+#' @slot routes \code{data.frame} geographic positions of the 'virtual buoys'
 #' that define one or more ship routes that ship agents can follow
 #' @slot ships \code{data.frame} defining each of the ships occurring in DEPONS
 #' simulations, and the route they occur on
+#' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}} and
+#' \code{\link[DEPONS2R]{read.DeponsShips}}
+#' @examples
+#' data(shipdata)
+#' ships(shipdata)[1:10,]
+#' routes(shipdata)
+#' plot(shipdata, col=c("red", "purple", "blue"))
 #' @exportClass DeponsShips
-##### #' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}} and
-##### #' \code{\link[DEPONS2R]{read.DeponsShips}}
 setClass(Class="DeponsShips",
          slots=list(title="character", landscape="character", crs="character",
                     routes="data.frame", ships="data.frame")
@@ -123,8 +128,8 @@ setMethod("write", "DeponsShips",
 #' @param ... Optional plotting parameters, including 'col', 'main',
 #' 'add.legend', and 'legend.xy' (defaults to 'topright' when add.legend=TRUE)
 #' @examples
-#' data(ships)
-#' plot(ships, col=c("red", "green", "blue"))
+#' data(shipdata)
+#' plot(shipdata, col=c("red", "green", "blue"))
 #'
 #' # convert route coordinate units from 'grid squares' to UTM
 #' data(bathymetry)
@@ -132,10 +137,10 @@ setMethod("write", "DeponsShips",
 #' left <- out[[4]][1]
 #' bottom <- out[[4]][2]
 #' for (i in 1:3) {
-#'     newroute <- ships@routes[[2]][[i]]*400
+#'     newroute <- shipdata@routes[[2]][[i]]*400
 #'     newroute$x <- newroute$x + as.numeric(left)
 #'     newroute$y <- newroute$y + as.numeric(bottom)
-#'     ships@routes[[2]][[i]] <- newroute
+#'     shipdata@routes[[2]][[i]] <- newroute
 #'     }
 #'
 #' # Reproject coastline and clip to size of Kattegat landscape
@@ -149,7 +154,7 @@ setMethod("write", "DeponsShips",
 #'   drop_lower_td = TRUE)
 #' \donttest{
 #' plot(new.coastline, col="lightyellow2")
-#' plot(ships, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
+#' plot(shipdata, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
 #' plot(clip.poly, add=TRUE)
 #' }
 #' @exportMethod plot
@@ -187,9 +192,9 @@ setMethod("plot", signature("DeponsShips", "missing"),
                    axes=axes)
             }
             n.routes <- length(x@routes[[2]])
-            if(length(col) != n.routes) col <- "black"
-            if(length(lwd) != n.routes) lwd <- 1
-            if(length(lty) != n.routes) lty <- 1
+            if(length(col) != n.routes) col <- rep("black", n.routes)
+            if(length(lwd) != n.routes) lwd <- rep(1, n.routes)
+            if(length(lty) != n.routes) lty <- rep(1, n.routes)
             for(r in 1:length(x@routes[[2]])) {
               one.route <- data.frame(x@routes[[2]][[r]])
               lines(one.route, col=col[r], lwd=lwd, lty=lty)
@@ -203,3 +208,107 @@ setMethod("plot", signature("DeponsShips", "missing"),
 )
 
 
+setGeneric("ships", function(x, value) {
+  return(x@ships)
+})
+
+#' @name ships
+#' @title Get or define ships in DeponsShips objects
+#' @rdname ships
+#' @aliases ships,DeponsShips-method
+#' @aliases ships<-,DeponsShips-method
+#' @param x Object of class \code{DeponsShips}
+#' @param value data frame with the 'name', 'speed', 'impact', and 'route' of
+#' ships to be simulated. Here 'impact' is the sound source level (dB SPL) and
+#' 'route' is one of the shipping routes already defined in the DeponsShips object.
+#' @examples
+#' data(shipdata)
+#' ships(shipdata)
+#' @seealso \code{\link{routes}}
+#' @exportMethod ships
+setMethod("ships", signature=("DeponsShips"), function(x) {
+  return(x@ships)
+})
+
+
+setGeneric("ships<-", function(x, value) {
+  if(class(value)!= 'data.frame') stop("'value' must be a data.frame")
+  if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
+  if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
+  if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
+  if(!("speed" %in% names(value))) stop("'value' must contain a variable named 'speed'")
+  if(!("impact" %in% names(value))) stop("'value' must contain a variable named 'impact'")
+  x@ships <- value
+  validObject(x)
+  x
+})
+
+
+
+#' @rdname ships
+#' @aliases ships<-,DeponsShips-method
+#' @exportMethod ships<-
+setGeneric("ships<-", function(x, value) {
+  if(class(value)!= 'data.frame') stop("'value' must be a data.frame")
+  if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
+  if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
+  if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
+  if(!("speed" %in% names(value))) stop("'value' must contain a variable named 'speed'")
+  if(!("impact" %in% names(value))) stop("'value' must contain a variable named 'impact'")
+  x@ships <- value
+  validObject(x)
+  x
+})
+
+
+
+setGeneric("routes", function(x) {
+  rts <- x@routes[[2]]
+  names(rts) <- x@routes[[1]]
+  return(rts)
+})
+
+
+#' @name routes
+#' @title Get or define routes in DeponsShips objects
+#' @aliases routes,DeponsShips-method
+#' @aliases routes<-,DeponsShips-method
+#' @aliases routes<-
+#' @param x Object of class \code{DeponsShips}
+#' @param value list with one named element per shipping route. Each element is
+#' a data frame with the variables x and y, which define the coordinates of the fix-points
+#' on the shipping routes.
+#' @seealso \code{\link{ships}}
+#' @exportMethod routes
+setMethod("routes", signature=("DeponsShips"), function(x) {
+  rts <- x@routes[[2]]
+  names(rts) <- x@routes[[1]]
+  return(rts)
+})
+
+
+setGeneric("routes<-", function(x, value) {
+  x@routes <- value
+  validObject(x)
+  x
+})
+
+
+#' @rdname routes
+#' @aliases routes<-,DeponsShips-method
+#' @exportMethod routes<-
+setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
+  if (class(value) != "list") stop("'value' must be a list with one element per ship route")
+  n.routes <- length(value)
+  out <- data.frame("name"=rep("", length=n.routes), "route"=NA)
+  for (i in 1:n.routes) {
+    if (!all(names(value[[i]])==c("x", "y"))) {
+      stop(paste("The names of element", i, "in 'value' is not 'x' and 'y'"))
+    }
+    out$route[i] <- value[i]
+    out$name[i] <- names(value[i])
+  }
+  x@routes <- out
+  validObject(x)
+  x
+})

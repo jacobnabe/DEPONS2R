@@ -19,8 +19,8 @@
 Plot the tracks that ship agents move along in DEPONS.
 }
 \examples{
-data(ships)
-plot(ships, col=c("red", "green", "blue"))
+data(shipdata)
+plot(shipdata, col=c("red", "green", "blue"))
 
 # convert route coordinate units from 'grid squares' to UTM
 data(bathymetry)
@@ -28,10 +28,10 @@ out <- summary(bathymetry)
 left <- out[[4]][1]
 bottom <- out[[4]][2]
 for (i in 1:3) {
-    newroute <- ships@routes[[2]][[i]]*400
+    newroute <- shipdata@routes[[2]][[i]]*400
     newroute$x <- newroute$x + as.numeric(left)
     newroute$y <- newroute$y + as.numeric(bottom)
-    ships@routes[[2]][[i]] <- newroute
+    shipdata@routes[[2]][[i]] <- newroute
     }
 
 # Reproject coastline and clip to size of Kattegat landscape
@@ -45,7 +45,7 @@ new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
   drop_lower_td = TRUE)
 \donttest{
 plot(new.coastline, col="lightyellow2")
-plot(ships, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
+plot(shipdata, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
 plot(clip.poly, add=TRUE)
 }
 }

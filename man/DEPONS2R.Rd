@@ -6,7 +6,7 @@
 \description{
 Classes and methods for analyzing and plotting movement tracks
 and population dynamics simulated using the DEPONS model
-(\url{http://www.depons.eu}).
+(\url{http://www.depons.eu}), and for handling shipping routes used in the model.
 
 The classes used in DEPONS2R include:
 \itemize{

@@ -14,8 +14,9 @@
 \item{obj}{DeponsRaster or DeponsTrack object}
 }
 \description{
-Retrieves spatial bounding box from object.
-
 Retrieves spatial bounding box from object. If a Depons* object
-is a DeonsTrack object containing multiple track, the box bounds all tracks.
+is a DeponsTrack object containing multiple track, the box bounds all tracks.
+}
+\seealso{
+\code{\link{make.clip.poly}}
 }

@@ -382,10 +382,8 @@ setMethod("make.blocksraster", signature("DeponsRaster"), make.br)
 setGeneric("bbox", function(obj){})
 
 #' @name bbox
-#' @title Get bbox from Depons* object
-#' @description Retrieves spatial bounding box from object.
+#' @rdname bbox
 #' @aliases bbox,DeponsRaster-method
-#' @param obj DeponsRaster or DeponsTrack object
 #' @exportMethod bbox
 setMethod("bbox", signature("DeponsRaster"),
           function(obj) {
