@@ -178,6 +178,7 @@ setGeneric("plot")
 #' @param ... Other optional plotting parameters, including 'axes', 'legend',
 #' and 'main'.
 #' @examples
+#' \donttest{
 #' data("bathymetry")
 #' data(coastline)
 #' library(sp)
@@ -187,7 +188,6 @@ setGeneric("plot")
 #' if(!identical(crs(bathymetry), crs(coastline2))) stop("Non-matching CRSs")
 #' new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE, drop_lower_td = TRUE)
 #'
-#' \donttest{
 #' plot(new.coastline, lwd=0.001)
 #' plot(bathymetry, add=TRUE)
 #' plot(new.coastline, add=TRUE, col="lightyellow2")

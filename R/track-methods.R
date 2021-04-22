@@ -152,6 +152,7 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' data("porpoisetrack")
 #' plot(porpoisetrack)
 #'
+#' \donttest{
 #' data(coastline)
 #' data(bathymetry)
 #' coastline2 <- sp::spTransform(coastline, crs(bathymetry))
@@ -163,7 +164,6 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
 #'     drop_lower_td = TRUE)
 #'
-#' \donttest{
 #' plot(new.coastline, col="lightyellow2")
 #' plot(porpoisetrack, col="blue", add=TRUE)
 #' plot(clip.poly, add=TRUE)

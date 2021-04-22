@@ -22,6 +22,7 @@ Plot the tracks that ship agents move along in DEPONS.
 data(shipdata)
 plot(shipdata, col=c("red", "green", "blue"))
 
+\donttest{
 # convert route coordinate units from 'grid squares' to UTM
 data(bathymetry)
 out <- summary(bathymetry)
@@ -43,7 +44,6 @@ bbox <- bbox(bathymetry)
 clip.poly <- make.clip.poly(bbox, crs(bathymetry))
 new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
   drop_lower_td = TRUE)
-\donttest{
 plot(new.coastline, col="lightyellow2")
 plot(shipdata, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
 plot(clip.poly, add=TRUE)

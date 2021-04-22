@@ -7,6 +7,7 @@ Maintainer: Jacob Nabe-Nielsen <jnn@bios.au.dk>
 Description: Methods for analyzing population dynamics and movement tracks simulated using the DEPONS model <https://www.depons.eu>, and for manipulating input raster files and shipping routes.
 License: GPL-3
 Encoding: UTF-8
+LazyData: true
 LazyDataCompression: true
 Depends: R (>= 3.5.0)
 Imports: raster, methods, sp, utils, grDevices, xml2, rgdal, rgeos, jsonlite

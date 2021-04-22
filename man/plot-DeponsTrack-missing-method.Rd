@@ -28,6 +28,7 @@ data(porpoisetrack)
 data("porpoisetrack")
 plot(porpoisetrack)
 
+\donttest{
 data(coastline)
 data(bathymetry)
 coastline2 <- sp::spTransform(coastline, crs(bathymetry))
@@ -39,7 +40,6 @@ if(!identical(crs(bathymetry), crs(coastline2))) stop("Non-matching CRSs")
 new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
     drop_lower_td = TRUE)
 
-\donttest{
 plot(new.coastline, col="lightyellow2")
 plot(porpoisetrack, col="blue", add=TRUE)
 plot(clip.poly, add=TRUE)
