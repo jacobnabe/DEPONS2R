@@ -43,13 +43,13 @@ new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
 plot(new.coastline, col="lightyellow2")
 plot(porpoisetrack, col="blue", add=TRUE)
 plot(clip.poly, add=TRUE)
-}
 # Clip to zoom in on smaller region
 bbox <- cbind("min"=c(549517, 6155000), "max"=c(636000, 6210000))
 rownames(bbox) <- c("x", "y")
 clip.poly <- make.clip.poly(bbox, crs(bathymetry))
 new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
                                       drop_lower_td = TRUE)
-                                      plot(new.coastline, col="lightyellow2")
-                                      plot(porpoisetrack, col="blue", add=TRUE)
+plot(new.coastline, col="lightyellow2")
+plot(porpoisetrack, col="blue", add=TRUE)
+}
 }

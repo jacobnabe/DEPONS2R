@@ -2,6 +2,7 @@
 % Please edit documentation in R/ships.methods.R
 \name{write,DeponsShips-method}
 \alias{write,DeponsShips-method}
+\alias{write.DeponsShips}
 \title{Writing DEPONS ship files}
 \usage{
 \S4method{write}{DeponsShips}(x, file)

@@ -125,7 +125,7 @@ setMethod("summary", "DeponsRaster",
 #' @references Nabe-Nielsen, J., van Beest, F. M., Grimm, V., Sibly, R. M.,
 #' Teilmann, J., & Thompson, P. M. (2018). Predicting the impacts of
 #' anthropogenic disturbances on marine populations. Conservation Letters,
-#' 11(5), e12563. \url{https://doi.org/10.1111/conl.12563}
+#' 11(5), e12563. \doi{10.1111/conl.12563}
 #' @export read.DeponsRaster
 read.DeponsRaster <- function(fname, type="NA", landscape="NA",
                               crs="NA") {
@@ -180,7 +180,6 @@ setGeneric("plot")
 #' @examples
 #' data("bathymetry")
 #' data(coastline)
-#' \donttest{
 #' library(sp)
 #' coastline2 <- spTransform(coastline, crs(bathymetry))
 #' bbox <- bbox(bathymetry)
@@ -188,11 +187,11 @@ setGeneric("plot")
 #' if(!identical(crs(bathymetry), crs(coastline2))) stop("Non-matching CRSs")
 #' new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE, drop_lower_td = TRUE)
 #'
+#' \donttest{
 #' plot(new.coastline, lwd=0.001)
 #' plot(bathymetry, add=TRUE)
 #' plot(new.coastline, add=TRUE, col="lightyellow2")
 #' plot(clip.poly, add=TRUE)
-#'
 #' }
 #' @seealso See method for \code{\link[raster]{plot}} in the \code{raster}
 #' package for plotting parameters and \code{\link{plot.DeponsTrack}} for

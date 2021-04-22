@@ -293,57 +293,6 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   return(all.wfs[, 3:8])
 }
 
-## Test 'make.windfarms'
-
-# xx <- seq(3900000, 4200000, 1500)
-# yy <- seq(3400000, 3700000, 1500)
-# x <- rep(xx, each=length(yy))
-# y <- rep(yy, length(xx))
-# wf.c <- data.frame(x,y)
-#
-#
-# wfs <- make.windfarms(area.file="WFraster.tif",
-#                       area.def=1,  # label for areas assigned to wind farms
-#                       n.wf=1650,
-#                       n.turb=1650,
-#                       turb.dist=1500,
-#                       min.wf.dist=1500,
-#                       impact=300,
-#                       constr.start=345601,
-#                       constr.end=691200,
-#                       constr.time=6,
-#                       constr.break=96,
-#                       iterate=10000000,
-#                       verbose=TRUE,
-#                       wf.coords=wf.c
-# )
-
-#
-# wfs <- make.windfarms(area.file="WFraster.tif",
-#                       area.def=1,  # label for areas assigned to wind farms
-#                       n.wf=30,
-#                       n.turb=750, # 750 / 30,  # 1650 / 66 turb per wf
-#                       turb.dist=1500,
-#                       min.wf.dist=1500,
-#                       impact=300,
-#                       constr.start=345601,
-#                       constr.end=691200,
-#                       constr.time=6,
-#                       constr.break=96,
-#                       iterate=10000000,
-#                       verbose=TRUE,
-#                       wf.coords="random"   # wf.c
-#                 )
-#
-# pdf(file="scen_30x25turb.pdf", width=10, height = 10)
-# plot(wf.area)
-# points(wfs$x.coordinate, wfs$y.coordinate, cex=0.1)
-# plot(coastline, add=TRUE, col="grey90")
-# dev.off()
-#
-# write.table(wfs, file="scen_30x25turb.txt", row.names=FALSE)
-
-
 
 
 #' @title Convert tick number to date

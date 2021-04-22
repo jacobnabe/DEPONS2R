@@ -1,3 +1,4 @@
+
 \docType{data}
 \name{bathymetry}
 \alias{bathymetry}
@@ -20,7 +21,7 @@ the study by Nabe-Nielsen et al (2014). The corresponding proj4string is
 Nabe-Nielsen, J., Sibly, R. M., Tougaard, J., Teilmann, J., &
 Sveegaard, S. (2014). Effects of noise and by-catch on a Danish harbour
 porpoise population. Ecological Modelling, 272, 242–251.
-\url{https://doi.org/10.1016/j.ecolmodel.2013.09.025}
+\doi{10.1016/j.ecolmodel.2013.09.025}
 }
 \seealso{
 \code{\link{DeponsRaster-class}}

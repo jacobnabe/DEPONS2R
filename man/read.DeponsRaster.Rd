@@ -37,7 +37,7 @@ Function  for reading raster files that have been used in DEPONS
 Nabe-Nielsen, J., van Beest, F. M., Grimm, V., Sibly, R. M.,
 Teilmann, J., & Thompson, P. M. (2018). Predicting the impacts of
 anthropogenic disturbances on marine populations. Conservation Letters,
-11(5), e12563. \url{https://doi.org/10.1111/conl.12563}
+11(5), e12563. \doi{10.1111/conl.12563}
 }
 \seealso{
 \code{\link{DeponsRaster-class}}
