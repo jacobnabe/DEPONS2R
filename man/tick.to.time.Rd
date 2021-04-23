@@ -4,19 +4,28 @@
 \alias{tick.to.time}
 \title{Convert tick number to date}
 \usage{
-tick.to.time(tick, ...)
+tick.to.time(tick, timestep = 30, origin = "2010-01-01", ...)
 }
 \arguments{
-\item{tick}{Numeric; tick number}
+\item{tick}{Numeric, or numeric vector; tick number}
 
-\item{...}{Time zone (tz) and other parameters}
+\item{timestep}{Numeric; length of each simulation time step, in minutes.
+Defaults to 30 minutes.}
+
+\item{origin}{Character. The first day in the period that the simulation represents,
+format: 'yyyy-mm-dd'.}
+
+\item{...}{Optional parameters, including time zone (tz)}
+}
+\value{
+object of class \code{\link{as.POSIXlt}}
 }
 \description{
 Converts the number of ticks since the start of the simulation
 to a specific date while taking into account that DEPONS assumes that there
-is 30 days per month. Returns an object of class \code{\link{as.POSIXlt}}
+are 360 days in a simulation year.
 }
 \note{
-The conversion from ticks to date is problematic in February, with <30
-days. Here time is forced to 'stands still'.
+The function assumes that there are 30 days in each month, except in
+January, February and March with 31, 28 and 31 days, respectively.
 }

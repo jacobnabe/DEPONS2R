@@ -22,6 +22,9 @@ object contains more than one track. Ignored if \code{y} is missing}
 \item{...}{Other optional plotting parameters, including 'axes', 'legend',
 and 'main'.}
 }
+\value{
+No return value, called for side effects
+}
 \description{
 Plot the values in a DeponsRaster object. Porpoisetracks or
 other kinds of lines, poits etc. can be drawn on top of the plot by adding

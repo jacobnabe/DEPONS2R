@@ -24,6 +24,15 @@
 \arguments{
 \item{object}{Depons* object}
 }
+\value{
+list summarizing the DeponsBlockdyn object
+
+list summarizing the DeponsBlockdyn object
+
+list summarizing the DeponsRaster object
+
+list summarizing the DeponsTrack object
+}
 \description{
 Summarizes different kinds of objects created based on output
   from the DEPONS model

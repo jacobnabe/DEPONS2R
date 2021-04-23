@@ -32,11 +32,11 @@ If not provided this is obtained from name of input file}
 #'}
 }
 \value{
-Returns an object with the elements \code{title}, \code{simtime},
-\code{crs}, and \code{tracks}. The \code{date} is extracted from input data
-if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
-element \code{tracks} is a list of objects of class
-\link[sp]{SpatialPointsDataFrame}, each of which corresponds to one
+Returns a \code{DeponsTrack} object with the elements \code{title},
+\code{simtime}, \code{crs}, and \code{tracks}. The \code{date} is extracted
+from input data if not provided explicitly and stored as a
+\code{\link{POSIXlt}} object. The element \code{tracks} is a list of objects
+of class \link[sp]{SpatialPointsDataFrame}, each of which corresponds to one
 simulated animal (several animals can be tracked in one simulation).
 }
 \description{

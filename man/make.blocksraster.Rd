@@ -35,6 +35,10 @@ should equal the number of blocks plus 1}
 
 \item{overwrite}{Whether to replace existing file.}
 }
+\value{
+\code{RasterLayer} object defining different subregions of the
+landscape where animals should be counted.
+}
 \description{
 Produces a DeponsRaster object of type='blocks' for use in DEPONS
 simulations. This allows animals to be counted within specific regions (blocks)

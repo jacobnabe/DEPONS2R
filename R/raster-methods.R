@@ -74,6 +74,7 @@ setMethod("initialize", "DeponsRaster",
 #' @title Summary
 #' @rdname summary
 #' @aliases summary,DeponsRaster-method
+#' @return list summarizing the DeponsRaster object
 #' @exportMethod summary
 setMethod("summary", "DeponsRaster",
           function(object) {
@@ -197,6 +198,7 @@ setGeneric("plot")
 #' package for plotting parameters and \code{\link{plot.DeponsTrack}} for
 #' plotting of DeponsRasters cropped to the extent of tracks.
 #' @import rgdal
+#' @return No return value, called for side effects
 #' @exportMethod plot
 setMethod("plot", signature("DeponsRaster", "ANY"),
           function(x, y, col, trackToPlot=1, ...)  {
@@ -251,7 +253,6 @@ setMethod("plot", signature("DeponsRaster", "ANY"),
                                     crs=crs2)
             raster::plot(rdata, col=col, main=main,
                          alpha=alpha, add=add, ext=ext, axes=axes, legend=legend)
-
             return(invisible(NULL))
           }
 )
@@ -344,6 +345,8 @@ setGeneric("make.blocksraster", make.br)
 #' @param fname Name of the output raster file (character string ending with
 #' '.asc'). No file is written to disk if fname is not provided.
 #' @param overwrite Whether to replace existing file.
+#' @return \code{RasterLayer} object defining different subregions of the
+#' landscape where animals should be counted.
 #' @note The blocks file should not be modified when running DEPONS
 #' simulations using the 'Kattegat' landscape. In this landscape the simulated
 #' animals use the blocks file for navigation. Also note that blocks are added
@@ -375,7 +378,6 @@ setGeneric("make.blocksraster", make.br)
 #' }
 #' @exportMethod make.blocksraster
 setMethod("make.blocksraster", signature("DeponsRaster"), make.br)
-
 
 
 setGeneric("bbox", function(obj){})

@@ -27,6 +27,9 @@ yyyy-mm-dd). If not provided this is obtained from name of input file}
 \item{startday}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (POSIXlt)}
 }
+\value{
+\code{DeponsBlockdyn} object
+}
 \description{
 Function for reading DEPONS simulation output with number of
 animals per block for each time step.

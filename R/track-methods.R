@@ -47,6 +47,7 @@ setMethod("initialize", "DeponsTrack",
 #' @title Summary
 #' @rdname summary
 #' @aliases summary,DeponsTrack-method
+#' @return list summarizing the DeponsTrack object
 #' @exportMethod summary
 setMethod("summary", "DeponsTrack",
           function(object) {
@@ -56,6 +57,14 @@ setMethod("summary", "DeponsTrack",
             cat("simtime:  \t", as.character(object@simtime), "\n")
             cat("crs:      \t", object@crs, "\n")
             cat("N tracks: \t", length(object@tracks), "\n")
+            out <- list(
+              "title" <- object@title,
+              "landscape" <- object@landscape,
+              "simtime" <- object@simtime,
+              "crs" <- object@crs,
+              "tracks" <- object@tracks
+            )
+            return(invisible(out))
           }
 )
 
@@ -81,11 +90,11 @@ setMethod("summary", "DeponsTrack",
 #' @param crs Character, coordinate reference system (map projection)
 #' @param tz Time zone used in simulations. Defaults to UTC/GMT.
 #' #'
-#' @return Returns an object with the elements \code{title}, \code{simtime},
-#' \code{crs}, and \code{tracks}. The \code{date} is extracted from input data
-#' if not provided explicitly and stored as a  \code{\link{POSIXlt}} object. The
-#' element \code{tracks} is a list of objects of class
-#' \link[sp]{SpatialPointsDataFrame}, each of which corresponds to one
+#' @return Returns a \code{DeponsTrack} object with the elements \code{title},
+#' \code{simtime}, \code{crs}, and \code{tracks}. The \code{date} is extracted
+#' from input data if not provided explicitly and stored as a
+#' \code{\link{POSIXlt}} object. The element \code{tracks} is a list of objects
+#' of class \link[sp]{SpatialPointsDataFrame}, each of which corresponds to one
 #' simulated animal (several animals can be tracked in one simulation).
 #' @examples
 #' data(porpoisetrack) # Load data for use in example
@@ -148,6 +157,7 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' @param add Logical, whether to add the track to an existing plot
 #' one animal was tracked during the simulation.
 #' @param ... Optional plotting parameters
+#' @return No return value, called for side effects
 #' @examples data(porpoisetrack)
 #' data("porpoisetrack")
 #' plot(porpoisetrack)
@@ -227,6 +237,9 @@ setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
 #' is a DeponsTrack object containing multiple track, the box bounds all tracks.
 #' @aliases bbox,DeponsTrack-method
 #' @param obj DeponsRaster or DeponsTrack object
+#' @return Returns a \code{matrix} defining the northern, southern, eastern and
+#' western boundary of a DeponsRaster object or of one or more DeponsTrack
+#' objects.
 #' @seealso \code{\link{make.clip.poly}}
 #' @exportMethod bbox
 setMethod("bbox", signature("DeponsTrack"),

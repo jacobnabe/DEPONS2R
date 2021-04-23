@@ -20,6 +20,9 @@ one animal was tracked during the simulation.}
 
 \item{...}{Optional plotting parameters}
 }
+\value{
+No return value, called for side effects
+}
 \description{
 Plot the coordinates in a movement track simulated with DEPONS.
 }

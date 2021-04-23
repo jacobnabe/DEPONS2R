@@ -18,6 +18,10 @@ the following values.}
 
 \item{...}{Optional plotting parameters}
 }
+\value{
+\code{data.frame} listing blocks where no animals were counted
+(returned invisibly)
+}
 \description{
 Plot population dynamics simulated with DEPONS
 }

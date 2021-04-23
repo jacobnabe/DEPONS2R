@@ -294,48 +294,62 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
 }
 
 
-
 #' @title Convert tick number to date
 #' @name tick.to.time
 #' @description Converts the number of ticks since the start of the simulation
 #' to a specific date while taking into account that DEPONS assumes that there
-#' is 30 days per month. Returns an object of class \code{\link{as.POSIXlt}}
-#' @note The conversion from ticks to date is problematic in February, with <30
-#' days. Here time is forced to 'stands still'.
-#' @param tick Numeric; tick number
-#' @param ... Time zone (tz) and other parameters
+#' are 360 days in a simulation year.
+#' @param tick Numeric, or numeric vector; tick number
+#' @param timestep Numeric; length of each simulation time step, in minutes.
+#' Defaults to 30 minutes.
+#' @param origin Character. The first day in the period that the simulation represents,
+#' format: 'yyyy-mm-dd'.
+#' @param ... Optional parameters, including time zone (tz)
+#' @note The function assumes that there are 30 days in each month, except in
+#' January, February and March with 31, 28 and 31 days, respectively.
+#' @return object of class \code{\link{as.POSIXlt}}
 #' @export tick.to.time
-tick.to.time <- function(tick, ...) {
+tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
   old <- options()
   on.exit(options(old))  # Reset user options on exit
-  minute <- tick*30
-  hour <- floor(minute/60)
-  day <- floor(hour/24)
-  month <- floor(day/30)
-  year <- floor(month/12)
-  options(scipen=999) # Avoid sci notation
-  mi <- substr(as.character((minute %% 60)+1000000), 6, 7)
-  hh <- substr(as.character((hour %% 24)+1000000), 6, 7)
-  dd <- substr(as.character((day %% 30)+1000000+1), 6, 7)
-  mm <- substr(as.character((month %% 12)+1000000+1), 6, 7)
-  yy <- substr(as.character(year+1000000), 4, 7)
-  str <- paste0(yy, "-", mm, "-", dd, " ", hh, ":", mi, ":00")
-  # Handle February
-  if((mm=="02") && ((day %% 30 +1) >28)) {
-    str <- paste0(yy, "-", mm, "-28 23:59:00")
+  if(min(tick)<0) stop("tick should be positive and numeric")
+  if(!is.numeric(timestep)) stop("'timestep' should be numeric")
+  if(!is.character(origin)) stop("'origin' should be character, in the format 'yyyy-mm-dd'")
+  # convert to numberic to check that input value is valid
+  start.y <- as.numeric(substr(origin, 1, 4))
+  start.m <- as.numeric(substr(origin, 6, 7))
+  start.d <- as.numeric(substr(origin, 9, 10))
+  if(!hasArg(tz)) {
+    tz <- "GMT"
+  } else {
+    tz <- as.character(list(...)[["tz"]])
+    tz <- tz
   }
-    if(!hasArg(tz)) {
-      tz <- ""
-    } else {
-      tz <- as.character(list(...)[["tz"]])
-      tz <- tz
-    }
-  out <- try(as.POSIXlt(str, tz=tz), silent=TRUE)
-  if(any(class(out)=="try-error")) {
-    stop(paste(" Error in conversion of tick =", tick))
-  }
+  doy <- 1:360
+  mm <- rep(NA, length(doy))
+  mm <- ifelse(doy>=1 & doy<=31, 1, mm)
+  mm <- ifelse(doy>=32 & doy<=59, 2, mm)
+  mm <- ifelse(doy>=60 & doy<=90, 3, mm)
+  mm <- ifelse(doy>=91, ceiling(doy/30), mm)
+  dd <- rep(NA, length(doy))
+  dd <- ifelse(doy>=1 & doy<=31, doy, dd)
+  dd <- ifelse(doy>=32 & doy<=59, doy-31, dd)
+  dd <- ifelse(doy>=60 & doy<=90, doy-59, dd)
+  dd <- ifelse(doy>=91, (doy%%30), dd)
+  dd <- ifelse(dd==0, 30, dd)
+  sim.day <- trunc((tick-1)/((24*60)/timestep)) + 1
+  sim.day <- trunc((tick-1)/((24*60)/timestep))+1
+  sim.month <- mm[sim.day%%360]
+  sim.day.of.m <- dd[sim.day%%360]
+  doy.for.origin <- doy[mm==start.m & dd==start.d]
+  sim.year <- start.y+trunc((sim.day + doy.for.origin - 1)/360)
+  sim.date <- paste(sim.year, substr(sim.month+100, 2, 3), substr(sim.day.of.m+100, 2, 3), sep="-")
+  sim.date <- as.POSIXlt(sim.date, tz=tz)
+  sim.second.of.day <- (tick*timestep*60) %% (24*60*60)
+  out <- sim.date+sim.second.of.day
   return(out)
 }
+
 
 
 

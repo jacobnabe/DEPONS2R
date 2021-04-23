@@ -61,6 +61,7 @@ setMethod("initialize", "DeponsBlockdyn",
 #' @details The summary method is available for \code{\link{DeponsTrack-class}},
 #' \code{\link{DeponsDyn-class}}, \code{\link{DeponsRaster-class}},
 #' and \code{\link{DeponsBlockdyn-class}}-objects.
+#' @return list summarizing the DeponsBlockdyn object
 #' @exportMethod summary
 setMethod("summary", "DeponsBlockdyn",
           function(object) {
@@ -80,6 +81,17 @@ setMethod("summary", "DeponsBlockdyn",
               if(max(cnt)<1000) cat("   \t", b, "\t", min(cnt), "   \t", rnd(mean(cnt)), "   \t", max(cnt), "\n")
               else cat("  \t", b, "\t", min(cnt), "\t", rnd(mean(cnt)), "\t", max(cnt), "\n")
             }
+            nticks <- max(object@dyn$tick)
+            ndays <- max(object@dyn$tick)/48
+            out <- list(
+              "title" <- object@title,
+              "landscape" <- object@landscape,
+              "simtime" <- object@simtime,
+              "startday" <- object@startday,
+              "nticks" <- nticks,
+              "ndays" <- object@ext
+            )
+            return(invisible(out))
           }
 )
 
@@ -102,6 +114,7 @@ setMethod("summary", "DeponsBlockdyn",
 #' the output object and \code{\link{read.DeponsParam}} for reading the parameters
 #' used in the simulation.
 #' @export read.DeponsBlockdyn
+#' @return \code{DeponsBlockdyn} object
 #' @examples
 #' \dontrun{
 #' # File loaded from default location
@@ -156,6 +169,8 @@ read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' # Show all data points for small range of x-values
 #' plot(porpoisebdyn, xlim=c(1950, 2050), ylim=c(4850, 5050), type="p", dilute=1, col=my.col)
 #' @importFrom graphics points
+#' @return \code{data.frame} listing blocks where no animals were counted
+#' (returned invisibly)
 #' @note The function returns a data frame with numbers of blocks with no agents.
 setMethod("plot", signature("DeponsBlockdyn", "missing"),
           function(x, y, dilute=5, ...)  {

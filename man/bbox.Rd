@@ -13,6 +13,11 @@
 \arguments{
 \item{obj}{DeponsRaster or DeponsTrack object}
 }
+\value{
+Returns a \code{matrix} defining the northern, southern, eastern and
+western boundary of a DeponsRaster object or of one or more DeponsTrack
+objects.
+}
 \description{
 Retrieves spatial bounding box from object. If a Depons* object
 is a DeponsTrack object containing multiple track, the box bounds all tracks.
