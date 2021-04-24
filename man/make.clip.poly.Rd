@@ -13,6 +13,9 @@
 \item{crs}{CRS object defining the projection of the SpatialPolygons object
 to be clipped}
 }
+\value{
+\code{SpatialPolygons} object
+}
 \description{
 Makes a polygon from a bounding box to use for
 clipping the coastline, or other SpatialPolygons objects

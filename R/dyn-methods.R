@@ -55,7 +55,7 @@ setMethod("initialize", "DeponsDyn",
 #' @title Summary
 #' @rdname summary
 #' @aliases summary,DeponsDyn-method
-#' @return list summarizing the DeponsBlockdyn object
+#' @return table summarizing the DeponsBlockdyn object
 #' @exportMethod summary
 setMethod("summary", "DeponsDyn",
           function(object) {
@@ -63,41 +63,10 @@ setMethod("summary", "DeponsDyn",
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
             cat("simtime:  \t", as.character(object@simtime), "\n\n")
-            cat("Dynamics:  \n  \t\t tick    \t count \t\t anim.e   \t lands.e\t time \n" )
-            rnd <- function(n) sprintf(n, fmt='%#.3f')
-            l.obj <- nrow(object@dyn)
-            cat("   start:\t",  object@dyn$tick[1], "\t\t", object@dyn$count[1],
-                "       \t" , rnd(object@dyn$anim.e[1]), "     \t" , rnd(object@dyn$lands.e[1]),
-                "\t", as.character(object@startday), "\n")
-            cat("   mean:\t",  rnd(mean(object@dyn$tick)), "  \t", rnd(mean(object@dyn$count)),
-                "\t", rnd(mean(object@dyn$anim.e)), "\t", rnd(mean(object@dyn$lands.e)),
-                "\t NA \n")
-            if(!is.null(l.obj)) {
-              cat("   end:  \t",  object@dyn$tick[l.obj], "    \t", object@dyn$count[l.obj],
-                  "    \t", rnd(object@dyn$anim.e[l.obj]), "   \t", rnd(object@dyn$lands.e[l.obj]),
-                  "\t", as.character((object@dyn$real.time[l.obj])))
-            }
-            out <- list(
-              "title" <- object@title,
-              "landscape" <- object@landscape,
-              "simtime" <- object@simtime,
-              "tick" <- data.frame("first"=min(object@dyn$tick),
-                                   "last"=max(object@dyn$tick)
-              ),
-              "anim.energy" <- data.frame("min"=min(object@dyn$anim.e),
-                                        "mean"=mean(object@dyn$anim.e),
-                                        "max"=max(object@dyn$anim.e)
-              ),
-              "n.animals" <- data.frame("min"=min(object@dyn$count),
-                                      "mean"=mean(object@dyn$count),
-                                      "max"=max(object@dyn$count)
-              )
-            )
-            return(invisible(out))
-
-
+            summary(object@dyn)
           }
 )
+
 
 #' @title Reading DEPONS simulation output
 #' @description Function  for reading simulation output produced by DEPONS.

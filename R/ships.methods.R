@@ -106,6 +106,7 @@ setMethod("summary", "DeponsShips",
 #' landscape. The projection is not stored as part of the json file.
 #' @param x Name of the DeponsShips object to be exported
 #' @param file Name of the file (character) that defines the ship routes
+#' @return No return value, called for side effects
 #' @export write
 setMethod("write", "DeponsShips",
           function(x, file) {
@@ -158,6 +159,7 @@ setMethod("write", "DeponsShips",
 #' plot(shipdata, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
 #' plot(clip.poly, add=TRUE)
 #' }
+#' @return No return value, called for side effects
 #' @exportMethod plot
 setMethod("plot", signature("DeponsShips", "missing"),
           function(x, y, ...)  {
@@ -204,7 +206,6 @@ setMethod("plot", signature("DeponsShips", "missing"),
               graphics::legend(legend.xy, fill=col, legend=x@routes[[1]],
                                bg="white", cex=0.8)
             }
-
           }
 )
 

@@ -60,6 +60,12 @@ The number also defines the number of random positions to search through.}
 farms. Defaults to the text "random", but can also be a data frame with
 coordinates in the columns x and y.}
 }
+\value{
+data.frame specifying the position of each turbine in a wind farm,
+along with the start time and end time for pile driving of the turbine
+foundation and the sound source level during pile driving. Can be
+exported as a text file and used for controlling DEPONS simulations.
+}
 \description{
 Produce a hypothetical wind farm construction scenario, specifying
 the position and timing of individual piling events, as well as the sound

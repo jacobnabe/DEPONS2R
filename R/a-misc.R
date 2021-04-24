@@ -102,9 +102,11 @@ get.simtime <- function(fname=NULL, tz="GMT") {
 #' @param type Type of simulation output to check; can be one of:
 #' "dyn" (for looking in "Statistics.XX.csv" files),
 #' "blockdyn" (for looking in "PorpoisePerBlock.XX.csv" files)
-#' "track" (for looking in "RandomPorpoise.XX.csv" files)
+#' "track" (for looking in "RandomPorpoise.XX.csv" files).
 #' @param dir Directory to look for simulation output in (character string)
 #' @seealso \code{\link{read.DeponsBlockdyn}} for example.
+#' @return character string with the name of the most recent simulation output
+#' file.
 #' @export get.latest.sim
 get.latest.sim <- function(type="dyn", dir) {
   if (!(type %in% c("dyn", "blockdyn", "track"))) {
@@ -167,6 +169,10 @@ get.latest.sim <- function(type="dyn", dir) {
 #' foundation is piled over a period of \code{constr.time}, followed by a
 #' noise-free period of \code{constr.break}. Several pile driving operations may
 #' take place at the same time, to ensure that the last piling ends before \code{constr.end}.
+#' @return data.frame specifying the position of each turbine in a wind farm,
+#' along with the start time and end time for pile driving of the turbine
+#' foundation and the sound source level during pile driving. Can be
+#' exported as a text file and used for controlling DEPONS simulations.
 #' @export make.windfarms
 make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
                            min.wf.dist, impact, constr.start, constr.end,
@@ -315,10 +321,6 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
   if(min(tick)<0) stop("tick should be positive and numeric")
   if(!is.numeric(timestep)) stop("'timestep' should be numeric")
   if(!is.character(origin)) stop("'origin' should be character, in the format 'yyyy-mm-dd'")
-  # convert to numberic to check that input value is valid
-  start.y <- as.numeric(substr(origin, 1, 4))
-  start.m <- as.numeric(substr(origin, 6, 7))
-  start.d <- as.numeric(substr(origin, 9, 10))
   if(!hasArg(tz)) {
     tz <- "GMT"
   } else {
@@ -326,6 +328,7 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
     tz <- tz
   }
   doy <- 1:360
+  # Make months and days in sim year
   mm <- rep(NA, length(doy))
   mm <- ifelse(doy>=1 & doy<=31, 1, mm)
   mm <- ifelse(doy>=32 & doy<=59, 2, mm)
@@ -337,13 +340,20 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
   dd <- ifelse(doy>=60 & doy<=90, doy-59, dd)
   dd <- ifelse(doy>=91, (doy%%30), dd)
   dd <- ifelse(dd==0, 30, dd)
-  sim.day <- trunc((tick-1)/((24*60)/timestep)) + 1
+  # Find doy of origin
+  start.y <- as.numeric(substr(origin, 1, 4))
+  start.m <- as.numeric(substr(origin, 6, 7))
+  start.d <- as.numeric(substr(origin, 9, 10))
+  start.doy <- which(mm==start.m & dd==start.d)
+  # Date that the sim is supposed to correspond to
   sim.day <- trunc((tick-1)/((24*60)/timestep))+1
-  sim.month <- mm[sim.day%%360]
-  sim.day.of.m <- dd[sim.day%%360]
-  doy.for.origin <- doy[mm==start.m & dd==start.d]
-  sim.year <- start.y+trunc((sim.day + doy.for.origin - 1)/360)
-  sim.date <- paste(sim.year, substr(sim.month+100, 2, 3), substr(sim.day.of.m+100, 2, 3), sep="-")
+  min.vector.lgt <- max(sim.day)+start.doy
+  mm2 <- rep(mm, ceiling(min.vector.lgt/360))
+  dd2 <- rep(dd, ceiling(min.vector.lgt/360))
+  sim.month <- mm2[sim.day + start.doy - 1]
+  sim.day.of.month <- dd2[sim.day + start.doy - 1]
+  sim.year <- start.y+trunc((sim.day  + start.doy - 1)/360)
+  sim.date <- paste(sim.year, substr(sim.month+100, 2, 3), substr(sim.day.of.month+100, 2, 3), sep="-")
   sim.date <- as.POSIXlt(sim.date, tz=tz)
   sim.second.of.day <- (tick*timestep*60) %% (24*60*60)
   out <- sim.date+sim.second.of.day
@@ -367,6 +377,7 @@ setGeneric("make.clip.poly", function(bbox, ...){})
 #' @seealso \code{\link{bbox}} for creation of bbox matrix from DeponsRaster
 #' @import rgeos
 #' @exportMethod make.clip.poly
+#' @return \code{SpatialPolygons} object
 #' @examples
 #' data(bathymetry)
 #' bbox <- cbind("min"=c(549517, 6155000), "max"=c(636000, 6210000))

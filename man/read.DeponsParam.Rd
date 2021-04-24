@@ -11,6 +11,10 @@ read.DeponsParam(fname)
 list used for running a DEPONS simulation. The name includes the path to the
 directory if this is not the current working directory.}
 }
+\value{
+Data frame containing all parameters used in a specific
+simulation
+}
 \description{
 Read the parameters that were used for running a specific DEPONS
 simulation
