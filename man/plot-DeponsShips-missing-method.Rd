@@ -15,6 +15,9 @@
 \item{...}{Optional plotting parameters, including 'col', 'main',
 'add.legend', and 'legend.xy' (defaults to 'topright' when add.legend=TRUE)}
 }
+\value{
+No return value, called for side effects
+}
 \description{
 Plot the tracks that ship agents move along in DEPONS.
 }

@@ -8,7 +8,7 @@ Description: Methods for analyzing population dynamics and movement tracks simul
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-LazyDataCompression: true
+LazyDataCompression: xz
 Depends: R (>= 3.5.0)
 Imports: raster, methods, sp, utils, grDevices, xml2, rgdal, rgeos, jsonlite
 RoxygenNote: 7.1.1

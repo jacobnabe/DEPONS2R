@@ -10,9 +10,13 @@ get.latest.sim(type = "dyn", dir)
 \item{type}{Type of simulation output to check; can be one of:
 "dyn" (for looking in "Statistics.XX.csv" files),
 "blockdyn" (for looking in "PorpoisePerBlock.XX.csv" files)
-"track" (for looking in "RandomPorpoise.XX.csv" files)}
+"track" (for looking in "RandomPorpoise.XX.csv" files).}
 
 \item{dir}{Directory to look for simulation output in (character string)}
+}
+\value{
+character string with the name of the most recent simulation output
+file.
 }
 \description{
 Returns the name of the newest simulation output of a particular

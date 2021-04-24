@@ -27,7 +27,7 @@
 \value{
 list summarizing the DeponsBlockdyn object
 
-list summarizing the DeponsBlockdyn object
+table summarizing the DeponsBlockdyn object
 
 list summarizing the DeponsRaster object
 
