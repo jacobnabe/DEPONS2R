@@ -21,10 +21,10 @@ and ship agents used in DEPONS simulations.
 \code{\link[sp]{CRS}} for details}
 
 \item{\code{routes}}{\code{data.frame} geographic positions of the 'virtual buoys'
-that define one or more ship routes that ship agents can follow}
+that define one or more ship routes that ship agents follow}
 
 \item{\code{ships}}{\code{data.frame} defining each of the ships occurring in DEPONS
-simulations, and the route they occur on}
+simulations, and the routes they occur on}
 }}
 
 \examples{

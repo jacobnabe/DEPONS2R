@@ -15,11 +15,15 @@
 \item{x}{Object of class \code{DeponsShips}}
 
 \item{value}{list with one named element per shipping route. Each element is
-a data frame with the variables x and y, which define the coordinates of the fix-points
-on the shipping routes.}
+a data frame with the variables x, y, and speed, which define the coordinates
+of the fix-points on the shipping routes and the speeds that ships
+have after passing the fix point and until reaching the next fix point.}
 }
 \description{
 Get or define routes in DeponsShips objects
+}
+\note{
+The unit of 'speed' is knots.
 }
 \seealso{
 \code{\link{ships}}

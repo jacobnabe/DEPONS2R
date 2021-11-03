@@ -11,9 +11,9 @@
 #' @slot crs CRS object providing the coordinate reference system used; see
 #' \code{\link[sp]{CRS}} for details
 #' @slot routes \code{data.frame} geographic positions of the 'virtual buoys'
-#' that define one or more ship routes that ship agents can follow
+#' that define one or more ship routes that ship agents follow
 #' @slot ships \code{data.frame} defining each of the ships occurring in DEPONS
-#' simulations, and the route they occur on
+#' simulations, and the routes they occur on
 #' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}} and
 #' \code{\link[DEPONS2R]{read.DeponsShips}}
 #' @examples
@@ -41,17 +41,15 @@ setMethod("initialize", "DeponsShips",
 
 
 
-
-
 #' @title Reading DEPONS ship files
 #' @description Function  for reading the json-files that are used for controlling
 #' how ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
 #' time steps. The routes are defined by the fix-points provided in the
 #' json file, and the geographic projection is assumed to match that of the
 #' landscape.
-#' @param fname Name of the file (character) that defines the ship routes
-#' and ships.
-#' @param title Optional character string giving name of simulation
+#' @param fname Name of the file (character) where ship routes and ships
+#' are defined.
+#' @param title Optional character string with the name of the simulation
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
 #' @param crs Character, coordinate reference system (map projection)
@@ -96,6 +94,20 @@ setMethod("summary", "DeponsShips",
 )
 
 
+setMethod("show", "DeponsShips",
+          function(object) {
+            cat("Object of class:  \t", "DeponsShips \n")
+            cat("title:          \t", object@title, "\n")
+            cat("landscape:      \t", object@landscape, "\n")
+            cat("crs:            \t", object@crs, "\n")
+            the.routes <- object@routes
+            cat("\nObject contains ", nrow(the.routes), " ship routes ")
+            ships <- object@ships
+            cat("and ", nrow(ships), " ships \n")
+          }
+)
+
+
 #' @title Writing DEPONS ship files
 #' @aliases write,DeponsShips-method
 #' @aliases write.DeponsShips
@@ -105,7 +117,7 @@ setMethod("summary", "DeponsShips",
 #' json file, and the geographic projection is assumed to match that of the
 #' landscape. The projection is not stored as part of the json file.
 #' @param x Name of the DeponsShips object to be exported
-#' @param file Name of the file (character) that defines the ship routes
+#' @param file Name of the output file (character)
 #' @return No return value, called for side effects
 #' @export write
 setMethod("write", "DeponsShips",
@@ -191,6 +203,7 @@ setMethod("plot", signature("DeponsShips", "missing"),
               for(r in 1:length(x@routes[[2]])) {
                 comb.routes <- rbind(comb.routes, x@routes[[2]][[r]])
               }
+              comb.routes <- comb.routes[,c("x", "y")]
               plot(comb.routes, type="n", asp=1, xlab=xlab, ylab=ylab, main=main,
                    axes=axes)
             }
@@ -200,6 +213,7 @@ setMethod("plot", signature("DeponsShips", "missing"),
             if(length(lty) != n.routes) lty <- rep(1, n.routes)
             for(r in 1:length(x@routes[[2]])) {
               one.route <- data.frame(x@routes[[2]][[r]])
+              one.route <- one.route[,c("x", "y")]
               lines(one.route, col=col[r], lwd=lwd, lty=lty)
             }
             if (add.legend) {
@@ -220,9 +234,10 @@ setGeneric("ships", function(x, value) {
 #' @aliases ships,DeponsShips-method
 #' @aliases ships<-,DeponsShips-method
 #' @param x Object of class \code{DeponsShips}
-#' @param value data frame with the 'name', 'speed', 'impact', and 'route' of
-#' ships to be simulated. Here 'impact' is the sound source level (dB SPL) and
-#' 'route' is one of the shipping routes already defined in the DeponsShips object.
+#' @param value data frame with the 'name', 'ship.type', 'length', and 'route' of
+#' ships to be simulated, as well as the start and end tick for when the ship
+#' is to be included in simulations. 'route' is one of the shipping routes
+#' defined in the DeponsShips object.
 #' @examples
 #' data(shipdata)
 #' ships(shipdata)
@@ -238,8 +253,8 @@ setGeneric("ships<-", function(x, value) {
   if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
   if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
   if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
-  if(!("speed" %in% names(value))) stop("'value' must contain a variable named 'speed'")
-  if(!("impact" %in% names(value))) stop("'value' must contain a variable named 'impact'")
+  if(!("ship.type" %in% names(value))) stop("'value' must contain a variable named 'ship.type'")
+  if(!("length" %in% names(value))) stop("'value' must contain a variable named 'length'")
   x@ships <- value
   validObject(x)
   x
@@ -255,8 +270,8 @@ setGeneric("ships<-", function(x, value) {
   if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
   if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
   if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
-  if(!("speed" %in% names(value))) stop("'value' must contain a variable named 'speed'")
-  if(!("impact" %in% names(value))) stop("'value' must contain a variable named 'impact'")
+  if(!("ship.type" %in% names(value))) stop("'value' must contain a variable named 'ship.type'")
+  if(!("length" %in% names(value))) stop("'value' must contain a variable named 'length'")
   x@ships <- value
   validObject(x)
   x
@@ -278,8 +293,10 @@ setGeneric("routes", function(x) {
 #' @aliases routes<-
 #' @param x Object of class \code{DeponsShips}
 #' @param value list with one named element per shipping route. Each element is
-#' a data frame with the variables x and y, which define the coordinates of the fix-points
-#' on the shipping routes.
+#' a data frame with the variables x, y, and speed, which define the coordinates
+#' of the fix-points on the shipping routes and the speeds that ships
+#' have after passing the fix point and until reaching the next fix point.
+#' @note The unit of 'speed' is knots.
 #' @seealso \code{\link{ships}}
 #' @exportMethod routes
 setMethod("routes", signature=("DeponsShips"), function(x) {
@@ -304,8 +321,8 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
   n.routes <- length(value)
   out <- data.frame("name"=rep("", length=n.routes), "route"=NA)
   for (i in 1:n.routes) {
-    if (!all(names(value[[i]])==c("x", "y"))) {
-      stop(paste("The names of element", i, "in 'value' is not 'x' and 'y'"))
+    if (!all(names(value[[i]])==c("x", "y", "speed"))) {
+      stop(paste("The names of element", i, "in 'value' is not 'x', 'y', and 'speed'"))
     }
     out$route[i] <- value[i]
     out$name[i] <- names(value[i])

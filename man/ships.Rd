@@ -14,9 +14,10 @@ ships(x) <- value
 \arguments{
 \item{x}{Object of class \code{DeponsShips}}
 
-\item{value}{data frame with the 'name', 'speed', 'impact', and 'route' of
-ships to be simulated. Here 'impact' is the sound source level (dB SPL) and
-'route' is one of the shipping routes already defined in the DeponsShips object.}
+\item{value}{data frame with the 'name', 'ship.type', 'length', and 'route' of
+ships to be simulated, as well as the start and end tick for when the ship
+is to be included in simulations. 'route' is one of the shipping routes
+defined in the DeponsShips object.}
 }
 \description{
 Get or define ships in DeponsShips objects

@@ -7,10 +7,10 @@
 read.DeponsShips(fname, title = "NA", landscape = "NA", crs = as.character(NA))
 }
 \arguments{
-\item{fname}{Name of the file (character) that defines the ship routes
-and ships.}
+\item{fname}{Name of the file (character) where ship routes and ships
+are defined.}
 
-\item{title}{Optional character string giving name of simulation}
+\item{title}{Optional character string with the name of the simulation}
 
 \item{landscape}{Optional character string with the landscape used in the
 simulation}

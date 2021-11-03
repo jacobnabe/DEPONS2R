@@ -10,7 +10,7 @@
 \arguments{
 \item{x}{Name of the DeponsShips object to be exported}
 
-\item{file}{Name of the file (character) that defines the ship routes}
+\item{file}{Name of the output file (character)}
 }
 \value{
 No return value, called for side effects
