@@ -15,6 +15,9 @@
 \value{
 No return value, called for side effects
 }
+\value{
+No return value, called for side effects
+}
 \description{
 Function  for writing a json-file for controlling
 how ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
