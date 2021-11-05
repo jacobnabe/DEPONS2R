@@ -8,7 +8,7 @@
 
 #' @name  shipdata
 #' @docType data
-#' @title Ships on  routes through Kattegat
+#' @title Hypothetical ships on  routes through Kattegat
 #' @description The ship routes and ships used in the study by Nabe-Nielsen et
 #' al. (2014). The fix points that define the routes use the UTM zone 32
 #' projection, (EPSG:32632; see \url{https://epsg.io/32632}).
@@ -30,6 +30,20 @@
 #' porpoise population. Ecological Modelling, 272, 242–251.
 #' \doi{10.1016/j.ecolmodel.2013.09.025}
 # data("shipdata")
+
+
+#' @name  aisdata
+#' @docType data
+#' @title Position for three ships in the inner Danish waters
+#' @description Automatic identification system (AIS) data for three ships
+#' in Kattegat and the Western Baltic from 20 Dec 2015. The data set includes
+#' the variables id (the Maritime Mobile Service Identity number), time,
+#' speed (in knots), type, length (in metres), x and y (which provide the
+#' coordinates of the ship at a given time. The coordinates use the UTM zone 32
+#' projection (CRS = "+proj=utm +zone=32 +units=m +no_defs +datum=WGS84").
+#' @format data.frame
+#' @keywords datasets
+# data("aisdata")       # uncomment line to trigger roxygen
 
 
 #' @name  bathymetry
