@@ -11,9 +11,13 @@
 #' @slot crs CRS object providing the coordinate reference system used; see
 #' \code{\link[sp]{CRS}} for details
 #' @slot routes \code{data.frame} geographic positions of the 'virtual buoys'
-#' that define one or more ship routes that ship agents follow
+#' that define one or more ship routes that ship agents follow, and the speed
+#' that the ships should use when following this route. Can be extracted using
+#' the \code{\link{routes}} function.
 #' @slot ships \code{data.frame} defining each of the ships occurring in DEPONS
-#' simulations, and the routes they occur on
+#' simulations, and the routes they occur on. The data frame includes the variables
+#' 'name', 'ship.'type', 'length', 'route' 'start', and 'end'. Info can be
+#' extracted using the \code{\link{ships}} function.
 #' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}} and
 #' \code{\link[DEPONS2R]{read.DeponsShips}}
 #' @examples
@@ -234,7 +238,7 @@ setGeneric("ships", function(x, value) {
 #' @aliases ships,DeponsShips-method
 #' @aliases ships<-,DeponsShips-method
 #' @param x Object of class \code{DeponsShips}
-#' @param value data frame with the 'name', 'ship.type', 'length', and 'route' of
+#' @param value data frame with the 'name', 'type', 'length', and 'route' of
 #' ships to be simulated, as well as the start and end tick for when the ship
 #' is to be included in simulations. 'route' is one of the shipping routes
 #' defined in the DeponsShips object.
@@ -253,7 +257,7 @@ setGeneric("ships<-", function(x, value) {
   if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
   if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
   if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
-  if(!("ship.type" %in% names(value))) stop("'value' must contain a variable named 'ship.type'")
+  if(!("type" %in% names(value))) stop("'value' must contain a variable named 'type'")
   if(!("length" %in% names(value))) stop("'value' must contain a variable named 'length'")
   x@ships <- value
   validObject(x)
@@ -270,7 +274,7 @@ setGeneric("ships<-", function(x, value) {
   if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
   if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
   if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
-  if(!("ship.type" %in% names(value))) stop("'value' must contain a variable named 'ship.type'")
+  if(!("type" %in% names(value))) stop("'value' must contain a variable named 'type'")
   if(!("length" %in% names(value))) stop("'value' must contain a variable named 'length'")
   x@ships <- value
   validObject(x)

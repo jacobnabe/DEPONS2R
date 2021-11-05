@@ -14,7 +14,7 @@ ships(x) <- value
 \arguments{
 \item{x}{Object of class \code{DeponsShips}}
 
-\item{value}{data frame with the 'name', 'ship.type', 'length', and 'route' of
+\item{value}{data frame with the 'name', 'type', 'length', and 'route' of
 ships to be simulated, as well as the start and end tick for when the ship
 is to be included in simulations. 'route' is one of the shipping routes
 defined in the DeponsShips object.}

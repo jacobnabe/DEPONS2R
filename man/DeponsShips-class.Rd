@@ -21,10 +21,14 @@ and ship agents used in DEPONS simulations.
 \code{\link[sp]{CRS}} for details}
 
 \item{\code{routes}}{\code{data.frame} geographic positions of the 'virtual buoys'
-that define one or more ship routes that ship agents follow}
+that define one or more ship routes that ship agents follow, and the speed
+that the ships should use when following this route. Can be extracted using
+the \code{\link{routes}} function.}
 
 \item{\code{ships}}{\code{data.frame} defining each of the ships occurring in DEPONS
-simulations, and the routes they occur on}
+simulations, and the routes they occur on. The data frame includes the variables
+'name', 'ship.'type', 'length', 'route' 'start', and 'end'. Info can be
+extracted using the \code{\link{ships}} function.}
 }}
 
 \examples{
