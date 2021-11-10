@@ -12,11 +12,13 @@
 #' \code{\link[sp]{CRS}} for details
 #' @slot routes \code{data.frame} geographic positions of the 'virtual buoys'
 #' that define one or more ship routes that ship agents follow, and the speed
-#' that the ships should use when following this route. Can be extracted using
-#' the \code{\link{routes}} function.
+#' that the ships should use when following this route. They also provide
+#' information about how long ships should use speed zero when reaching a
+#' specific buoy ('i.e. 'break', measured in number of ticks). Can be extracted
+#' using the \code{\link{routes}} function.
 #' @slot ships \code{data.frame} defining each of the ships occurring in DEPONS
 #' simulations, and the routes they occur on. The data frame includes the variables
-#' 'name', 'ship.'type', 'length', 'route' 'start', and 'end'. Info can be
+#' 'name', 'ship.'type', 'length', 'route' 'tick.start', and 'tick.end'. Info can be
 #' extracted using the \code{\link{ships}} function.
 #' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}} and
 #' \code{\link[DEPONS2R]{read.DeponsShips}}
@@ -239,9 +241,9 @@ setGeneric("ships", function(x, value) {
 #' @aliases ships<-,DeponsShips-method
 #' @param x Object of class \code{DeponsShips}
 #' @param value data frame with the 'name', 'type', 'length', and 'route' of
-#' ships to be simulated, as well as the start and end tick for when the ship
-#' is to be included in simulations. 'route' is one of the shipping routes
-#' defined in the DeponsShips object.
+#' ships to be simulated, as well as 'tick.start' and 'tick.end' defining when
+#' the ships are to be included in simulations. 'route' is one of the shipping
+#' routes defined in the DeponsShips object.
 #' @examples
 #' data(shipdata)
 #' ships(shipdata)
@@ -297,9 +299,11 @@ setGeneric("routes", function(x) {
 #' @aliases routes<-
 #' @param x Object of class \code{DeponsShips}
 #' @param value list with one named element per shipping route. Each element is
-#' a data frame with the variables x, y, and speed, which define the coordinates
-#' of the fix-points on the shipping routes and the speeds that ships
-#' have after passing the fix point and until reaching the next fix point.
+#' a data frame with the variables x, y, speed, and 'break' which define the
+#' coordinates of the fix-points on the shipping routes and the speeds that ships
+#' have after passing the fix point and until reaching the next fix point. The
+#' variable 'break' instructs ships about how many tick to wait before continuing
+#' to move.
 #' @note The unit of 'speed' is knots.
 #' @seealso \code{\link{ships}}
 #' @exportMethod routes
@@ -325,8 +329,8 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
   n.routes <- length(value)
   out <- data.frame("name"=rep("", length=n.routes), "route"=NA)
   for (i in 1:n.routes) {
-    if (!all(names(value[[i]])==c("x", "y", "speed"))) {
-      stop(paste("The names of element", i, "in 'value' is not 'x', 'y', and 'speed'"))
+    if (!all(names(value[[i]])==c("x", "y", "speed", "break"))) {
+      stop(paste("The names of element", i, "in 'value' is not 'x', 'y', 'speed', and 'break"))
     }
     out$route[i] <- value[i]
     out$name[i] <- names(value[i])

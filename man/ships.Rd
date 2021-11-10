@@ -15,9 +15,9 @@ ships(x) <- value
 \item{x}{Object of class \code{DeponsShips}}
 
 \item{value}{data frame with the 'name', 'type', 'length', and 'route' of
-ships to be simulated, as well as the start and end tick for when the ship
-is to be included in simulations. 'route' is one of the shipping routes
-defined in the DeponsShips object.}
+ships to be simulated, as well as 'tick.start' and 'tick.end' defining when
+the ships are to be included in simulations. 'route' is one of the shipping
+routes defined in the DeponsShips object.}
 }
 \description{
 Get or define ships in DeponsShips objects
