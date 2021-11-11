@@ -1,36 +1,3 @@
-tan (pi)
-tan (120*pi/180)
-100 / tan (120*pi/180)
-pi * 120/180
-pi * 26/180
-tan (pi * 26/180)
-100 / tan (pi * 26/180)
-100/205
-tan 2
-tan 0.5
-tan (0.5)
-atan(0.5463025)
-100/205
-library(nlme)
-?nls
-library(ggtern)
-?ggtern
-?ggern
-?ggtern
-ggtern(data=data.frame(x=1,y=1,z=1),aes(x,y,z)) + geom_point()
-?ggtern
-ggtern(data=data.frame(x=2,y=1,z=1),aes(x,y,z)) + geom_point()
-ggtern(data=data.frame(x=2,y=1,z=0),aes(x,y,z)) + geom_point()
-ggtern(data=data.frame(x=100,y=1,z=0),aes(x,y,z)) + geom_point()
-track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.20_53_33.csv"))
-ecl.dir <- "~/eclipse-workspace/porpoise-2020-05-22-master-e534946.zip_expanded/PorpoiseJava/"#
-track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.20_53_33.csv"))
-head(track)
-track <- read.csv(paste0(ecl.dir, "RandomPorpoise.2020.May.26.20_53_33.csv"), sep=";")#
-head(track)
-summary(track)
-track.det <- track[track$DeterStrength>0 ,]
-track.det
 track.det <- track[track$DeterStrength>0, c(1,3,4,6)]
 track.det
 head(track.det)
@@ -546,3 +513,289 @@ plot(ba)
 plot(ba, main="ba")
 tt <- raster("test.asc")
 plot(tt)
+in.n.or.s <- function(one.track) {#
+			if((one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])) {#
+				dy <- one.track$y[cross.row+1] - one.track$y[cross.row]#
+				dy.to.cross <- one.track$y[cross.row] - bb["y", "max"]#
+				proportion.to.cross <- abs(dy.to.cross/dy)#
+				y.at.cross <- one.track$y[cross.row] + proportion.to.cross*dy#
+				dx <- one.track$x[cross.row+1] - one.track$x[cross.row]#
+				x.at.cross <- one.track$x[cross.row] + proportion.to.cross*dx#
+				dt <- as.numeric(difftime(one.track$time[cross.row+1], one.track$time[cross.row], units="sec"))#
+				t.at.cross <- one.track$time[cross.row] + proportion.to.cross*dt#
+			}#
+			# Replace data in cross row with time and pos for crossing#
+			one.track$x[cross.row] <- x.at.cross		#
+			one.track$y[cross.row] <- y.at.cross		#
+			one.track$time[cross.row] <- t.at.cross#
+			one.track$inside[cross.row] <- TRUE#
+			one.track <- one.track[one.track$inside,]#
+			return(one.track)#
+		}#
+		cropped.track <- in.n.or.s(one.track)
+id <- "636091769" # remove line again#
+		one.track <- data[data$id==id ,]#
+		one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] & #
+			one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]#
+		nrw <- nrow(one.track)#
+		cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])#
+		# Find pos and time were edge is crossed
+library(DEPONS2R)
+head(aisdata)
+data <- aisdata#
+landsc <- bathymetry
+if(class(data)!="data.frame") #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!all(names(data) %in% c('id', 'time', 'speed', 'type', 'length', 'x', 'y'))) #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!all(c('id', 'time', 'speed', 'type', 'length', 'x', 'y') %in% names(data))) #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!(class(data$speed)=="numeric")) stop("'speed' must be numeric")#
+	if(!(class(data$length)=="numeric")) stop("'length' must be numeric")#
+	if(!(class(data$x)=="numeric")) stop("'x' must be numeric")#
+	if(!(class(data$y)=="numeric")) stop("'y' must be numeric")#
+	if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")#
+	message(paste0("The conversion assumes that 'x' and 'y' coordinates use the '", crs(landsc), "' projection"))#
+	time <- try(as.POSIXlt(data$time, tz="UTC"))#
+	if(!("POSIXlt" %in% class(time))) stop("'time' must be of the form 'YYYY-MM-DD HH:MM:SS' for conversion to POSIXlt")
+class(data$length)
+if(!(class(data$length)=="numeric" || class(data$length)=="integer")) stop("'length' must be numeric")
+if(!(class(data$x)=="numeric")) stop("'x' must be numeric")
+if(!(class(data$x)=="numeric")) stop("'x' must be numeric")#
+	if(!(class(data$y)=="numeric")) stop("'y' must be numeric")
+if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")
+message(paste0("The conversion assumes that 'x' and 'y' coordinates use the '", crs(landsc), "' projection"))
+message(paste0("The conversion assumes that 'x' and 'y' coordinates of ships use the '", #
+		crs(landsc), "' projection"))
+time <- try(as.POSIXlt(data$time, tz="UTC"))
+if(!("POSIXlt" %in% class(time))) #
+		stop("'time' must be of the form 'YYYY-MM-DD HH:MM:SS' for conversion to POSIXlt")
+data$time <- time#
+	bb <- bbox(landsc)#
+	# For each track in 'data': find places where the track crosses bb and make linear intrapolation to#
+	# place new waypoint at the edge of the landscape -- then remove waypoints outside the edge from the route#
+	cropped.data <- data.frame()
+id <- "636091769" # remove line again
+one.track <- data[data$id==id ,]#
+		one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] & #
+			one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]
+nrw <- nrow(one.track)
+cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])
+cross.row
+cross.row
+one.track$inside[cross.row]
+one.track$inside[cross.row+1]
+moving.out <- one.track$inside[cross.row]
+moving.out
+one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])
+cross.row
+one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"])
+one.track$y[cross.row] > bb["y", "max"]
+one.track$y[cross.row+1] < bb["y", "max"]
+(one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])
+crossing.n.or.s <- (one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])
+crossing.n.or.s
+crossing.n.or.s
+dy <- one.track$y[cross.row+1] - one.track$y[cross.row]
+dy.to.cross <- one.track$y[cross.row] - bb["y", "max"]
+proportion.to.cross <- abs(dy.to.cross/dy)
+y.at.cross <- one.track$y[cross.row] + proportion.to.cross*dy
+y.at.cross
+dx <- one.track$x[cross.row+1] - one.track$x[cross.row]#
+			x.at.cross <- one.track$x[cross.row] + proportion.to.cross*dx
+dt <- as.numeric(difftime(one.track$time[cross.row+1], one.track$time[cross.row], units="sec"))#
+			t.at.cross <- one.track$time[cross.row] + proportion.to.cross*dt
+# Replace data in cross row with time and pos for crossing#
+			one.track$x[cross.row] <- x.at.cross		#
+			one.track$y[cross.row] <- y.at.cross		#
+			one.track$time[cross.row] <- t.at.cross#
+			one.track$inside[cross.row] <- TRUE#
+			one.track <- one.track[one.track$inside,]
+get.n.or.s.cross <- function(a.track) {#
+		dy <- a.track$y[cross.row+1] - a.track$y[cross.row]#
+		dy.to.cross <- a.track$y[cross.row] - bb["y", "max"]#
+		proportion.to.cross <- abs(dy.to.cross/dy)#
+		y.at.cross <- a.track$y[cross.row] + proportion.to.cross*dy#
+		dx <- a.track$x[cross.row+1] - a.track$x[cross.row]#
+		x.at.cross <- a.track$x[cross.row] + proportion.to.cross*dx#
+		dt <- as.numeric(difftime(a.track$time[cross.row+1], a.track$time[cross.row], units="sec"))#
+		t.at.cross <- a.track$time[cross.row] + proportion.to.cross*dt#
+		# Replace data in cross row with time and pos for crossing#
+		a.track$x[cross.row] <- x.at.cross		#
+		a.track$y[cross.row] <- y.at.cross		#
+		a.track$time[cross.row] <- t.at.cross#
+		a.track$inside[cross.row] <- TRUE#
+		a.track <- a.track[a.track$inside,]#
+		return(a.track)#
+	}
+id <- "636091769" # remove line again
+one.track <- data[data$id==id ,]#
+		# Are positions inside the landscape?#
+		one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] & #
+			one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]
+nrw <- nrow(one.track)
+# Find data row just before ship crosses edge of landsc#
+		cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])
+cross.row
+moving.out <- one.track$inside[cross.row]
+moving.out
+# Find data row just outside edge of landsc#
+		cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])#
+		moving.out <- one.track$inside[cross.row]
+moving.out
+crossing.n.or.s <- (one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])
+crossing.n.or.s
+if(crossing.n.or.s) cropped.track <- get.n.or.s.cross(one.track)
+xx <- c(one.track$x[cross.row], one.track$x[cross.row+1], x.at.cross)
+x.at.cross
+rm(list=ls())
+# Function for creating DeponsShips object from AIS data#
+#
+library(DEPONS2R)#
+#
+head(aisdata)#
+? DEPONS2R#
+data <- aisdata#
+landsc <- bathymetry#
+as.DeponsShips <- function(data, landsc) {#
+	if(class(data)!="data.frame") #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!all(names(data) %in% c('id', 'time', 'speed', 'type', 'length', 'x', 'y'))) #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!all(c('id', 'time', 'speed', 'type', 'length', 'x', 'y') %in% names(data))) #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!(class(data$speed)=="numeric")) stop("'speed' must be numeric")#
+	if(!(class(data$length)=="numeric" || class(data$length)=="integer")) stop("'length' must be numeric")#
+	if(!(class(data$x)=="numeric")) stop("'x' must be numeric")#
+	if(!(class(data$y)=="numeric")) stop("'y' must be numeric")#
+	if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")#
+	message(paste0("The conversion assumes that 'x' and 'y' coordinates of ships use the '", #
+		crs(landsc), "' projection"))#
+	time <- try(as.POSIXlt(data$time, tz="UTC"))#
+	if(!("POSIXlt" %in% class(time))) #
+		stop("'time' must be of the form 'YYYY-MM-DD HH:MM:SS' for conversion to POSIXlt")#
+	data$time <- time#
+	bb <- bbox(landsc)#
+	# For each track in 'data': find places where the track crosses bb and make linear intrapolation to#
+	# place new waypoint at the edge of the landscape -- then remove waypoints outside the edge from the route#
+	cropped.data <- data.frame()#
+	get.n.or.s.cross <- function(a.track) {#
+		dy <- a.track$y[cross.row+1] - a.track$y[cross.row]#
+		dy.to.cross <- a.track$y[cross.row] - bb["y", "max"]#
+		proportion.to.cross <- abs(dy.to.cross/dy)#
+		y.at.cross <- a.track$y[cross.row] + proportion.to.cross*dy#
+		dx <- a.track$x[cross.row+1] - a.track$x[cross.row]#
+		x.at.cross <- a.track$x[cross.row] + proportion.to.cross*dx#
+		dt <- as.numeric(difftime(a.track$time[cross.row+1], a.track$time[cross.row], units="sec"))#
+		t.at.cross <- a.track$time[cross.row] + proportion.to.cross*dt#
+		# Replace data in cross row with time and pos for crossing#
+		a.track$x[cross.row] <- x.at.cross		#
+		a.track$y[cross.row] <- y.at.cross		#
+		a.track$time[cross.row] <- t.at.cross#
+		a.track$inside[cross.row] <- TRUE#
+		a.track <- a.track[a.track$inside,]#
+		return(a.track)#
+	}#
+	for(id in data$id) {#
+		id <- "636091769" # remove line again#
+		one.track <- data[data$id==id ,]#
+		# Are positions inside the landscape?#
+		one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] & #
+			one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]#
+		nrw <- nrow(one.track)#
+		# Find data row just outside edge of landsc#
+		cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])#
+		moving.out <- one.track$inside[cross.row]#
+		if(moving.out) cross.row <- cross.row+1#
+		# Find pos and time were edge is crossed. Crossing northern or southern edge?#
+		crossing.n.or.s <- (one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])#
+		if(crossing.n.or.s) cropped.track <- get.n.or.s.cross(one.track)#
+	}
+ls()
+if(class(data)!="data.frame") #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!all(names(data) %in% c('id', 'time', 'speed', 'type', 'length', 'x', 'y'))) #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!all(c('id', 'time', 'speed', 'type', 'length', 'x', 'y') %in% names(data))) #
+		stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")#
+	if(!(class(data$speed)=="numeric")) stop("'speed' must be numeric")#
+	if(!(class(data$length)=="numeric" || class(data$length)=="integer")) stop("'length' must be numeric")#
+	if(!(class(data$x)=="numeric")) stop("'x' must be numeric")#
+	if(!(class(data$y)=="numeric")) stop("'y' must be numeric")#
+	if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")#
+	message(paste0("The conversion assumes that 'x' and 'y' coordinates of ships use the '", #
+		crs(landsc), "' projection"))#
+	time <- try(as.POSIXlt(data$time, tz="UTC"))#
+	if(!("POSIXlt" %in% class(time))) #
+		stop("'time' must be of the form 'YYYY-MM-DD HH:MM:SS' for conversion to POSIXlt")#
+	data$time <- time#
+	bb <- bbox(landsc)
+# For each track in 'data': find places where the track crosses bb and make linear intrapolation to#
+	# place new waypoint at the edge of the landscape -- then remove waypoints outside the edge from the route#
+	cropped.data <- data.frame()
+get.n.or.s.cross <- function(a.track) {#
+		dy <- a.track$y[cross.row+1] - a.track$y[cross.row]#
+		dy.to.cross <- a.track$y[cross.row] - bb["y", "max"]#
+		proportion.to.cross <- abs(dy.to.cross/dy)#
+		y.at.cross <- a.track$y[cross.row] + proportion.to.cross*dy#
+		dx <- a.track$x[cross.row+1] - a.track$x[cross.row]#
+		x.at.cross <- a.track$x[cross.row] + proportion.to.cross*dx#
+		dt <- as.numeric(difftime(a.track$time[cross.row+1], a.track$time[cross.row], units="sec"))#
+		t.at.cross <- a.track$time[cross.row] + proportion.to.cross*dt#
+		# Replace data in cross row with time and pos for crossing#
+		a.track$x[cross.row] <- x.at.cross		#
+		a.track$y[cross.row] <- y.at.cross		#
+		a.track$time[cross.row] <- t.at.cross#
+		a.track$inside[cross.row] <- TRUE#
+		a.track <- a.track[a.track$inside,]#
+		return(a.track)#
+	}
+id <- "636091769" # remove line again#
+		one.track <- data[data$id==id ,]#
+		# Are positions inside the landscape?#
+		one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] & #
+			one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]
+nrw <- nrow(one.track)#
+		# Find data row just outside edge of landsc#
+		cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])
+moving.out <- one.track$inside[cross.row]#
+		if(moving.out) cross.row <- cross.row+1
+crossing.n.or.s <- (one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])
+crossing.n.or.s
+if(crossing.n.or.s) cropped.track <- get.n.or.s.cross(one.track)
+xx <- c(one.track$x[cross.row], one.track$x[cross.row+1], x.at.cross)
+xx <- c(one.track$x[cross.row], one.track$x[cross.row+1])#
+	yy <- c(one.track$y[cross.row], one.track$y[cross.row+1])#
+	plot(xx, yy)
+abline(h=bb["y", "max"], col="red")
+points(cropped.track$x, cropped.track$y, col="red")
+plot(one.track$x, one.track$y)#
+	plot(landsc, add=TRUE)#
+	points(cropped.track$x, cropped.track$y, col="red")
+length(one.track$x)
+one.track <- data[data$id==id ,]#
+		# Reverse positions in one.track -- TEMPORARILY#
+		one.track$x <- one.track$x[length(one.track$x):1]#
+		one.track$y <- one.track$y[length(one.track$y):1]
+# Are positions inside the landscape?#
+		one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] & #
+			one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]#
+		nrw <- nrow(one.track)#
+		# Find data row just outside edge of landsc#
+		cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])#
+		moving.out <- one.track$inside[cross.row]#
+		if(moving.out) cross.row <- cross.row+1#
+		# Find pos and time were edge is crossed. Crossing northern or southern edge?#
+		crossing.n.or.s <- (one.track$y[cross.row] > bb["y", "max"] && one.track$y[cross.row+1] < bb["y", "max"]) ||#
+				(one.track$y[cross.row] < bb["y", "min"] && one.track$y[cross.row+1] > bb["y", "min"])#
+		if(crossing.n.or.s) cropped.track <- get.n.or.s.cross(one.track)
+plot(one.track$x, one.track$y)#
+	plot(landsc, add=TRUE)#
+	points(cropped.track$x, cropped.track$y, col="red")

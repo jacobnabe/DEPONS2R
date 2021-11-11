@@ -102,14 +102,14 @@ setMethod("summary", "DeponsShips",
 
 setMethod("show", "DeponsShips",
           function(object) {
-            cat("Object of class:  \t", "DeponsShips \n")
+            cat("Object of class:\t", "DeponsShips \n")
             cat("title:          \t", object@title, "\n")
             cat("landscape:      \t", object@landscape, "\n")
             cat("crs:            \t", object@crs, "\n")
             the.routes <- object@routes
             cat("\nObject contains ", nrow(the.routes), " ship routes ")
             ships <- object@ships
-            cat("and ", nrow(ships), " ships \n")
+            cat("and ", length(unique(ships$name)), " ships \n")
           }
 )
 
@@ -339,3 +339,166 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
   validObject(x)
   x
 })
+
+
+#' @title Convert ship tracks to DeponsShips object
+#' @name ais.to.DeponsShips
+#' @description Crop one or more ship tracks to the extent of a landscape
+#' and convert the datas into a \code{DeponsShips} object
+#' @param data data.frame with ship positions and the times at which the
+#' positions were recorded
+#' @param landsc A \code{DeponsRaster} object corresponding to the
+#' landscape that the ships move in. It is assumed that the spatial projection
+#' of the ship positions corresponds to that of the DeponsRaster object
+#' @param title Title of the output object
+#' @return Returns a \code{DeponsShips} object
+#' @seealso \code{\link{aisdata}} can be used as input to as.DeponsShips
+#' @export ais.to.DeponsShips
+#' @examples
+#' data(aisdata)
+#' plot(aisdata$x, aisdata$y, type="n", asp=1)
+#' ids <- sort(unique(aisdata$id))
+#' my.colors <- rainbow(length(ids))
+#' for (i in length(ids)) {
+#'   id <- ids[i]
+#'   points(aisdata$x[aisdata$id==id], aisdata$y[aisdata$id==id],
+#'      cex=0.6, col=my.colors[i])
+#' }
+#' data(bathymetry)
+#' plot(bathymetry, add=TRUE)
+#' depons.ais <- ais.to.DeponsShips(aisdata, bathymetry)
+#' the.routes <- routes(depons.ais)
+#' for (i in 1:length(ids)) {
+#'   points(the.routes[[i]]$x, the.routes[[i]]$y,
+#'          cex=0.6, pch=16, col=my.colors[i])
+#' }
+# setMethod("as", signature("data.frame", "DeponsRaster"), function(data, landsc, title="NA") {
+ais.to.DeponsShips <- function(data, landsc, title="NA") {
+  if(class(data)!="data.frame")
+    stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
+  if(!all(names(data) %in% c('id', 'time', 'speed', 'type', 'length', 'x', 'y')))
+    stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
+  if(!all(c('id', 'time', 'speed', 'type', 'length', 'x', 'y') %in% names(data)))
+    stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
+  if(!(class(data$speed)=="numeric")) stop("'speed' must be numeric")
+  if(!(class(data$length)=="numeric" || class(data$length)=="integer")) stop("'length' must be numeric")
+  if(!(class(data$x)=="numeric")) stop("'x' must be numeric")
+  if(!(class(data$y)=="numeric")) stop("'y' must be numeric")
+  if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")
+  message(paste0("Conversion assumes that 'x' and 'y' coordinates of ships use the '",
+                 crs(landsc), "' projection"))
+  time <- try(as.POSIXlt(data$time, tz="UTC"))
+  if(!("POSIXlt" %in% class(time)))
+    stop("'time' must be of the form 'YYYY-MM-DD HH:MM:SS' for conversion to POSIXlt")
+  data$time <- time
+  bb <- bbox(landsc)
+  # For each track in 'data': find places where the track crosses bb and make linear intrapolation to
+  # place new waypoint at the edge of the landscape -- then remove waypoints outside the edge from the route
+  get.n.or.s.cross <- function(a.track, cross.row) {
+    moving.out <- a.track$inside[cross.row] && !a.track$inside[cross.row+1]
+    # if(moving.out) cross.row <- cross.row+1
+    dy <- a.track$y[cross.row+1] - a.track$y[cross.row]
+    # Which edge is crossed?
+    edge <- ifelse(abs(a.track$y[cross.row]-bb["y", "max"]) <
+                     abs(a.track$y[cross.row]-bb["y", "min"]), "max", "min")
+    dy.to.cross <- a.track$y[cross.row] - bb["y", edge]
+    proportion.to.cross <- abs(dy.to.cross/dy)
+    y.at.cross <- a.track$y[cross.row] + proportion.to.cross*dy
+    dx <- a.track$x[cross.row+1] - a.track$x[cross.row]
+    x.at.cross <- a.track$x[cross.row] + proportion.to.cross*dx
+    dt <- as.numeric(difftime(a.track$time[cross.row+1],
+                              a.track$time[cross.row], units="sec"))
+    t.at.cross <- a.track$time[cross.row] + proportion.to.cross*dt
+    # Replace data in cross row with time and pos for crossing
+    a.track$x[cross.row + as.numeric(moving.out)] <- x.at.cross # put value in row just outsd landsc
+    a.track$y[cross.row + as.numeric(moving.out)] <- y.at.cross
+    a.track$time[cross.row + as.numeric(moving.out)] <- t.at.cross
+    a.track$inside[cross.row + as.numeric(moving.out)] <- TRUE
+    return(a.track)
+  }
+  get.e.or.w.cross <- function(a.track, cross.row) {
+    moving.out <- a.track$inside[cross.row] && !a.track$inside[cross.row+1]
+    # if(moving.out) cross.row <- cross.row+1
+    dx <- a.track$x[cross.row+1] - a.track$x[cross.row]
+    # Which edge is crossed?
+    edge <- ifelse(abs(a.track$x[cross.row]-bb["x", "max"]) <
+                     abs(a.track$x[cross.row]-bb["x", "min"]), "max", "min")
+    dx.to.cross <- a.track$x[cross.row] - bb["x", edge]
+    proportion.to.cross <- abs(dx.to.cross/dx)
+    x.at.cross <- a.track$x[cross.row] + proportion.to.cross*dx
+    dy <- a.track$y[cross.row+1] - a.track$y[cross.row]
+    y.at.cross <- a.track$y[cross.row] + proportion.to.cross*dy
+    dt <- as.numeric(difftime(a.track$time[cross.row+1],
+                              a.track$time[cross.row], units="sec"))
+    t.at.cross <- a.track$time[cross.row] + proportion.to.cross*dt
+    # Replace data in cross row with time and pos for crossing
+    a.track$y[cross.row + as.numeric(moving.out)] <- y.at.cross # put value in row just outsd landsc
+    a.track$x[cross.row + as.numeric(moving.out)] <- x.at.cross
+    a.track$time[cross.row + as.numeric(moving.out)] <- t.at.cross
+    a.track$inside[cross.row + as.numeric(moving.out)] <- TRUE
+    return(a.track)
+  }
+  all.cropped.tracks <- data.frame()
+  for(id in unique(data$id)) {
+    one.track <- data[data$id==id ,]
+    # Are positions inside the landscape?
+    one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] &
+      one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]
+    nrw <- nrow(one.track)
+    # Find data row just before crossing edge of landsc
+    cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])
+    if(length(cross.row)==0) { # that is, if the edge isn't crossed
+      cropped.track <- one.track[, c("id", "time", "speed", "type", "length", "x", "y")]
+      all.cropped.tracks <- rbind(all.cropped.tracks, cropped.track)
+      next
+    }
+    # Find pos and time were edge is crossed. Crossing northern or southern edge?
+    for (i in 1:length(cross.row)) {
+      crossing.n.or.s <- (one.track$y[cross.row[i]] > bb["y", "max"] && one.track$y[cross.row[i]+1] < bb["y", "max"]) ||
+        (one.track$y[cross.row[i]] < bb["y", "min"] && one.track$y[cross.row[i]+1] > bb["y", "min"])
+      if(crossing.n.or.s) one.track <- get.n.or.s.cross(one.track, cross.row[i])
+      else one.track <- get.e.or.w.cross(one.track, cross.row[i])
+    }
+    cropped.track <- one.track[one.track$inside, c("id", "time", "speed", "type", "length", "x", "y")]
+    all.cropped.tracks <- rbind(all.cropped.tracks, cropped.track)
+    rm(one.track, cropped.track)
+  }
+
+  # Convert all.cropped.tracks to a DeponsShips object
+  all.cropped.DS <- new("DeponsShips")
+  # slotNames(all.cropped.DS)
+  all.cropped.DS@crs <- as.character(crs(landsc))
+  all.cropped.DS@landscape <- landscape(landsc)
+  all.cropped.DS@title <- title
+  # Generate one route per ship
+  ids <- sort(unique(all.cropped.tracks$id))
+  all.routes <- list()
+  for (i in 1:length(ids)) {
+    id <- ids[i]
+    one.track <- all.cropped.tracks[all.cropped.tracks$id==id,]
+    dx <- one.track$x[2:length(one.track$x)] - one.track$x[1:(length(one.track$x)-1)]
+    dy <- one.track$y[2:length(one.track$y)] - one.track$y[1:(length(one.track$y)-1)]
+    dt <- difftime(one.track$time[2:length(one.track$time)], one.track$time[1:(length(one.track$time)-1)],
+                   units="secs")
+    dist <- sqrt(dx^2 + dy^2)
+    speed <- dist/as.numeric(dt)
+    # convert to km per hour
+    speed <- speed * 60 * 60 / 1000
+    # convert to knots
+    speed <- speed/1.85200
+    # repeat last know speed for last buoy
+    speed <- c(speed, speed[length(speed)])
+    one.route <- data.frame("x"=one.track$x, "y"=one.track$y, speed, "break"=0)
+    names(one.route)[4] <- "break"
+    all.routes[[i]] <- one.route
+  }
+  names(all.routes) <- paste("Route", ids, sep="_")
+  routes(all.cropped.DS) <- all.routes
+  # Now, add the ships
+  all.ships <- all.cropped.tracks[, c("id", "type", "length")]
+  names(all.ships)[1] <- "name"
+  all.ships$route <- paste0("Route_", all.cropped.tracks$id)
+  ships(all.cropped.DS) <- all.ships
+  validObject(all.cropped.DS)
+  return(all.cropped.DS)
+}
