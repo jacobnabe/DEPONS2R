@@ -344,7 +344,9 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' @title Convert ship tracks to DeponsShips object
 #' @name ais.to.DeponsShips
 #' @description Crop one or more ship tracks to the extent of a landscape
-#' and convert the datas into a \code{DeponsShips} object
+#' and convert the data into a \code{DeponsShips-class} object. The in the
+#' 'break' in the \code{DeponsShips} object corresponds to the number of half-hour
+#' intervals where ships do not move, e.g. when in a port.
 #' @param data data.frame with ship positions and the times at which the
 #' positions were recorded
 #' @param landsc A \code{DeponsRaster} object corresponding to the
@@ -454,8 +456,12 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     }
     # Find pos and time were edge is crossed. Crossing northern or southern edge?
     for (i in 1:length(cross.row)) {
-      crossing.n.or.s <- (one.track$y[cross.row[i]] > bb["y", "max"] && one.track$y[cross.row[i]+1] < bb["y", "max"]) ||
-        (one.track$y[cross.row[i]] < bb["y", "min"] && one.track$y[cross.row[i]+1] > bb["y", "min"])
+
+      crossing.n.or.s <- (one.track$y[cross.row[i]] < bb["y", "max"] && one.track$y[cross.row[i]+1] > bb["y", "max"]) ||
+        (one.track$y[cross.row[i]] < bb["y", "min"] && one.track$y[cross.row[i]+1] > bb["y", "min"]) ||
+        (one.track$y[cross.row[i]] > bb["y", "max"] && one.track$y[cross.row[i]+1] < bb["y", "max"]) ||
+        (one.track$y[cross.row[i]] > bb["y", "min"] && one.track$y[cross.row[i]+1] < bb["y", "min"])
+
       if(crossing.n.or.s) one.track <- get.n.or.s.cross(one.track, cross.row[i])
       else one.track <- get.e.or.w.cross(one.track, cross.row[i])
     }
@@ -476,6 +482,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
   for (i in 1:length(ids)) {
     id <- ids[i]
     one.track <- all.cropped.tracks[all.cropped.tracks$id==id,]
+    one.track<-one.track[order(one.track$time),]
     dx <- one.track$x[2:length(one.track$x)] - one.track$x[1:(length(one.track$x)-1)]
     dy <- one.track$y[2:length(one.track$y)] - one.track$y[1:(length(one.track$y)-1)]
     dt <- difftime(one.track$time[2:length(one.track$time)], one.track$time[1:(length(one.track$time)-1)],
@@ -488,7 +495,64 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     speed <- speed/1.85200
     # repeat last know speed for last buoy
     speed <- c(speed, speed[length(speed)])
-    one.route <- data.frame("x"=one.track$x, "y"=one.track$y, speed, "break"=0)
+
+    # Calculate duration of breaks & collapse rows where ship not moving:
+    # Set 0.1 knots as a threshold for moving
+    new_speeds<-ifelse(speed<=0.1, 0, speed)
+
+    # Label recurring 0s as 1s & add lox/time information
+    recurringZero<-data.frame(new_speeds)
+    recurringZero$recurringSpeed<-ifelse(recurringZero$new_speeds==0, 1, 0)
+    recurringZero$x<-one.track$x
+    recurringZero$y<-one.track$y
+    recurringZero$time<-one.track$time
+
+    # Add a break id so that break duration can be summed by break id
+    seq_length<-rle(recurringZero$recurringSpeed)$lengths # Calculate duration of break ids
+    NoIds<-length(seq_length)
+    recurringZero$break_no<-rep(1:NoIds, seq_length)
+
+    # Sum recurring zeros to calculate duration of breaks  &
+    # Find out what the next non-zero speed is and re-label this row
+    breaks<-aggregate(recurringZero$recurringSpeed, list(recurringZero$break_no), FUN=sum)
+    recurringZero$breakTime<-rep(breaks$x, seq_length)
+    lead_lag <- function(v, n) {
+      if (n > 0) c(rep(NA, n), head(v, length(v) - n))
+      else c(tail(v, length(v) - abs(n)), rep(NA, abs(n)))
+    }
+    recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$recurringSpeed, +1), recurringZero$recurringSpeed)
+    recurringZero$new_breakno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$break_no, +1), recurringZero$break_no)
+
+    # Only collapse dataset if there are pauses
+    if (max(recurringZero$breakTime)>0) {
+
+      # Collapse recurring zeros & average x/y lox per break as AIS coordinates can jitter around
+      breaks<-recurringZero[recurringZero$new_recurringSpeed==1,]
+      max_speed<-aggregate(breaks$new_speeds, list(breaks$new_breakno), FUN=max)
+      new_x<-aggregate(breaks$x, list(breaks$new_breakno), FUN=mean)
+      new_y<-aggregate(breaks$y, list(breaks$new_breakno), FUN=mean)
+      new_time<-aggregate(breaks$time, list(breaks$new_breakno), FUN=min)
+      new_breakTime<-aggregate(breaks$breakTime, list(breaks$new_breakno), FUN=max)
+
+      # Create new data frame with these values per break id
+      breaks_collapsed<-data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x), max_speed$Group.1,
+                                   new_breakTime$x, rep(1), max_speed$Group.1)
+      colnames(breaks_collapsed)<-c("new_speeds", "recurringSpeed", "x", "y", "time", "break_no", "breakTime",
+                                    "new_recurringSpeed", "new_breakno")
+
+      # Join with the rest of the dataset & arrange by time
+      movingperiods<-recurringZero[recurringZero$new_recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
+      breaks_joined<-rbind(movingperiods, breaks_collapsed)
+      breaks_joined<-breaks_joined[order(breaks_joined$time),]
+
+    } else {
+
+      breaks_joined<-recurringZero
+
+    }
+
+    # Save route characteristics
+    one.route <- data.frame("x"=breaks_joined$x, "y"=breaks_joined$y, "speed"=breaks_joined$new_speeds, "break"=breaks_joined$breakTime)
     names(one.route)[4] <- "break"
     all.routes[[i]] <- one.route
   }
@@ -502,3 +566,4 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 }
+
