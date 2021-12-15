@@ -37,7 +37,7 @@ be located}
 \item{min.wf.dist}{Minimum distance between wind farms (meters)}
 
 \item{impact}{Sound source level (dB); sound emitted from turbines during
-construction, i.e. from tick.start to tick.end (including both start and end)}
+construction, i.e. from tickStart to tickEnd (including both start and end)}
 
 \item{constr.start}{The tick at which construction of the first turbine starts.}
 

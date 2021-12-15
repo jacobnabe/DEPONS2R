@@ -22,7 +22,7 @@ Returns a \code{DeponsShips} object
 \description{
 Crop one or more ship tracks to the extent of a landscape
 and convert the data into a \code{DeponsShips-class} object. The in the
-'break' in the \code{DeponsShips} object corresponds to the number of half-hour
+'pause' in the \code{DeponsShips} object corresponds to the number of half-hour
 intervals where ships do not move, e.g. when in a port.
 }
 \examples{

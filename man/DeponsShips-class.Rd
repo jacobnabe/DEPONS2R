@@ -24,12 +24,12 @@ and ship agents used in DEPONS simulations.
 that define one or more ship routes that ship agents follow, and the speed
 that the ships should use when following this route. They also provide
 information about how long ships should use speed zero when reaching a
-specific buoy ('i.e. 'break', measured in number of ticks). Can be extracted
+specific buoy ('i.e. 'pause', measured in minutes). Can be extracted
 using the \code{\link{routes}} function.}
 
 \item{\code{ships}}{\code{data.frame} defining each of the ships occurring in DEPONS
 simulations, and the routes they occur on. The data frame includes the variables
-'name', 'ship.'type', 'length', 'route' 'tick.start', and 'tick.end'. Info can be
+'name', 'type', 'length', 'route' 'tickStart', and 'tickEnd'. Info can be
 extracted using the \code{\link{ships}} function.}
 }}
 

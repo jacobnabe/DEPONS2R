@@ -14,11 +14,11 @@
 #' that define one or more ship routes that ship agents follow, and the speed
 #' that the ships should use when following this route. They also provide
 #' information about how long ships should use speed zero when reaching a
-#' specific buoy ('i.e. 'break', measured in number of ticks). Can be extracted
+#' specific buoy ('i.e. 'pause', measured in minutes). Can be extracted
 #' using the \code{\link{routes}} function.
 #' @slot ships \code{data.frame} defining each of the ships occurring in DEPONS
 #' simulations, and the routes they occur on. The data frame includes the variables
-#' 'name', 'ship.'type', 'length', 'route' 'tick.start', and 'tick.end'. Info can be
+#' 'name', 'type', 'length', 'route' 'tickStart', and 'tickEnd'. Info can be
 #' extracted using the \code{\link{ships}} function.
 #' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}} and
 #' \code{\link[DEPONS2R]{read.DeponsShips}}
@@ -241,7 +241,7 @@ setGeneric("ships", function(x, value) {
 #' @aliases ships<-,DeponsShips-method
 #' @param x Object of class \code{DeponsShips}
 #' @param value data frame with the 'name', 'type', 'length', and 'route' of
-#' ships to be simulated, as well as 'tick.start' and 'tick.end' defining when
+#' ships to be simulated, as well as 'tickStart' and 'tickEnd' defining when
 #' the ships are to be included in simulations. 'route' is one of the shipping
 #' routes defined in the DeponsShips object.
 #' @examples
@@ -299,10 +299,10 @@ setGeneric("routes", function(x) {
 #' @aliases routes<-
 #' @param x Object of class \code{DeponsShips}
 #' @param value list with one named element per shipping route. Each element is
-#' a data frame with the variables x, y, speed, and 'break' which define the
+#' a data frame with the variables x, y, speed, and 'pause' which define the
 #' coordinates of the fix-points on the shipping routes and the speeds that ships
 #' have after passing the fix point and until reaching the next fix point. The
-#' variable 'break' instructs ships about how many tick to wait before continuing
+#' variable 'pause' instructs ships about how many minutes to wait before continuing
 #' to move.
 #' @note The unit of 'speed' is knots.
 #' @seealso \code{\link{ships}}
@@ -329,8 +329,8 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
   n.routes <- length(value)
   out <- data.frame("name"=rep("", length=n.routes), "route"=NA)
   for (i in 1:n.routes) {
-    if (!all(names(value[[i]])==c("x", "y", "speed", "break"))) {
-      stop(paste("The names of element", i, "in 'value' is not 'x', 'y', 'speed', and 'break"))
+    if (!all(names(value[[i]])==c("x", "y", "speed", "pause"))) {
+      stop(paste("The names of element", i, "in 'value' is not 'x', 'y', 'speed', and 'pause"))
     }
     out$route[i] <- value[i]
     out$name[i] <- names(value[i])
@@ -345,7 +345,7 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' @name ais.to.DeponsShips
 #' @description Crop one or more ship tracks to the extent of a landscape
 #' and convert the data into a \code{DeponsShips-class} object. The in the
-#' 'break' in the \code{DeponsShips} object corresponds to the number of half-hour
+#' 'pause' in the \code{DeponsShips} object corresponds to the number of half-hour
 #' intervals where ships do not move, e.g. when in a port.
 #' @param data data.frame with ship positions and the times at which the
 #' positions were recorded
@@ -496,7 +496,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     # repeat last know speed for last buoy
     speed <- c(speed, speed[length(speed)])
 
-    # Calculate duration of breaks & collapse rows where ship not moving:
+    # Calculate duration of pauses & collapse rows where ship not moving:
     # Set 0.1 knots as a threshold for moving
     new_speeds<-ifelse(speed<=0.1, 0, speed)
 
@@ -507,53 +507,53 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     recurringZero$y<-one.track$y
     recurringZero$time<-one.track$time
 
-    # Add a break id so that break duration can be summed by break id
-    seq_length<-rle(recurringZero$recurringSpeed)$lengths # Calculate duration of break ids
+    # Add a pause id so that pause duration can be summed by pause id
+    seq_length<-rle(recurringZero$recurringSpeed)$lengths # Calculate duration of pause ids
     NoIds<-length(seq_length)
-    recurringZero$break_no<-rep(1:NoIds, seq_length)
+    recurringZero$pause_no<-rep(1:NoIds, seq_length)
 
-    # Sum recurring zeros to calculate duration of breaks  &
+    # Sum recurring zeros to calculate duration of pauses  &
     # Find out what the next non-zero speed is and re-label this row
-    breaks<-aggregate(recurringZero$recurringSpeed, list(recurringZero$break_no), FUN=sum)
-    recurringZero$breakTime<-rep(breaks$x, seq_length)
+    pauses<-aggregate(recurringZero$recurringSpeed, list(recurringZero$pause_no), FUN=sum)
+    recurringZero$pauseTime<-rep(pauses$x, seq_length)
     lead_lag <- function(v, n) {
       if (n > 0) c(rep(NA, n), head(v, length(v) - n))
       else c(tail(v, length(v) - abs(n)), rep(NA, abs(n)))
     }
     recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$recurringSpeed, +1), recurringZero$recurringSpeed)
-    recurringZero$new_breakno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$break_no, +1), recurringZero$break_no)
+    recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
 
     # Only collapse dataset if there are pauses
-    if (max(recurringZero$breakTime)>0) {
+    if (max(recurringZero$pauseTime)>0) {
 
-      # Collapse recurring zeros & average x/y lox per break as AIS coordinates can jitter around
-      breaks<-recurringZero[recurringZero$new_recurringSpeed==1,]
-      max_speed<-aggregate(breaks$new_speeds, list(breaks$new_breakno), FUN=max)
-      new_x<-aggregate(breaks$x, list(breaks$new_breakno), FUN=mean)
-      new_y<-aggregate(breaks$y, list(breaks$new_breakno), FUN=mean)
-      new_time<-aggregate(breaks$time, list(breaks$new_breakno), FUN=min)
-      new_breakTime<-aggregate(breaks$breakTime, list(breaks$new_breakno), FUN=max)
+      # Collapse recurring zeros & average x/y lox per pause as AIS coordinates can jitter around
+      pauses<-recurringZero[recurringZero$new_recurringSpeed==1,]
+      max_speed<-aggregate(pauses$new_speeds, list(pauses$new_pauseno), FUN=max)
+      new_x<-aggregate(pauses$x, list(pauses$new_pauseno), FUN=mean)
+      new_y<-aggregate(pauses$y, list(pauses$new_pauseno), FUN=mean)
+      new_time<-aggregate(pauses$time, list(pauses$new_pauseno), FUN=min)
+      new_pauseTime<-aggregate(pauses$pauseTime, list(pauses$new_pauseno), FUN=max)
 
-      # Create new data frame with these values per break id
-      breaks_collapsed<-data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x), max_speed$Group.1,
-                                   new_breakTime$x, rep(1), max_speed$Group.1)
-      colnames(breaks_collapsed)<-c("new_speeds", "recurringSpeed", "x", "y", "time", "break_no", "breakTime",
-                                    "new_recurringSpeed", "new_breakno")
+      # Create new data frame with these values per pause id
+      pauses_collapsed<-data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x), max_speed$Group.1,
+                                   new_pauseTime$x, rep(1), max_speed$Group.1)
+      colnames(pauses_collapsed)<-c("new_speeds", "recurringSpeed", "x", "y", "time", "pause_no", "pauseTime",
+                                    "new_recurringSpeed", "new_pauseno")
 
       # Join with the rest of the dataset & arrange by time
       movingperiods<-recurringZero[recurringZero$new_recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
-      breaks_joined<-rbind(movingperiods, breaks_collapsed)
-      breaks_joined<-breaks_joined[order(breaks_joined$time),]
+      pauses_joined<-rbind(movingperiods, pauses_collapsed)
+      pauses_joined<-pauses_joined[order(pauses_joined$time),]
 
     } else {
 
-      breaks_joined<-recurringZero
+      pauses_joined<-recurringZero
 
     }
 
     # Save route characteristics
-    one.route <- data.frame("x"=breaks_joined$x, "y"=breaks_joined$y, "speed"=breaks_joined$new_speeds, "break"=breaks_joined$breakTime)
-    names(one.route)[4] <- "break"
+    one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y, "speed"=pauses_joined$new_speeds, "pause"=pauses_joined$pauseTime)
+    names(one.route)[4] <- "pause"
     all.routes[[i]] <- one.route
   }
   names(all.routes) <- paste("Route", ids, sep="_")

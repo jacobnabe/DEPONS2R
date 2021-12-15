@@ -148,7 +148,7 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @param turb.dist Distance between turbines within a wind farm (meters)
 #' @param min.wf.dist Minimum distance between wind farms (meters)
 #' @param impact Sound source level (dB); sound emitted from turbines during
-#' construction, i.e. from tick.start to tick.end (including both start and end)
+#' construction, i.e. from tickStart to tickEnd (including both start and end)
 #' @param constr.start The tick at which construction of the first turbine starts.
 #' @param constr.end The tick at which construction of the very last turbine in
 #' the last wind farm ends.
@@ -278,8 +278,8 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   constr.end <- floor(constr.end)
   constr.time <- floor(constr.time)
   constr.break <- floor(constr.break)
-  all.wfs$tick.start <- NA
-  all.wfs$tick.end <- NA
+  all.wfs$tickStart <- NA
+  all.wfs$tickEnd <- NA
   # Add start and end time for one turbine at a time
   current.tick <- constr.start
   for (w in 1:max(all.wfs$wf)) {
@@ -290,8 +290,8 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     if(expected.end.tick > constr.end) current.tick <- constr.start
     for (tt in 1:max(sel.wf$t)) {
       sel.row <- which(all.wfs$wf==w & all.wfs$t==tt)
-      all.wfs[sel.row,]$tick.start <- current.tick
-      all.wfs[sel.row,]$tick.end <- current.tick+constr.time
+      all.wfs[sel.row,]$tickStart <- current.tick
+      all.wfs[sel.row,]$tickEnd <- current.tick+constr.time
       current.tick <- current.tick + constr.time + constr.break
     }
   }
