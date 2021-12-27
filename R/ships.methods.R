@@ -485,8 +485,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     one.track<-one.track[order(one.track$time),]
     dx <- one.track$x[2:length(one.track$x)] - one.track$x[1:(length(one.track$x)-1)]
     dy <- one.track$y[2:length(one.track$y)] - one.track$y[1:(length(one.track$y)-1)]
-    dt <- difftime(one.track$time[2:length(one.track$time)],
-                   one.track$time[1:(length(one.track$time)-1)],
+    dt <- difftime(one.track$time[2:length(one.track$time)], one.track$time[1:(length(one.track$time)-1)],
                    units="secs")
     dist <- sqrt(dx^2 + dy^2)
     speed <- dist/as.numeric(dt)
@@ -512,9 +511,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     seq_length<-rle(recurringZero$recurringSpeed)$lengths # Calculate duration of pause ids
     NoIds<-length(seq_length)
     recurringZero$pause_no<-rep(1:NoIds, seq_length)
-    recurringZero$duration<-c(as.numeric(difftime(recurringZero$time[2:nrow(recurringZero)],
-                                                  recurringZero$time[1:nrow(recurringZero)-1],
-                                                  units=c("mins"))), 0)
+    recurringZero$duration<-c(as.numeric(difftime(recurringZero$time[2:nrow(recurringZero)], recurringZero$time[1:nrow(recurringZero)-1], units=c("mins"))), 0)
     recurringZero$duration<-ifelse(recurringZero$recurringSpeed==0, 0, recurringZero$duration)
 
     # Sum recurring zeros to calculate duration of pauses  &
@@ -525,10 +522,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
       if (n > 0) c(rep(NA, n), head(v, length(v) - n))
       else c(tail(v, length(v) - abs(n)), rep(NA, abs(n)))
     }
-    recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==0,
-                                             lead_lag(recurringZero$recurringSpeed, +1), recurringZero$recurringSpeed)
-    recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0,
-                                      lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
+    recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$recurringSpeed, +1), recurringZero$recurringSpeed)
+    recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
 
     # Only collapse dataset if there are pauses
     if (max(recurringZero$pauseTime)>0) {
@@ -549,7 +544,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
 
       # Join with the rest of the dataset & arrange by time
       movingperiods<-recurringZero[recurringZero$new_recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
-      movingperiods<-subset(movingperiods, select=-c(duration))
+      movingperiods<-movingperiods[-c(7)]
       pauses_joined<-rbind(movingperiods, pauses_collapsed)
       pauses_joined<-pauses_joined[order(pauses_joined$time),]
 
@@ -574,6 +569,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 }
+
+
 
 
 
