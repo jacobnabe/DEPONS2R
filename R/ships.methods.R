@@ -562,14 +562,13 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
   names(all.routes) <- paste("Route", ids, sep="_")
   routes(all.cropped.DS) <- all.routes
   # Now, add the ships
-  all.ships <- all.cropped.tracks[, c("id", "type", "length")]
+  all.ships <- unique(all.cropped.tracks[, c("id", "type", "length")])
   names(all.ships)[1] <- "name"
-  all.ships$route <- paste0("Route_", all.cropped.tracks$id)
+  all.ships$route <- paste0("Route_", unique(all.cropped.tracks$id))
   ships(all.cropped.DS) <- all.ships
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 }
-
 
 
 
