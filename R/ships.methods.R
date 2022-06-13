@@ -20,8 +20,8 @@
 #' simulations, and the routes they occur on. The data frame includes the variables
 #' 'name', 'type', 'length', 'route' 'tickStart', and 'tickEnd'. Info can be
 #' extracted using the \code{\link{ships}} function.
-#' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}} and
-#' \code{\link[DEPONS2R]{read.DeponsShips}}
+#' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}},
+#' code\{\link{ais.to.DeponsShips}} and \code{\link[DEPONS2R]{read.DeponsShips}}
 #' @examples
 #' data(shipdata)
 #' ships(shipdata)[1:10,]
@@ -59,6 +59,7 @@ setMethod("initialize", "DeponsShips",
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
 #' @param crs Character, coordinate reference system (map projection)
+#' @seealso code\{\link{ais.to.DeponsShips}}
 #' @return Returns an object with the elements \code{title} \code{landscape},
 #' \code{crs}, \code{routes} and \code{ships}.
 #' @export read.DeponsShips
@@ -343,10 +344,13 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 
 #' @title Convert ship tracks to DeponsShips object
 #' @name ais.to.DeponsShips
-#' @description Crop one or more ship tracks to the extent of a landscape
-#' and convert the data into a \code{DeponsShips-class} object. The in the
-#' 'pause' in the \code{DeponsShips} object corresponds to the number of half-hour
-#' intervals where ships do not move, e.g. when in a port.
+#' @description Convert Automatic Identification System (AIS) data for ships to
+#' ship track objects. This is done by cropping one or more ship tracks to the
+#' extent of a landscape and converting the data to a \code{DeponsShips-class}
+#' object. If the AIS data does not include ship positions recorded in half-hour
+#' steps, the tracks are intrapolated to make objects suitable for use in DEPONS.
+#' The 'pause' in the \code{DeponsShips} object corresponds to the number of half-hour
+#' intervals where ships do not move at a specific position, e.g. when in a port.
 #' @param data data.frame with ship positions and the times at which the
 #' positions were recorded
 #' @param landsc A \code{DeponsRaster} object corresponding to the
@@ -354,14 +358,15 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' of the ship positions corresponds to that of the DeponsRaster object
 #' @param title Title of the output object
 #' @return Returns a \code{DeponsShips} object
-#' @seealso \code{\link{aisdata}} can be used as input to as.DeponsShips
+#' @seealso \code{\link{aisdata}} for an example of data that can be used as
+#' input to ais.to.DeponsShips
 #' @export ais.to.DeponsShips
 #' @examples
 #' data(aisdata)
 #' plot(aisdata$x, aisdata$y, type="n", asp=1)
 #' ids <- sort(unique(aisdata$id))
 #' my.colors <- rainbow(length(ids))
-#' for (i in length(ids)) {
+#' for (i in 1:length(ids)) {
 #'   id <- ids[i]
 #'   points(aisdata$x[aisdata$id==id], aisdata$y[aisdata$id==id],
 #'      cex=0.6, col=my.colors[i])
@@ -569,7 +574,4 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 }
-
-
-
 
