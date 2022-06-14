@@ -40,6 +40,6 @@ routes(shipdata)
 plot(shipdata, col=c("red", "purple", "blue"))
 }
 \seealso{
-\code{\link[DEPONS2R]{plot.DeponsShips}} and
-\code{\link[DEPONS2R]{read.DeponsShips}}
+\code{\link{plot.DeponsShips}},
+\code{\link[DEPONS2R]{ais.to.DeponsShips}} and \code{\link[DEPONS2R]{read.DeponsShips}}
 }

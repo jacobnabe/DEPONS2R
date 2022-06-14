@@ -17,20 +17,36 @@ of the ship positions corresponds to that of the DeponsRaster object}
 \item{title}{Title of the output object}
 }
 \value{
-Returns a \code{DeponsShips} object
+Returns a \code{DeponsShips} object containing one or more ships
+assigned to each of the routes in the object. All ships on a particular
+route move at the same speed between along the route. The routes are
+defined by x and y coordinates based on the same coordinate reference
+system the landscape they are located in. The speed that ships use after
+reaching a particular position (a particular 'virtual buoy') is calculated
+from the distance to the following position, and the time it takes reaching
+that position. If speed is included in the input AIS data, this is NOT used.
+The routes include one position per half-hour time step, corresponding to
+the default time step used in the DEPONS model. If input data does not
+include one position per half hour, new positions are generated using linear
+interpolation. If the input data contains many positions in a particular
+half-hour interval, only the positions closest to the half-hour interval are
+used. The routes contain information about the number of half-hour
+intervals were ships should 'pause' at a particular location, e.g. in a
+port.
 }
 \description{
-Crop one or more ship tracks to the extent of a landscape
-and convert the data into a \code{DeponsShips-class} object. The in the
-'pause' in the \code{DeponsShips} object corresponds to the number of half-hour
-intervals where ships do not move, e.g. when in a port.
+Convert Automatic Identification System (AIS) data for ships to
+ship track objects. This is done by cropping one or more ship tracks to the
+extent of a landscape and converting the data to a \code{DeponsShips-class}
+object. If the AIS data does not include ship positions recorded in half-hour
+steps, the tracks are interpolated to make objects suitable for use in DEPONS.
 }
 \examples{
 data(aisdata)
 plot(aisdata$x, aisdata$y, type="n", asp=1)
 ids <- sort(unique(aisdata$id))
 my.colors <- rainbow(length(ids))
-for (i in length(ids)) {
+for (i in 1:length(ids)) {
   id <- ids[i]
   points(aisdata$x[aisdata$id==id], aisdata$y[aisdata$id==id],
      cex=0.6, col=my.colors[i])
@@ -45,5 +61,9 @@ for (i in 1:length(ids)) {
 }
 }
 \seealso{
-\code{\link{aisdata}} can be used as input to as.DeponsShips
+\code{\link{aisdata}} for an example of data that can be used as
+input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} for a
+description of the interpolation procedure. See \code{\link{routes}},
+\code{\link{ships}}, and \code{\link{title}} for inspection of the generated
+object.
 }

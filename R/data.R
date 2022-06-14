@@ -90,7 +90,7 @@
 #' and energy availability is recorded for the entire landscape.
 #' @format DeponsDyn
 #' @keywords datasets
-#' @seealso \code{\link{DeponsDyn-class}}, \code{\link{porpoisebdyn}}
+#' @seealso \code{\link{DeponsDyn-class}} and \code{\link{porpoisebdyn}}.
 # data("porpoisedyn")
 
 #' @name porpoisebdyn
@@ -116,8 +116,9 @@
 #' simulated animal. \code{simtime} is the simulation date.
 #' @format DeponsTrack
 #' @keywords datasets
-#' @seealso \code{\link{DeponsTrack-class}}
-# data("porpoisetrack")
+#' @seealso \code{\link{DeponsTrack-class}}. See
+#' \code{\link[DEPONS2R]{plot.DeponsTrack}} for plotting of simulated tracks.
+#data("porpoisetrack")
 
 
 

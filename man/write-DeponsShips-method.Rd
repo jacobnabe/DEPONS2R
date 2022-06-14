@@ -3,7 +3,7 @@
 \name{write,DeponsShips-method}
 \alias{write,DeponsShips-method}
 \alias{write.DeponsShips}
-\title{Writing DEPONS ship files}
+\title{Write DEPONS ship files}
 \usage{
 \S4method{write}{DeponsShips}(x, file)
 }

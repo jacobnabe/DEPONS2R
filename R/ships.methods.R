@@ -1,7 +1,5 @@
 
 
-
-
 #' @title DeponsShips-class
 #' @description Objects containing ship routes and ships
 #' @description Methods for manipulating, plotting and analyzing ship routes
@@ -20,8 +18,8 @@
 #' simulations, and the routes they occur on. The data frame includes the variables
 #' 'name', 'type', 'length', 'route' 'tickStart', and 'tickEnd'. Info can be
 #' extracted using the \code{\link{ships}} function.
-#' @seealso \code{\link[DEPONS2R]{plot.DeponsShips}},
-#' code\{\link{ais.to.DeponsShips}} and \code{\link[DEPONS2R]{read.DeponsShips}}
+#' @seealso \code{\link{plot.DeponsShips}},
+#' \code{\link[DEPONS2R]{ais.to.DeponsShips}} and \code{\link[DEPONS2R]{read.DeponsShips}}
 #' @examples
 #' data(shipdata)
 #' ships(shipdata)[1:10,]
@@ -47,7 +45,100 @@ setMethod("initialize", "DeponsShips",
 
 
 
-#' @title Reading DEPONS ship files
+#' @title Interpolate AIS data
+#' @name interpolate.ais.data
+#' @description Interpolates ship movement tracks obtained from Automatic
+#' Identification System (AIS) data to obtain exactly one position per 30
+#' minutes. The first and last position in the original track are omitted
+#' unless minutes = 0 or 30 and seconds = 0.
+#' @param aisdata Data frame including the columns 'id' (ship identifier),
+#' 'time' (text string readable by \code{\link{as.POSIXct}}), 'x' and 'y'
+#' (recorded ship position, unit: meters), and potentially additional columns
+#' @return Returns a data frame with the same columns as the input data
+#' @seealso \code{\link{read.DeponsShips}}
+#' @examples
+#' data(aisdata)
+#' ais.testdata <- aisdata[c(12,14,16) ,]
+#' plot(ais.testdata[c("x", "y")], asp=1, col="green", pch=16, xlim=c(780000, 837000))
+#' lines(ais.testdata[c("x", "y")])
+#' # Add 600 sec to 'time' to mis-allign with intervcal needed
+#' ais.testdata$time <- as.character(as.POSIXlt(ais.testdata$time)+600)
+#' text(ais.testdata[c("x", "y")]-900, ais.testdata$time, adj=0, cex=0.5)
+#' interpolated <- interpolate.ais.data(ais.testdata)
+#' points(interpolated[,c("x", "y")], col="red")
+#' text(interpolated[c("x", "y")]-900, interpolated$time, adj=0, cex=0.5)
+#' legend("bottomright", bty="n", pch=c(16, 1), col=c("green", "red"),
+#'     legend=c("original positions", "interpolated"))
+#' @export interpolate.ais.data
+interpolate.ais.data <- function(aisdata) {
+  if(!("x" %in% names(aisdata))) stop("aisdata must contain the column 'x'")
+  if(!("y" %in% names(aisdata))) stop("aisdata must contain the column 'y'")
+  if(!("time" %in% names(aisdata))) stop("aisdata must contain the column 'time'")
+  if(!("id" %in% names(aisdata))) stop("aisdata must contain the column 'id'")
+  if(!class(aisdata$time)=="character") stop("'time' must be character")
+  # Interpolate for one id at a time (=one track)
+  ids <- sort(unique(aisdata$id))
+  out.data <- data.frame()
+  for (the.id in ids) {
+    aisdata.one.id <- aisdata[aisdata$id==the.id ,]
+    # Get time of first half-hour position in track (whether it exists or not)
+    t.first <- aisdata.one.id[1,"time"]
+    mins <- as.numeric(substr(t.first, nchar(t.first)-4, nchar(t.first)-3))
+    secs <- as.numeric(substr(t.first, nchar(t.first)-1, nchar(t.first)))
+    if(mins==0 && secs==0) {
+      new.t.first <- t.first
+    } else if(mins<30) {
+      secs.to.add <- 60*(30-mins)
+      new.t.first <- as.character(as.POSIXct(t.first)+secs.to.add)
+    } else {
+      secs.to.add <- 60*(60-mins)
+      new.t.first <- as.character(as.POSIXct(t.first)+secs.to.add)
+    }
+    # Get time of last half-hour position in track (whether it exists or not)
+    t.last <- aisdata.one.id[nrow(aisdata.one.id),"time"]
+    mins <- as.numeric(substr(t.last, nchar(t.last)-4, nchar(t.last)-3))
+    new.mins <- ifelse(mins<30, "00", "30")
+    substr(t.last, nchar(t.last)-4, nchar(t.last)-3)	 <- new.mins
+    new.t.last <- t.last
+    all.new.times <- seq(as.POSIXct(new.t.first), as.POSIXct(new.t.last), (60*30))
+    # Find out which positions to interpolate between
+    secs.org.pos <- as.numeric(as.POSIXlt(aisdata.one.id$time))
+    secs.new.pos <- as.numeric(all.new.times)
+    last.org.pos <- function(x) max(which(secs.org.pos<=secs.new.pos[x]))
+    next.org.pos <- function(x) {
+      if(!any(secs.org.pos > secs.new.pos[x])) return(NA) # happens if pos is on half-hr
+      the.next.pos <- min(which(secs.org.pos>secs.new.pos[x]))
+    }
+    # Find positions to interpolate between for each new pos
+    interp.start.pos <- sapply(1:length(all.new.times), FUN="last.org.pos")
+    interp.end.pos <- sapply(1:length(all.new.times), FUN="next.org.pos")
+    secs.from.start.pos <- secs.new.pos - secs.org.pos[interp.start.pos]
+    secs.to.end.pos <- secs.org.pos[interp.end.pos] - secs.new.pos
+    # Proportion of next step to move before reaching half-hour position
+    prop.of.step <- secs.from.start.pos / (secs.from.start.pos+secs.to.end.pos)
+    # select proportion of x and y steps to move
+    new.x <- aisdata.one.id$x[interp.start.pos] +
+      prop.of.step * (aisdata.one.id$x[interp.end.pos] - aisdata.one.id$x[interp.start.pos])
+    new.y <- aisdata.one.id$y[interp.start.pos] +
+      prop.of.step * (aisdata.one.id$y[interp.end.pos] - aisdata.one.id$y[interp.start.pos])
+    new.time <- as.POSIXct(aisdata.one.id$time[interp.start.pos]) +
+      prop.of.step * (as.numeric(as.POSIXct(aisdata.one.id$time[interp.end.pos])) -
+                        as.numeric(as.POSIXct(aisdata.one.id$time[interp.start.pos])) )
+    new.time <- as.character(new.time)
+    substr(new.time, nchar(new.time)-1, nchar(new.time)) <- "00"
+    other.columns <- names(aisdata.one.id)[(!(names(aisdata.one.id) %in% c("id", "time", "x", "y")))]
+    other.columns <- aisdata.one.id[interp.start.pos, other.columns]
+    out.data.one.id <- data.frame("id"=the.id, other.columns, "x"=new.x, "y"=new.y, "time"=new.time)
+    out.data.one.id <- out.data.one.id[!is.na(out.data.one.id$x) ,]
+    out.data <- rbind(out.data, out.data.one.id)
+  }
+  row.names(out.data) <- NULL
+  return(out.data)
+}
+
+
+
+#' @title Read DEPONS ship files
 #' @description Function  for reading the json-files that are used for controlling
 #' how ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
 #' time steps. The routes are defined by the fix-points provided in the
@@ -59,7 +150,7 @@ setMethod("initialize", "DeponsShips",
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
 #' @param crs Character, coordinate reference system (map projection)
-#' @seealso code\{\link{ais.to.DeponsShips}}
+#' @seealso \code{\link{ais.to.DeponsShips}}
 #' @return Returns an object with the elements \code{title} \code{landscape},
 #' \code{crs}, \code{routes} and \code{ships}.
 #' @export read.DeponsShips
@@ -115,7 +206,7 @@ setMethod("show", "DeponsShips",
 )
 
 
-#' @title Writing DEPONS ship files
+#' @title Write DEPONS ship files
 #' @aliases write,DeponsShips-method
 #' @aliases write.DeponsShips
 #' @description Function  for writing a json-file for controlling
@@ -348,18 +439,34 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' ship track objects. This is done by cropping one or more ship tracks to the
 #' extent of a landscape and converting the data to a \code{DeponsShips-class}
 #' object. If the AIS data does not include ship positions recorded in half-hour
-#' steps, the tracks are intrapolated to make objects suitable for use in DEPONS.
-#' The 'pause' in the \code{DeponsShips} object corresponds to the number of half-hour
-#' intervals where ships do not move at a specific position, e.g. when in a port.
+#' steps, the tracks are interpolated to make objects suitable for use in DEPONS.
 #' @param data data.frame with ship positions and the times at which the
 #' positions were recorded
 #' @param landsc A \code{DeponsRaster} object corresponding to the
 #' landscape that the ships move in. It is assumed that the spatial projection
 #' of the ship positions corresponds to that of the DeponsRaster object
 #' @param title Title of the output object
-#' @return Returns a \code{DeponsShips} object
+#' @return Returns a \code{DeponsShips} object containing one or more ships
+#' assigned to each of the routes in the object. All ships on a particular
+#' route move at the same speed between along the route. The routes are
+#' defined by x and y coordinates based on the same coordinate reference
+#' system the landscape they are located in. The speed that ships use after
+#' reaching a particular position (a particular 'virtual buoy') is calculated
+#' from the distance to the following position, and the time it takes reaching
+#' that position. If speed is included in the input AIS data, this is NOT used.
+#' The routes include one position per half-hour time step, corresponding to
+#' the default time step used in the DEPONS model. If input data does not
+#' include one position per half hour, new positions are generated using linear
+#' interpolation. If the input data contains many positions in a particular
+#' half-hour interval, only the positions closest to the half-hour interval are
+#' used. The routes contain information about the number of half-hour
+#' intervals were ships should 'pause' at a particular location, e.g. in a
+#' port.
 #' @seealso \code{\link{aisdata}} for an example of data that can be used as
-#' input to ais.to.DeponsShips
+#' input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} for a
+#' description of the interpolation procedure. See \code{\link{routes}},
+#' \code{\link{ships}}, and \code{\link{title}} for inspection of the generated
+#' object.
 #' @export ais.to.DeponsShips
 #' @examples
 #' data(aisdata)
@@ -392,6 +499,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
   if(!(class(data$x)=="numeric")) stop("'x' must be numeric")
   if(!(class(data$y)=="numeric")) stop("'y' must be numeric")
   if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")
+  data <- interpolate.ais.data(data)
   message(paste0("Conversion assumes that 'x' and 'y' coordinates of ships use the '",
                  crs(landsc), "' projection"))
   time <- try(as.POSIXlt(data$time, tz="UTC"))
@@ -399,8 +507,9 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     stop("'time' must be of the form 'YYYY-MM-DD HH:MM:SS' for conversion to POSIXlt")
   data$time <- time
   bb <- bbox(landsc)
-  # For each track in 'data': find places where the track crosses bb and make linear intrapolation to
-  # place new waypoint at the edge of the landscape -- then remove waypoints outside the edge from the route
+  # For each track in 'data': find places where the track crosses bb and make
+  # linear intrapolation to place new waypoint at the edge of the landscape --
+  # then remove waypoints outside the edge from the route
   get.n.or.s.cross <- function(a.track, cross.row) {
     moving.out <- a.track$inside[cross.row] && !a.track$inside[cross.row+1]
     # if(moving.out) cross.row <- cross.row+1

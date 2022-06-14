@@ -2,7 +2,7 @@
 % Please edit documentation in R/ships.methods.R
 \name{read.DeponsShips}
 \alias{read.DeponsShips}
-\title{Reading DEPONS ship files}
+\title{Read DEPONS ship files}
 \usage{
 read.DeponsShips(fname, title = "NA", landscape = "NA", crs = as.character(NA))
 }
@@ -27,4 +27,7 @@ how ship agents behave in DEPONS. Ships move along pre-defined routes in 30-min
 time steps. The routes are defined by the fix-points provided in the
 json file, and the geographic projection is assumed to match that of the
 landscape.
+}
+\seealso{
+\code{\link{ais.to.DeponsShips}}
 }
