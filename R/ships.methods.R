@@ -441,11 +441,17 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' object. If the AIS data does not include ship positions recorded in half-hour
 #' steps, the tracks are interpolated to make objects suitable for use in DEPONS.
 #' @param data data.frame with ship positions and the times at which the
-#' positions were recorded
+#' positions were recorded. Must contain the columns 'id', 'time' (of the form
+#' "%Y-%m-%d %H:%M:%S", character, see \code{\link{as.POSIXct}}), 'type' (ship
+#' type, character), 'length' (ship length, meters), 'x', and 'y' (position, meters).
 #' @param landsc A \code{DeponsRaster} object corresponding to the
 #' landscape that the ships move in. It is assumed that the spatial projection
 #' of the ship positions corresponds to that of the DeponsRaster object
 #' @param title Title of the output object
+#' @param ... Optional parameters, including 'min.date' and 'max.date'
+#' ("%Y-%m-%d %H:%M:%S", character) for defining the first and last date to use
+#' from 'data'. If min.date = max.date the output object will contain up to
+#' 48 positions from the selected date for each vessel track.
 #' @return Returns a \code{DeponsShips} object containing one or more ships
 #' assigned to each of the routes in the object. All ships on a particular
 #' route move at the same speed between along the route. The routes are
@@ -462,17 +468,18 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' used. The routes contain information about the number of half-hour
 #' intervals were ships should 'pause' at a particular location, e.g. in a
 #' port.
+#'
 #' @seealso \code{\link{aisdata}} for an example of data that can be used as
-#' input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} for a
-#' description of the interpolation procedure. See \code{\link{routes}},
-#' \code{\link{ships}}, and \code{\link{title}} for inspection of the generated
-#' object.
-#' @export ais.to.DeponsShips
+#' input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} interpolation
+#' of tracks. See \code{write.DeponsShips} for conversion of \code{DeponsShips}
+#' objects to json-files to be used in DEPONS. \code{\link{routes}},
+#' \code{\link{ships}}, and \code{\link{title}} enable inspection/modification
+#' of the ship tracks.
 #' @examples
 #' data(aisdata)
 #' plot(aisdata$x, aisdata$y, type="n", asp=1)
 #' ids <- sort(unique(aisdata$id))
-#' my.colors <- rainbow(length(ids))
+#' my.colors <- heat.colors(length(ids))
 #' for (i in 1:length(ids)) {
 #'   id <- ids[i]
 #'   points(aisdata$x[aisdata$id==id], aisdata$y[aisdata$id==id],
@@ -483,22 +490,24 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' depons.ais <- ais.to.DeponsShips(aisdata, bathymetry)
 #' the.routes <- routes(depons.ais)
 #' for (i in 1:length(ids)) {
-#'   points(the.routes[[i]]$x, the.routes[[i]]$y,
-#'          cex=0.6, pch=16, col=my.colors[i])
+#' points(the.routes[[i]]$x, the.routes[[i]]$y,
+#'         cex=0.6, pch=16, col=my.colors[i])
 #' }
+#' @export ais.to.DeponsShips
 # setMethod("as", signature("data.frame", "DeponsRaster"), function(data, landsc, title="NA") {
-ais.to.DeponsShips <- function(data, landsc, title="NA") {
+ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   if(class(data)!="data.frame")
     stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
-  if(!all(names(data) %in% c('id', 'time', 'speed', 'type', 'length', 'x', 'y')))
-    stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
-  if(!all(c('id', 'time', 'speed', 'type', 'length', 'x', 'y') %in% names(data)))
-    stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
+  if(!all(c('id', 'time', 'type', 'length', 'x', 'y') %in% names(data)))
+    stop("data must be a data.frame with the variables 'id', 'time', 'type', 'length', 'x', and 'y'")
   if(!(class(data$speed)=="numeric")) stop("'speed' must be numeric")
   if(!(class(data$length)=="numeric" || class(data$length)=="integer")) stop("'length' must be numeric")
   if(!(class(data$x)=="numeric")) stop("'x' must be numeric")
   if(!(class(data$y)=="numeric")) stop("'y' must be numeric")
   if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")
+  dots <- list(...)
+  min.date <- ifelse("min.date" %in% names(dots), dots$min.date, "NA")
+  max.date <- ifelse("max.date" %in% names(dots), dots$max.date, "NA")
   data <- interpolate.ais.data(data)
   message(paste0("Conversion assumes that 'x' and 'y' coordinates of ships use the '",
                  crs(landsc), "' projection"))
@@ -507,6 +516,34 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     stop("'time' must be of the form 'YYYY-MM-DD HH:MM:SS' for conversion to POSIXlt")
   data$time <- time
   bb <- bbox(landsc)
+
+  # Calculate speed now that data has been interpolated
+  data.all<-list()
+  for (i in unique(data$id)) {
+    data_sub<-data[data$id==i,]
+    if(nrow(data_sub)<2) {
+      next
+    }
+    dx <- data_sub$x[2:length(data_sub$x)] - data_sub$x[1:(length(data_sub$x)-1)]
+    dy <- data_sub$y[2:length(data_sub$y)] - data_sub$y[1:(length(data_sub$y)-1)]
+    dt <- difftime(data_sub$time[2:length(data_sub$time)], data_sub$time[1:(length(data_sub$time)-1)],
+                   units="secs")
+    dist <- sqrt(dx^2 + dy^2)
+    speed <- dist/as.numeric(dt)
+    speed[is.na(speed)] <- 0 # replace NAs with 0
+    # convert to km per hour
+    speed <- speed * 60 * 60 / 1000
+    # convert to knots
+    speed <- speed/1.85200
+    # repeat last know speed for last buoy
+    speed <- c(speed, speed[length(speed)])
+    # Add to one track
+    data_sub$speed<-speed
+    # Save results
+    data.all<-rbind(data.all, data_sub)
+  }
+  data<-data.all
+
   # For each track in 'data': find places where the track crosses bb and make
   # linear intrapolation to place new waypoint at the edge of the landscape --
   # then remove waypoints outside the edge from the route
@@ -597,22 +634,152 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     id <- ids[i]
     one.track <- all.cropped.tracks[all.cropped.tracks$id==id,]
     one.track<-one.track[order(one.track$time),]
-    dx <- one.track$x[2:length(one.track$x)] - one.track$x[1:(length(one.track$x)-1)]
-    dy <- one.track$y[2:length(one.track$y)] - one.track$y[1:(length(one.track$y)-1)]
-    dt <- difftime(one.track$time[2:length(one.track$time)], one.track$time[1:(length(one.track$time)-1)],
-                   units="secs")
-    dist <- sqrt(dx^2 + dy^2)
-    speed <- dist/as.numeric(dt)
-    # convert to km per hour
-    speed <- speed * 60 * 60 / 1000
-    # convert to knots
-    speed <- speed/1.85200
-    # repeat last know speed for last buoy
-    speed <- c(speed, speed[length(speed)])
 
+    # Check all time stamps are full minutes if not they will need to be rounded up or down to nearest tick
+    # This happens when porps leave or enter via the edges of the landscape
+    one.track$secs<-as.numeric(substr(one.track$time, 18, 19))
+    one.track$hour<-substr(one.track$time, 12, 13)
+    one.track$mins<-as.numeric(substr(one.track$time, 15, 16))
+    one.track$mins<-ifelse(one.track$mins==30, 0, one.track$mins)
+
+    # These are times to round
+    times.to.round<-one.track[!one.track$mins==0 | !one.track$secs==0,]
+
+    if (nrow(times.to.round)>0) {
+
+      all.times.to.round<-list()
+
+      for (j in 1:nrow(times.to.round)) {
+
+        times.to.round.sub<-times.to.round[j,]
+        next.hour<-substr(times.to.round.sub$time + 60*60 , 12, 13)
+        times.to.round.sub$time.below<-ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30, as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", times.to.round.sub$hour, ":00:00"), tz="GMT"), as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", times.to.round.sub$hour, ":30:00"), tz="GMT"))
+        times.to.round.sub$time.above<-ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30, as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", times.to.round.sub$hour, ":30:00"), tz="GMT"), as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", next.hour, ":00:00"), tz="GMT"))
+
+        # Determine which time is in the dataset already
+        track.compare<-one.track
+        track.compare$time<-as.character(track.compare$time)
+        time1<-track.compare[track.compare$time==times.to.round.sub$time.below,]
+        time2<-track.compare[track.compare$time==times.to.round.sub$time.above,]
+
+        # Situation where both times are already in the landscape
+        if (nrow(time1)>0 & nrow(time2)>0) {
+
+          # Ship goes out at tick 1 and comes back at tick 2 (i.e. both surrounding times are in the dataset already)
+          times.to.round.sub$time<-times.to.round.sub$time.below
+          times.to.round.sub<-times.to.round.sub[,1:7]
+          times.to.round.sub$remove<-"TRUE"
+
+        } else {
+
+          # Situations where one time isn't in the landscape
+          if (nrow(time1)==0) {
+
+            times.to.round.sub$time<-times.to.round.sub$time.below
+            times.to.round.sub<-times.to.round.sub[,1:7]
+            times.to.round.sub$remove<-"FALSE"
+
+          } else {
+
+            times.to.round.sub$time<-times.to.round.sub$time.above
+            times.to.round.sub<-times.to.round.sub[,1:7]
+            times.to.round.sub$remove<-"FALSE"
+
+          }
+
+        }
+
+        all.times.to.round<-rbind(all.times.to.round, times.to.round.sub)
+
+      }
+
+      # These are times to round
+      all.times.to.round<-all.times.to.round[all.times.to.round$remove==FALSE,]
+      all.times.to.round<-all.times.to.round[,1:7]
+      one.track.good<-one.track[one.track$mins==0 & one.track$secs==0,]
+      one.track.good<-one.track.good[,1:7]
+      one.track<-rbind(one.track.good, all.times.to.round)
+      one.track<-one.track[order(one.track$time),]
+    }
+
+    one.track$time<-as.character(one.track$time)
+    one.track$time<-as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="GMT")
+    one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
+    one.track<-one.track[,1:7]
+
+    if (!min.date %in% c("NA")) {
+
+      # Add more coordinates to pad out to max duration of simulation
+      min.time.track<-min(one.track$time)
+      max.time.track<-max(one.track$time)
+      min.time<-as.POSIXct(min.date, tz="GMT")
+      max.time<-as.POSIXct(max.date, tz="GMT")
+      all.ticks<-data.frame(seq(min.time, max.time-30*60, 30*60))
+      colnames(all.ticks)<-c("time")
+      no.ticks<-nrow(all.ticks)
+      # Add missing ticks at start of day
+      if(!min.time.track==min.time) {
+        first.row<-one.track[1,]
+        time<-all.ticks[all.ticks$time < first.row$time,]
+        id<-rep(one.track$id[1], length(time))
+        speed<-rep(0, length(time))
+        type<-rep(first.row$type[1], length(time))
+        length<-rep(first.row$length[1], length(time))
+        x<-rep(first.row$x[1], length(time))
+        y<-rep(first.row$y[1], length(time))
+        rows.add<-data.frame(id, time, speed, type, length, x, y)
+        one.track<-rbind(rows.add, one.track)
+      }
+      # Add missing ticks at end of day
+      if(!max.time.track==(max.time)) {
+        last.row<-one.track[nrow(one.track),]
+        time<-all.ticks[all.ticks$time > last.row$time,]
+        id<-rep(one.track$id[1], length(time))
+        speed<-rep(0, length(time))
+        type<-rep(last.row$type[1], length(time))
+        length<-rep(last.row$length[1], length(time))
+        x<-rep(last.row$x[1], length(time))
+        y<-rep(last.row$y[1], length(time))
+        rows.add<-data.frame(id, time, speed, type, length, x, y)
+        one.track<-rbind(one.track, rows.add)
+      }
+      # Add missing ticks in middle of day
+      match<-subset(all.ticks, !(time %in% one.track$time))
+      if(nrow(match)>0) {
+        id<-rep(one.track$id[1], nrow(match))
+        speed<-rep(0, nrow(match))
+        type<-rep(one.track$type[1], nrow(match))
+        length<-rep(one.track$length[1],nrow(match))
+        x<-rep(NA, nrow(match))
+        y<-rep(NA, nrow(match))
+        rows.add<-data.frame(id, match, speed, type, length, x, y)
+        one.track<-rbind(one.track, rows.add)
+        one.track<-one.track[order(one.track$time),]
+
+        # Fill missing coordinates with next x & y values
+        NAs<-one.track[is.na(one.track$x),]
+        NAS_info<-list()
+
+        for (k in 1:nrow(NAs)) {
+          Na_sub<-NAs[k,]
+          # subset times afterwards
+          times.after<-one.track[one.track$time>Na_sub$time,]
+          times.after<-times.after[!is.na(times.after$x),]
+          # Fill in with first x/y
+          Na_sub$x<-times.after$x[1]
+          Na_sub$y<-times.after$y[1]
+          # Save results
+          NAS_info<-rbind(NAS_info, Na_sub)
+        }
+
+        one.track<-one.track[!is.na(one.track$x),]
+        one.track<-rbind(one.track, NAS_info)
+        one.track<-one.track[order(one.track$time),]
+      }
+    }
     # Calculate duration of pauses & collapse rows where ship not moving:
     # Set 0.1 knots as a threshold for moving
-    new_speeds<-ifelse(speed<=0.1, 0, speed)
+    new_speeds<-ifelse(one.track$speed<=0.1, 0, one.track$speed)
 
     # Label recurring 0s as 1s & add lox/time information
     recurringZero<-data.frame(new_speeds)
@@ -625,7 +792,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
     seq_length<-rle(recurringZero$recurringSpeed)$lengths # Calculate duration of pause ids
     NoIds<-length(seq_length)
     recurringZero$pause_no<-rep(1:NoIds, seq_length)
-    recurringZero$duration<-c(as.numeric(difftime(recurringZero$time[2:nrow(recurringZero)], recurringZero$time[1:nrow(recurringZero)-1], units=c("mins"))), 0)
+    recurringZero$duration<-30
     recurringZero$duration<-ifelse(recurringZero$recurringSpeed==0, 0, recurringZero$duration)
 
     # Sum recurring zeros to calculate duration of pauses  &
@@ -636,19 +803,20 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
       if (n > 0) c(rep(NA, n), head(v, length(v) - n))
       else c(tail(v, length(v) - abs(n)), rep(NA, abs(n)))
     }
-    recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$recurringSpeed, +1), recurringZero$recurringSpeed)
-    recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
+    recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==1, lead_lag(recurringZero$new_speeds, -1), recurringZero$new_speeds)
+    recurringZero$new_recurringSpeed<-ifelse(is.na(recurringZero$new_recurringSpeed), 0, recurringZero$new_recurringSpeed)
+    #recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
 
     # Only collapse dataset if there are pauses
-    if (max(recurringZero$pauseTime)>0) {
+    if (max(recurringZero$pauseTime, na.rm=TRUE)>0) {
 
       # Collapse recurring zeros & average x/y lox per pause as AIS coordinates can jitter around
-      pauses<-recurringZero[recurringZero$new_recurringSpeed==1,]
-      max_speed<-aggregate(pauses$new_speeds, list(pauses$new_pauseno), FUN=max)
-      new_x<-aggregate(pauses$x, list(pauses$new_pauseno), FUN=mean)
-      new_y<-aggregate(pauses$y, list(pauses$new_pauseno), FUN=mean)
-      new_time<-aggregate(pauses$time, list(pauses$new_pauseno), FUN=min)
-      new_pauseTime<-aggregate(pauses$pauseTime, list(pauses$new_pauseno), FUN=max)
+      pauses<-recurringZero[recurringZero$recurringSpeed==1,]
+      max_speed<-aggregate(pauses$new_recurringSpeed, list(pauses$pause_no), FUN=max)
+      new_x<-aggregate(pauses$x, list(pauses$pause_no), FUN=mean)
+      new_y<-aggregate(pauses$y, list(pauses$pause_no), FUN=mean)
+      new_time<-aggregate(pauses$time, list(pauses$pause_no), FUN=min)
+      new_pauseTime<-aggregate(pauses$pauseTime, list(pauses$pause_no), FUN=max)
 
       # Create new data frame with these values per pause id
       pauses_collapsed<-data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x), max_speed$Group.1,
@@ -657,8 +825,10 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
                                     "new_recurringSpeed", "new_pauseno")
 
       # Join with the rest of the dataset & arrange by time
-      movingperiods<-recurringZero[recurringZero$new_recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
+      movingperiods<-recurringZero[recurringZero$recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
       movingperiods<-movingperiods[-c(7)]
+      pauses_collapsed<-pauses_collapsed[-c(9)]
+      pauses_collapsed$new_recurringSpeed<-pauses_collapsed$new_speeds
       pauses_joined<-rbind(movingperiods, pauses_collapsed)
       pauses_joined<-pauses_joined[order(pauses_joined$time),]
 
@@ -667,10 +837,18 @@ ais.to.DeponsShips <- function(data, landsc, title="NA") {
       pauses_joined<-recurringZero
 
     }
-
-    # Save route characteristics
     one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y, "speed"=pauses_joined$new_speeds, "pause"=pauses_joined$pauseTime)
     names(one.route)[4] <- "pause"
+
+    if (!min.date %in% c("NA")) {
+      # Calculate number of ticks to make sure add up to 48
+      one.route$pause<-ifelse(one.route$pause==0, 1, one.route$pause)
+      ticks<-sum(one.route$pause)
+      if(!ticks %% no.ticks ==0)
+        stop("Tick number is wrong")
+    }
+
+    # Save route characteristics
     all.routes[[i]] <- one.route
   }
   names(all.routes) <- paste("Route", ids, sep="_")

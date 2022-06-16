@@ -4,17 +4,24 @@
 \alias{ais.to.DeponsShips}
 \title{Convert ship tracks to DeponsShips object}
 \usage{
-ais.to.DeponsShips(data, landsc, title = "NA")
+ais.to.DeponsShips(data, landsc, title = "NA", ...)
 }
 \arguments{
 \item{data}{data.frame with ship positions and the times at which the
-positions were recorded}
+positions were recorded. Must contain the columns 'id', 'time' (of the form
+"%Y-%m-%d %H:%M:%S", character, see \code{\link{as.POSIXct}}), 'type' (ship
+type, character), 'length' (ship length, meters), 'x', and 'y' (position, meters).}
 
 \item{landsc}{A \code{DeponsRaster} object corresponding to the
 landscape that the ships move in. It is assumed that the spatial projection
 of the ship positions corresponds to that of the DeponsRaster object}
 
 \item{title}{Title of the output object}
+
+\item{...}{Optional parameters, including 'min.date' and 'max.date'
+("%Y-%m-%d %H:%M:%S", character) for defining the first and last date to use
+from 'data'. If min.date = max.date the output object will contain up to
+48 positions from the selected date for each vessel track.}
 }
 \value{
 Returns a \code{DeponsShips} object containing one or more ships
@@ -45,7 +52,7 @@ steps, the tracks are interpolated to make objects suitable for use in DEPONS.
 data(aisdata)
 plot(aisdata$x, aisdata$y, type="n", asp=1)
 ids <- sort(unique(aisdata$id))
-my.colors <- rainbow(length(ids))
+my.colors <- heat.colors(length(ids))
 for (i in 1:length(ids)) {
   id <- ids[i]
   points(aisdata$x[aisdata$id==id], aisdata$y[aisdata$id==id],
@@ -56,14 +63,15 @@ plot(bathymetry, add=TRUE)
 depons.ais <- ais.to.DeponsShips(aisdata, bathymetry)
 the.routes <- routes(depons.ais)
 for (i in 1:length(ids)) {
-  points(the.routes[[i]]$x, the.routes[[i]]$y,
-         cex=0.6, pch=16, col=my.colors[i])
+points(the.routes[[i]]$x, the.routes[[i]]$y,
+        cex=0.6, pch=16, col=my.colors[i])
 }
 }
 \seealso{
 \code{\link{aisdata}} for an example of data that can be used as
-input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} for a
-description of the interpolation procedure. See \code{\link{routes}},
-\code{\link{ships}}, and \code{\link{title}} for inspection of the generated
-object.
+input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} interpolation
+of tracks. See \code{write.DeponsShips} for conversion of \code{DeponsShips}
+objects to json-files to be used in DEPONS. \code{\link{routes}},
+\code{\link{ships}}, and \code{\link{title}} enable inspection/modification
+of the ship tracks.
 }
