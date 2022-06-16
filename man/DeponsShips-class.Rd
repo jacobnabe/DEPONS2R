@@ -29,8 +29,8 @@ using the \code{\link{routes}} function.}
 
 \item{\code{ships}}{\code{data.frame} defining each of the ships occurring in DEPONS
 simulations, and the routes they occur on. The data frame includes the variables
-'name', 'type', 'length', 'route' 'tickStart', and 'tickEnd'. Info can be
-extracted using the \code{\link{ships}} function.}
+'name', 'type', 'length', and 'route'. Info can be extracted using the
+\code{\link{ships}} function.}
 }}
 
 \examples{
