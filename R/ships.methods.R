@@ -150,7 +150,7 @@ interpolate.ais.data <- function(aisdata) {
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
 #' @param crs Character, coordinate reference system (map projection)
-#' @seealso \code{\link{ais.to.DeponsShips}}
+#' @seealso \code{\link{ais.to.DeponsShips}}, \code{\link[DEPONS2R]{write.DeponsShips}}
 #' @return Returns an object with the elements \code{title} \code{landscape},
 #' \code{crs}, \code{routes} and \code{ships}.
 #' @export read.DeponsShips
@@ -443,20 +443,21 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' @param data data.frame with ship positions and the times at which the
 #' positions were recorded. Must contain the columns 'id', 'time' (of the form
 #' "%Y-%m-%d %H:%M:%S", character, see \code{\link{as.POSIXct}}), 'type' (ship
-#' type, character), 'length' (ship length, meters), 'x', and 'y' (position, meters).
+#' type, character), 'length' (ship length, meters), 'x', and 'y' (position,
+#' meters/UTM).
 #' @param landsc A \code{DeponsRaster} object corresponding to the
 #' landscape that the ships move in. It is assumed that the spatial projection
 #' of the ship positions corresponds to that of the DeponsRaster object
 #' @param title Title of the output object
-#' @param ... Optional parameters, including 'min.date' and 'max.date'
+#' @param ... Optional parameters, including 'startday' and 'endday'
 #' ("%Y-%m-%d %H:%M:%S", character) for defining the first and last date to use
-#' from 'data'. If min.date = max.date the output object will contain up to
+#' from 'data'. If startday = endday the output object will contain up to
 #' 48 positions from the selected date for each vessel track.
 #' @return Returns a \code{DeponsShips} object containing one or more ships
 #' assigned to each of the routes in the object. All ships on a particular
-#' route move at the same speed between along the route. The routes are
+#' route move at the same speed along the route. The routes are
 #' defined by x and y coordinates based on the same coordinate reference
-#' system the landscape they are located in. The speed that ships use after
+#' system as the landscape they are located in. The speed that ships use after
 #' reaching a particular position (a particular 'virtual buoy') is calculated
 #' from the distance to the following position, and the time it takes reaching
 #' that position. If speed is included in the input AIS data, this is NOT used.
@@ -466,18 +467,18 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' interpolation. If the input data contains many positions in a particular
 #' half-hour interval, only the positions closest to the half-hour interval are
 #' used. The routes contain information about the number of half-hour
-#' intervals were ships should 'pause' at a particular location, e.g. in a
-#' port.
+#' intervals were ships 'pause' at a particular location, e.g. in a
+#' port. These are calculated based on the input AIS data.
 #'
 #' @seealso \code{\link{aisdata}} for an example of data that can be used as
 #' input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} interpolation
-#' of tracks. See \code{write.DeponsShips} for conversion of \code{DeponsShips}
-#' objects to json-files to be used in DEPONS. \code{\link{routes}},
-#' \code{\link{ships}}, and \code{\link{title}} enable inspection/modification
-#' of the ship tracks.
+#' of tracks. See \code{\link[DEPONS2R]{write.DeponsShips}} for conversion of
+#' \code{DeponsShips} objects to json-files to be used in DEPONS. Use
+#' \code{\link{routes}}, \code{\link{ships}}, and \code{\link{title}} for
+#' inspection/modification of the ship tracks.
 #' @examples
 #' data(aisdata)
-#' plot(aisdata$x, aisdata$y, type="n", asp=1)
+#' #' plot(aisdata$x, aisdata$y, type="n", asp=1)
 #' ids <- sort(unique(aisdata$id))
 #' my.colors <- heat.colors(length(ids))
 #' for (i in 1:length(ids)) {
@@ -493,6 +494,9 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' points(the.routes[[i]]$x, the.routes[[i]]$y,
 #'         cex=0.6, pch=16, col=my.colors[i])
 #' }
+#' depons.ais <- ais.to.DeponsShips(aisdata, bathymetry,
+#'    startday="2015-12-20", endday="2015-12-20")
+#' routes(depons.ais)
 #' @export ais.to.DeponsShips
 # setMethod("as", signature("data.frame", "DeponsRaster"), function(data, landsc, title="NA") {
 ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
@@ -506,8 +510,10 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   if(!(class(data$y)=="numeric")) stop("'y' must be numeric")
   if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")
   dots <- list(...)
-  min.date <- ifelse("min.date" %in% names(dots), dots$min.date, "NA")
-  max.date <- ifelse("max.date" %in% names(dots), dots$max.date, "NA")
+  startday <- ifelse("startday" %in% names(dots), dots$startday, "NA")
+  endday <- ifelse("endday" %in% names(dots), dots$endday, "NA")
+  if(!(class(startday)=="character")) stop(paste("'startday' must be character"))
+  if(!(class(endday)=="character")) stop("'endday' must be character")
   data <- interpolate.ais.data(data)
   message(paste0("Conversion assumes that 'x' and 'y' coordinates of ships use the '",
                  crs(landsc), "' projection"))
@@ -630,6 +636,18 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   # Generate one route per ship
   ids <- sort(unique(all.cropped.tracks$id))
   all.routes <- list()
+
+  if (!startday %in% c("NA")) {
+    startday <- substr(startday, 1, 10) # keep only date
+    startday <- as.POSIXct(startday, tz="GMT")
+  }
+  if (!endday %in% c("NA")) {
+    endday <- substr(endday, 1, 10)
+    endday <- as.POSIXct(endday, tz="GMT")
+    endday <- endday + 60 * 60 * 24 - 1
+  }
+  if (endday < startday) stop("endday should not be before startday")
+
   for (i in 1:length(ids)) {
     id <- ids[i]
     one.track <- all.cropped.tracks[all.cropped.tracks$id==id,]
@@ -707,18 +725,16 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
     one.track<-one.track[,1:7]
 
-    if (!min.date %in% c("NA")) {
+    if (!startday %in% c("NA")) {
 
       # Add more coordinates to pad out to max duration of simulation
-      min.time.track<-min(one.track$time)
-      max.time.track<-max(one.track$time)
-      min.time<-as.POSIXct(min.date, tz="GMT")
-      max.time<-as.POSIXct(max.date, tz="GMT")
-      all.ticks<-data.frame(seq(min.time, max.time-30*60, 30*60))
+      startday.track<-min(one.track$time)
+      endday.track<-max(one.track$time)
+      all.ticks<-data.frame(seq(startday, endday-30*60, 30*60))
       colnames(all.ticks)<-c("time")
       no.ticks<-nrow(all.ticks)
       # Add missing ticks at start of day
-      if(!min.time.track==min.time) {
+      if(!startday.track==startday) {
         first.row<-one.track[1,]
         time<-all.ticks[all.ticks$time < first.row$time,]
         id<-rep(one.track$id[1], length(time))
@@ -731,7 +747,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         one.track<-rbind(rows.add, one.track)
       }
       # Add missing ticks at end of day
-      if(!max.time.track==(max.time)) {
+      if(!endday.track==(endday)) {
         last.row<-one.track[nrow(one.track),]
         time<-all.ticks[all.ticks$time > last.row$time,]
         id<-rep(one.track$id[1], length(time))
@@ -840,7 +856,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y, "speed"=pauses_joined$new_speeds, "pause"=pauses_joined$pauseTime)
     names(one.route)[4] <- "pause"
 
-    if (!min.date %in% c("NA")) {
+    if (!startday %in% c("NA")) {
       # Calculate number of ticks to make sure add up to 48
       one.route$pause<-ifelse(one.route$pause==0, 1, one.route$pause)
       ticks<-sum(one.route$pause)
@@ -861,4 +877,3 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 }
-

@@ -29,5 +29,5 @@ json file, and the geographic projection is assumed to match that of the
 landscape.
 }
 \seealso{
-\code{\link{ais.to.DeponsShips}}
+\code{\link{ais.to.DeponsShips}}, \code{\link[DEPONS2R]{write.DeponsShips}}
 }
