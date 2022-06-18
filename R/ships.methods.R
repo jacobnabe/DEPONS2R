@@ -472,7 +472,6 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' used. The routes contain information about the number of half-hour
 #' intervals were ships 'pause' at a particular location, e.g. in a
 #' port. These are calculated based on the input AIS data.
-#'
 #' @seealso \code{\link{aisdata}} for an example of data that can be used as
 #' input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} interpolation
 #' of tracks. See \code{\link[DEPONS2R]{write.DeponsShips}} for conversion of
@@ -481,7 +480,7 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' inspection/modification of the ship tracks.
 #' @examples
 #' data(aisdata)
-#' #' plot(aisdata$x, aisdata$y, type="n", asp=1)
+#' plot(aisdata$x, aisdata$y, type="n", asp=1)
 #' ids <- sort(unique(aisdata$id))
 #' my.colors <- heat.colors(length(ids))
 #' for (i in 1:length(ids)) {
@@ -497,9 +496,14 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' points(the.routes[[i]]$x, the.routes[[i]]$y,
 #'         cex=0.6, pch=16, col=my.colors[i])
 #' }
-#' depons.ais <- ais.to.DeponsShips(aisdata, bathymetry,
-#'    startday="2015-12-20", endday="2015-12-20")
-#' routes(depons.ais)
+#' # depons.ais <- ais.to.DeponsShips(aisdata, bathymetry,
+#' #    startday="2015-12-20", endday="2015-12-20")
+#' # routes(depons.ais)
+#' # aisdata2 <- aisdata
+#' # aisdata2$time <- as.character(as.POSIXct(aisdata$time)+300)
+#' # depons.ais2 <- ais.to.DeponsShips(aisdata2, bathymetry,
+#' #                                startday="2015-12-20", endday="2015-12-21")
+#' # routes(depons.ais2)
 #' @export ais.to.DeponsShips
 # setMethod("as", signature("data.frame", "DeponsRaster"), function(data, landsc, title="NA") {
 ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
@@ -733,7 +737,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       # Add more coordinates to pad out to max duration of simulation
       startday.track<-min(one.track$time)
       endday.track<-max(one.track$time)
-      all.ticks<-data.frame(seq(startday, endday-30*60, 30*60))
+      all.ticks<-data.frame(seq(startday, round(endday)-30*60, 30*60))
       colnames(all.ticks)<-c("time")
       no.ticks<-nrow(all.ticks)
       # Add missing ticks at start of day
@@ -861,9 +865,10 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
     if (!startday %in% c("NA")) {
       # Calculate number of ticks to make sure add up to 48
-      one.route$pause<-ifelse(one.route$pause==0, 1, one.route$pause)
-      ticks<-sum(one.route$pause)
-      if(!ticks %% no.ticks ==0)
+      one.route2<-one.route
+      one.route2$pause<-ifelse(one.route2$pause==0, 1, one.route2$pause)
+      ticks<-sum(one.route2$pause)
+      if(!ticks %% 48 ==0)
         stop("Tick number is wrong")
     }
 
