@@ -496,14 +496,14 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' points(the.routes[[i]]$x, the.routes[[i]]$y,
 #'         cex=0.6, pch=16, col=my.colors[i])
 #' }
-#' # depons.ais <- ais.to.DeponsShips(aisdata, bathymetry,
-#' #    startday="2015-12-20", endday="2015-12-20")
-#' # routes(depons.ais)
-#' # aisdata2 <- aisdata
-#' # aisdata2$time <- as.character(as.POSIXct(aisdata$time)+300)
-#' # depons.ais2 <- ais.to.DeponsShips(aisdata2, bathymetry,
-#' #                                startday="2015-12-20", endday="2015-12-21")
-#' # routes(depons.ais2)
+#' depons.ais <- ais.to.DeponsShips(aisdata, bathymetry,
+#'    startday="2015-12-20", endday="2015-12-20")
+#' routes(depons.ais)
+#' aisdata2 <- aisdata
+#' aisdata2$time <- as.character(as.POSIXct(aisdata$time)+300)
+#' depons.ais2 <- ais.to.DeponsShips(aisdata2, bathymetry,
+#'                                startday="2015-12-20", endday="2015-12-21")
+#' routes(depons.ais2)
 #' @export ais.to.DeponsShips
 # setMethod("as", signature("data.frame", "DeponsRaster"), function(data, landsc, title="NA") {
 ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
@@ -548,8 +548,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     speed <- speed * 60 * 60 / 1000
     # convert to knots
     speed <- speed/1.85200
-    # repeat last know speed for last buoy
-    speed <- c(speed, speed[length(speed)])
+    # Last speed is 0 (i.e. ship has arrived at last coordinate)
+    speed <- c(speed, 0)
     # Add to one track
     data_sub$speed<-speed
     # Save results
@@ -729,7 +729,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
     one.track$time<-as.character(one.track$time)
     one.track$time<-as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="GMT")
-    one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
+    # one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
     one.track<-one.track[,1:7]
 
     if (!startday %in% c("NA")) {
@@ -737,9 +737,11 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       # Add more coordinates to pad out to max duration of simulation
       startday.track<-min(one.track$time)
       endday.track<-max(one.track$time)
-      all.ticks<-data.frame(seq(startday, round(endday)-30*60, 30*60))
+      all.ticks<-data.frame(seq(startday, endday + 30*60, 30*60)) # a multiple of 48 ticks +1 so that the ship knows where to keep going if it hasn't finished its track
       colnames(all.ticks)<-c("time")
       no.ticks<-nrow(all.ticks)
+      if ((no.ticks-1)%%48!=0)
+        stop("Wrong number of ticks")
       # Add missing ticks at start of day
       if(!startday.track==startday) {
         first.row<-one.track[1,]
@@ -868,7 +870,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       one.route2<-one.route
       one.route2$pause<-ifelse(one.route2$pause==0, 1, one.route2$pause)
       ticks<-sum(one.route2$pause)
-      if(!ticks %% 48 ==0)
+      if(!(ticks-1) %% 48 ==0)
         stop("Tick number is wrong")
     }
 
@@ -885,3 +887,4 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 }
+

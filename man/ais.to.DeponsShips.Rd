@@ -67,14 +67,14 @@ for (i in 1:length(ids)) {
 points(the.routes[[i]]$x, the.routes[[i]]$y,
         cex=0.6, pch=16, col=my.colors[i])
 }
-# depons.ais <- ais.to.DeponsShips(aisdata, bathymetry,
-#    startday="2015-12-20", endday="2015-12-20")
-# routes(depons.ais)
-# aisdata2 <- aisdata
-# aisdata2$time <- as.character(as.POSIXct(aisdata$time)+300)
-# depons.ais2 <- ais.to.DeponsShips(aisdata2, bathymetry,
-#                                startday="2015-12-20", endday="2015-12-21")
-# routes(depons.ais2)
+depons.ais <- ais.to.DeponsShips(aisdata, bathymetry,
+   startday="2015-12-20", endday="2015-12-20")
+routes(depons.ais)
+aisdata2 <- aisdata
+aisdata2$time <- as.character(as.POSIXct(aisdata$time)+300)
+depons.ais2 <- ais.to.DeponsShips(aisdata2, bathymetry,
+                               startday="2015-12-20", endday="2015-12-21")
+routes(depons.ais2)
 }
 \seealso{
 \code{\link{aisdata}} for an example of data that can be used as
