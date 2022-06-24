@@ -70,66 +70,90 @@ setMethod("initialize", "DeponsShips",
 #' legend("bottomright", bty="n", pch=c(16, 1), col=c("green", "red"),
 #'     legend=c("original positions", "interpolated"))
 #' @export interpolate.ais.data
-interpolate.ais.data <- function(aisdata) {
-  if(!("x" %in% names(aisdata))) stop("aisdata must contain the column 'x'")
-  if(!("y" %in% names(aisdata))) stop("aisdata must contain the column 'y'")
-  if(!("time" %in% names(aisdata))) stop("aisdata must contain the column 'time'")
-  if(!("id" %in% names(aisdata))) stop("aisdata must contain the column 'id'")
-  if(!class(aisdata$time)=="character") stop("'time' must be character")
-  # Interpolate for one id at a time (=one track)
+interpolate.ais.data <- function (aisdata) {
+  if (!("x" %in% names(aisdata)))
+    stop("aisdata must contain the column 'x'")
+  if (!("y" %in% names(aisdata)))
+    stop("aisdata must contain the column 'y'")
+  if (!("time" %in% names(aisdata)))
+    stop("aisdata must contain the column 'time'")
+  if (!("id" %in% names(aisdata)))
+    stop("aisdata must contain the column 'id'")
+  if (!class(aisdata$time) == "character")
+    stop("'time' must be character")
   ids <- sort(unique(aisdata$id))
   out.data <- data.frame()
+
+  # the.id <- ids[1]
   for (the.id in ids) {
-    aisdata.one.id <- aisdata[aisdata$id==the.id ,]
-    # Get time of first half-hour position in track (whether it exists or not)
-    t.first <- aisdata.one.id[1,"time"]
-    mins <- as.numeric(substr(t.first, nchar(t.first)-4, nchar(t.first)-3))
-    secs <- as.numeric(substr(t.first, nchar(t.first)-1, nchar(t.first)))
-    if(mins==0 && secs==0) {
+    aisdata.one.id <- aisdata[aisdata$id == the.id, ]
+    t.first <- aisdata.one.id[1, "time"]
+    mins <- as.numeric(substr(t.first, nchar(t.first) - 4,
+                              nchar(t.first) - 3))
+    secs <- as.numeric(substr(t.first, nchar(t.first) - 1,
+                              nchar(t.first)))
+    if (mins == 0 && secs == 0) {
       new.t.first <- t.first
-    } else if(mins<30) {
-      secs.to.add <- 60*(30-mins)
-      new.t.first <- as.character(as.POSIXct(t.first)+secs.to.add)
+    } else if (mins < 30) {
+      secs.to.add <- 60 * (30 - mins)
+      new.t.first <- as.character(as.POSIXct(t.first) +
+                                    secs.to.add)
     } else {
-      secs.to.add <- 60*(60-mins)
-      new.t.first <- as.character(as.POSIXct(t.first)+secs.to.add)
+      secs.to.add <- 60 * (60 - mins)
+      new.t.first <- as.character(as.POSIXct(t.first) +
+                                    secs.to.add)
     }
-    # Get time of last half-hour position in track (whether it exists or not)
-    t.last <- aisdata.one.id[nrow(aisdata.one.id),"time"]
-    mins <- as.numeric(substr(t.last, nchar(t.last)-4, nchar(t.last)-3))
-    new.mins <- ifelse(mins<30, "00", "30")
-    substr(t.last, nchar(t.last)-4, nchar(t.last)-3)	 <- new.mins
+    t.last <- aisdata.one.id[nrow(aisdata.one.id), "time"]
+
+
+    mins <- as.numeric(substr(t.last, nchar(t.last) - 4,
+                              nchar(t.last) - 3))
+    new.mins <- ifelse(mins < 30, "00", "30")
+    substr(t.last, nchar(t.last) - 4, nchar(t.last) - 3) <- new.mins
     new.t.last <- t.last
-    all.new.times <- seq(as.POSIXct(new.t.first), as.POSIXct(new.t.last), (60*30))
-    # Find out which positions to interpolate between
+
+
+    all.new.times <- seq(as.POSIXct(new.t.first), as.POSIXct(new.t.last),
+                         (60 * 30))
+
     secs.org.pos <- as.numeric(as.POSIXlt(aisdata.one.id$time))
     secs.new.pos <- as.numeric(all.new.times)
-    last.org.pos <- function(x) max(which(secs.org.pos<=secs.new.pos[x]))
+    prev.org.pos <- function(x) max(which(secs.org.pos <=
+                                            secs.new.pos[x]))
     next.org.pos <- function(x) {
-      if(!any(secs.org.pos > secs.new.pos[x])) return(NA) # happens if pos is on half-hr
-      the.next.pos <- min(which(secs.org.pos>secs.new.pos[x]))
+      if (!any(secs.org.pos > secs.new.pos[x]))
+        return(NA)
+      the.next.pos <- min(which(secs.org.pos > secs.new.pos[x]))
     }
-    # Find positions to interpolate between for each new pos
-    interp.start.pos <- sapply(1:length(all.new.times), FUN="last.org.pos")
-    interp.end.pos <- sapply(1:length(all.new.times), FUN="next.org.pos")
+    interp.start.pos <- sapply(1:length(all.new.times), FUN = "prev.org.pos")
+    interp.end.pos <- sapply(1:length(all.new.times), FUN = "next.org.pos")
     secs.from.start.pos <- secs.new.pos - secs.org.pos[interp.start.pos]
     secs.to.end.pos <- secs.org.pos[interp.end.pos] - secs.new.pos
-    # Proportion of next step to move before reaching half-hour position
-    prop.of.step <- secs.from.start.pos / (secs.from.start.pos+secs.to.end.pos)
-    # select proportion of x and y steps to move
-    new.x <- aisdata.one.id$x[interp.start.pos] +
-      prop.of.step * (aisdata.one.id$x[interp.end.pos] - aisdata.one.id$x[interp.start.pos])
-    new.y <- aisdata.one.id$y[interp.start.pos] +
-      prop.of.step * (aisdata.one.id$y[interp.end.pos] - aisdata.one.id$y[interp.start.pos])
+    prop.of.step <- secs.from.start.pos/(secs.from.start.pos +
+                                           secs.to.end.pos)
+    new.x <- aisdata.one.id$x[interp.start.pos] + prop.of.step *
+      (aisdata.one.id$x[interp.end.pos] - aisdata.one.id$x[interp.start.pos])
+    new.y <- aisdata.one.id$y[interp.start.pos] + prop.of.step *
+      (aisdata.one.id$y[interp.end.pos] - aisdata.one.id$y[interp.start.pos])
     new.time <- as.POSIXct(aisdata.one.id$time[interp.start.pos]) +
       prop.of.step * (as.numeric(as.POSIXct(aisdata.one.id$time[interp.end.pos])) -
-                        as.numeric(as.POSIXct(aisdata.one.id$time[interp.start.pos])) )
+                        as.numeric(as.POSIXct(aisdata.one.id$time[interp.start.pos])))
     new.time <- as.character(new.time)
-    substr(new.time, nchar(new.time)-1, nchar(new.time)) <- "00"
-    other.columns <- names(aisdata.one.id)[(!(names(aisdata.one.id) %in% c("id", "time", "x", "y")))]
+
+    # Handle special case where last pos has minutes=0 or 30
+    if(mins==0 || mins==30) {
+      new.x[length(new.x)] <- aisdata.one.id$x[length(aisdata.one.id$x)]
+      new.y[length(new.y)] <- aisdata.one.id$y[length(aisdata.one.id$y)]
+      new.time[length(new.time)] <- aisdata.one.id$time[length(aisdata.one.id$time)]
+    }
+    # set seconds to zero
+    substr(new.time, nchar(new.time) - 1, nchar(new.time)) <- "00"
+    other.columns <- names(aisdata.one.id)[(!(names(aisdata.one.id) %in%
+                                                c("id", "time", "x", "y")))]
     other.columns <- aisdata.one.id[interp.start.pos, other.columns]
-    out.data.one.id <- data.frame("id"=the.id, other.columns, "x"=new.x, "y"=new.y, "time"=new.time)
-    out.data.one.id <- out.data.one.id[!is.na(out.data.one.id$x) ,]
+    out.data.one.id <- data.frame(id = the.id, other.columns,
+                                  x = new.x, y = new.y, time = new.time)
+    out.data.one.id <- out.data.one.id[!is.na(out.data.one.id$x), ]
     out.data <- rbind(out.data, out.data.one.id)
   }
   row.names(out.data) <- NULL
