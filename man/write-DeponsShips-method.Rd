@@ -24,6 +24,6 @@ landscape. The projection is not stored as part of the json file.
 }
 \note{
 The exported json file is intended for use in DEPONS 2.3 or later
-(released June 2022) where the sound pressure level (SPL) is calculated
+(released July 2022) where the sound pressure level (SPL) is calculated
 within DEPONS based on ship type, ship length and speed.
 }

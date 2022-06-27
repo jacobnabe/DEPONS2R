@@ -40,7 +40,9 @@
 #' the variables id (the Maritime Mobile Service Identity number), time,
 #' speed (in knots), type, length (in meters), x and y (which provide the
 #' coordinates of the ship at a given time. The coordinates use the UTM zone 32
-#' projection (CRS = "+proj=utm +zone=32 +units=m +no_defs +datum=WGS84").
+#' projection (CRS = "+proj=utm +zone=32 +units=m +no_defs +datum=WGS84"). Data
+#' were downloaded from the Danish Maritime Authority web page
+#' (\url{https://dma.dk}).
 #' @format data.frame
 #' @keywords datasets
 # data("aisdata")       # uncomment line to trigger roxygen

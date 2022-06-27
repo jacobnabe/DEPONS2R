@@ -22,7 +22,7 @@ of the ship positions corresponds to that of the DeponsRaster object}
 \item{...}{Optional parameters, including 'startday' and 'endday'
 ("%Y-%m-%d %H:%M:%S", character) for defining the first and last date to use
 from 'data'. If startday = endday the output object will contain up to
-48 positions from the selected date for each vessel track.}
+49 positions from the selected date for each vessel track.}
 }
 \value{
 Returns a \code{DeponsShips} object containing one or more ships

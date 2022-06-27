@@ -241,7 +241,7 @@ setMethod("show", "DeponsShips",
 #' @param x Name of the DeponsShips object to be exported
 #' @param file Name of the output file (character)
 #' @note The exported json file is intended for use in DEPONS 2.3 or later
-#' (released June 2022) where the sound pressure level (SPL) is calculated
+#' (released July 2022) where the sound pressure level (SPL) is calculated
 #' within DEPONS based on ship type, ship length and speed.
 #' @return No return value, called for side effects
 #' @export write
@@ -479,7 +479,7 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' @param ... Optional parameters, including 'startday' and 'endday'
 #' ("%Y-%m-%d %H:%M:%S", character) for defining the first and last date to use
 #' from 'data'. If startday = endday the output object will contain up to
-#' 48 positions from the selected date for each vessel track.
+#' 49 positions from the selected date for each vessel track.
 #' @return Returns a \code{DeponsShips} object containing one or more ships
 #' assigned to each of the routes in the object. All ships on a particular
 #' route move at the same speed along the route. The routes are
@@ -854,18 +854,21 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     }
     recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==1, lead_lag(recurringZero$new_speeds, -1), recurringZero$new_speeds)
     recurringZero$new_recurringSpeed<-ifelse(is.na(recurringZero$new_recurringSpeed), 0, recurringZero$new_recurringSpeed)
-    #recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
+    recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
 
     # Only collapse dataset if there are pauses
     if (max(recurringZero$pauseTime, na.rm=TRUE)>0) {
 
       # Collapse recurring zeros & average x/y lox per pause as AIS coordinates can jitter around
       pauses<-recurringZero[recurringZero$recurringSpeed==1,]
-      max_speed<-aggregate(pauses$new_recurringSpeed, list(pauses$pause_no), FUN=max)
+      max_speed<-aggregate(pauses$new_recurringSpeed, list(pauses$new_pauseno), FUN=max)
       new_x<-aggregate(pauses$x, list(pauses$pause_no), FUN=mean)
       new_y<-aggregate(pauses$y, list(pauses$pause_no), FUN=mean)
       new_time<-aggregate(pauses$time, list(pauses$pause_no), FUN=min)
       new_pauseTime<-aggregate(pauses$pauseTime, list(pauses$pause_no), FUN=max)
+
+      #Adjust last pause time (as should be -1)
+      new_pauseTime$x[nrow(new_pauseTime)]<-new_pauseTime$x[nrow(new_pauseTime)] -1
 
       # Create new data frame with these values per pause id
       pauses_collapsed<-data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x), max_speed$Group.1,
@@ -874,9 +877,10 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
                                     "new_recurringSpeed", "new_pauseno")
 
       # Join with the rest of the dataset & arrange by time
-      movingperiods<-recurringZero[recurringZero$recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
+      #movingperiods<-recurringZero[recurringZero$recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
+      movingperiods<-recurringZero[!recurringZero$new_pauseno %in% c(pauses_collapsed$new_pauseno) ,]
       movingperiods<-movingperiods[-c(7)]
-      pauses_collapsed<-pauses_collapsed[-c(9)]
+      #pauses_collapsed<-pauses_collapsed[-c(9)]
       pauses_collapsed$new_recurringSpeed<-pauses_collapsed$new_speeds
       pauses_joined<-rbind(movingperiods, pauses_collapsed)
       pauses_joined<-pauses_joined[order(pauses_joined$time),]
@@ -892,8 +896,11 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     if (!startday %in% c("NA")) {
       # Calculate number of ticks to make sure add up to 48
       one.route2<-one.route
-      one.route2$pause<-ifelse(one.route2$pause==0, 1, one.route2$pause)
-      ticks<-sum(one.route2$pause)
+      one.route2$index<-1:nrow(one.route2) # index the rows
+      one.route2$count.ticks<-1
+      # Add pauses to ticks
+      one.route2$count.ticks<-ifelse(one.route2$pause>0, one.route2$count.ticks+one.route2$pause, one.route2$count.ticks)
+      ticks<-sum(one.route2$count.ticks)
       if(!(ticks-1) %% 48 ==0)
         stop("Tick number is wrong")
     }
@@ -911,4 +918,5 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 }
+
 
