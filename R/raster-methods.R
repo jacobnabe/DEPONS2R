@@ -199,6 +199,7 @@ setGeneric("plot")
 #' plotting of DeponsRasters cropped to the extent of tracks.
 #' @import rgdal
 #' @return No return value, called for side effects
+#' @importFrom grDevices rainbow
 #' @exportMethod plot
 setMethod("plot", signature("DeponsRaster", "ANY"),
           function(x, y, col, trackToPlot=1, ...)  {
