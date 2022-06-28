@@ -444,7 +444,7 @@ setGeneric("routes<-", function(x, value) {
 #' @aliases routes<-,DeponsShips-method
 #' @exportMethod routes<-
 setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
-  if (class(value) != "list") stop("'value' must be a list with one element per ship route")
+  if (as.character(class(value)) != "list") stop("'value' must be a list with one element per ship route")
   n.routes <- length(value)
   out <- data.frame("name"=rep("", length=n.routes), "route"=NA)
   for (i in 1:n.routes) {

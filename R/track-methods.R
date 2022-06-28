@@ -1,6 +1,5 @@
 # Author: Jacob Nabe-Nielsen
 # Date: 1 August 2020
-# Version 0.9
 # Licence GPL v3
 # Description: Methods and classses for reading and summarizing DEPONS track
 #   objects

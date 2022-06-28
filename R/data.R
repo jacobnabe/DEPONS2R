@@ -1,6 +1,4 @@
 # Author: Jacob Nabe-Nielsen
-# Date: 1 August 2020
-# Version 0.9
 # Licence GPL v3
 # Documentation of data sets in DEPONS2R
 

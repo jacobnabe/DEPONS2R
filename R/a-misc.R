@@ -220,7 +220,7 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     else warning("Only the character string 'random' is supported")
   }
   if (!is.character(wf.coords)) {
-    if (class(wf.coords)!="data.frame") stop("wf.coords must be a data frame")
+    if (as.character(class(wf.coords))!="data.frame") stop("wf.coords must be a data frame")
     xy.val <- raster::extract(wf.area, wf.coords)
     sel.rows <- which(xy.val==area.def)
     start.pos <- wf.coords[sel.rows, ]

@@ -1,7 +1,6 @@
 
 # Author: Jacob Nabe-Nielsen
-# Date: 1 August 2020
-# Version 0.9
+# Date: 1 August 2020 (v. 0.9)
 # Licence GPL v3
 # Description: Methods and classes for reading and summarizing DEPONS raster
 #   objects
