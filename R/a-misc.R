@@ -1,6 +1,8 @@
 # DEPONS2R helper functions (related to multiple classes)
 
 # devtools::document()  # Make rd files based on roxygen comments.
+# devtools::install_deps()
+# devtools::test(filter=NULL)
 # devtools::build_manual()
 # devtools::check(cleanup=FALSE) # check timings of examples: read log
 

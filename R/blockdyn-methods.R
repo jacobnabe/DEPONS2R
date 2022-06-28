@@ -170,7 +170,6 @@ read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #'
 #' # Show all data points for small range of x-values
 #' plot(porpoisebdyn, xlim=c(1950, 2050), ylim=c(4850, 5050), type="p", dilute=1, col=my.col)
-#' @import grDevices
 ##' @importFrom graphics points
 #' @return \code{data.frame} listing blocks where no animals were counted
 #' (returned invisibly)
