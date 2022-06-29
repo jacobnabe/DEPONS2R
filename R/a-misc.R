@@ -5,6 +5,7 @@
 # devtools::test(filter=NULL)
 # devtools::build_manual()
 # devtools::check(cleanup=FALSE) # check timings of examples: read log
+# devtools::check
 
 #' @title  Package for analyzing DEPONS simulation output
 #' @name DEPONS2R
