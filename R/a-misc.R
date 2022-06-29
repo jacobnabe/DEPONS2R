@@ -89,7 +89,7 @@ get.simtime <- function(fname=NULL, tz="GMT") {
   substr(time.string, 8, 8) <- "-"
   substr(time.string, 11, 11) <- " "
   time.posix <- as.POSIXlt(time.string, tz=tz)
-  if (any(class(time.posix)=="POSIXlt"))
+  if (any(inherits(time.posix,"POSIXlt")))
     return(time.posix)
   stop(paste0("Could not extract date correctly from ", fname), ". Got ", time.string)
 }
@@ -220,7 +220,7 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
     else warning("Only the character string 'random' is supported")
   }
   if (!is.character(wf.coords)) {
-    if (as.character(class(wf.coords))!="data.frame") stop("wf.coords must be a data frame")
+    if (!inherits(wf.coords,"data.frame")) stop("wf.coords must be a data frame")
     xy.val <- raster::extract(wf.area, wf.coords)
     sel.rows <- which(xy.val==area.def)
     start.pos <- wf.coords[sel.rows, ]
@@ -387,7 +387,7 @@ setGeneric("make.clip.poly", function(bbox, ...){})
 #' clip.poly <- make.clip.poly(bbox, crs(bathymetry))
 setMethod("make.clip.poly", signature("matrix"),
           function(bbox, crs) {
-            if(class(crs)!="CRS") stop("crs must be a 'CRS' object")
+            if(!inherits(crs,"CRS")) stop("crs must be a 'CRS' object")
             if(dim(bbox)[1]!=2 || dim(bbox)[2]!=2) stop("bbox must be a 2x2 matrix")
             if(bbox["x", "min"] >= bbox["x", "max"]) stop("Ensure that bbox[1,1] < bbox[1,2]")
             if(bbox["y", "min"] >= bbox["y", "max"]) stop("Ensure that bbox[2,1] < bbox[2,2]")

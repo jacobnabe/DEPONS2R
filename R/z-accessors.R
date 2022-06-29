@@ -300,8 +300,8 @@ setMethod("startday", signature=("DeponsDyn"), function(x) { return(x@startday) 
 
 assign.startday <- function(x, value) {
   if(as.character(value)=="NA" || is.na(value)) value <- as.POSIXlt(NA)
-  if(any(class(value)=="character")) value <- as.POSIXlt(value)
-  if(!any(class(value)=="POSIXlt")) stop("The input value could not be converted to POSIXlt")
+  if(any(inherits(value, "character"))) value <- as.POSIXlt(value)
+  if(!any(inherits(value, "POSIXlt"))) stop("The input value could not be converted to POSIXlt")
   x@startday <- value
   # Calc real time corresponding to new startday
   if (!is.na(value)) {
