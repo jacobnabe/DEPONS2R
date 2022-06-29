@@ -79,7 +79,7 @@ interpolate.ais.data <- function (aisdata) {
     stop("aisdata must contain the column 'time'")
   if (!("id" %in% names(aisdata)))
     stop("aisdata must contain the column 'id'")
-  if (!class(aisdata$time) == "character")
+  if (!inherits(aisdata$time, "character"))
     stop("'time' must be character")
   ids <- sort(unique(aisdata$id))
   out.data <- data.frame()
@@ -374,7 +374,7 @@ setMethod("ships", signature=("DeponsShips"), function(x) {
 
 
 setGeneric("ships<-", function(x, value) {
-  if(class(value)!= 'data.frame') stop("'value' must be a data.frame")
+  if(!inherits(value,'data.frame')) stop("'value' must be a data.frame")
   if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
   if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
   if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
@@ -391,7 +391,7 @@ setGeneric("ships<-", function(x, value) {
 #' @aliases ships<-,DeponsShips-method
 #' @exportMethod ships<-
 setGeneric("ships<-", function(x, value) {
-  if(class(value)!= 'data.frame') stop("'value' must be a data.frame")
+  if(!inherits(value,"data.frame")) stop("'value' must be a data.frame")
   if(!("route" %in% names(value))) stop("'value' must contain a variable named 'route'")
   if(!all(value$route %in% x@routes[[1]])) stop("At least some of the routes in 'value' are not defined in 'x'")
   if(!("name" %in% names(value))) stop("'value' must contain a variable named 'name'")
@@ -531,20 +531,20 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' @export ais.to.DeponsShips
 # setMethod("as", signature("data.frame", "DeponsRaster"), function(data, landsc, title="NA") {
 ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
-  if(class(data)!="data.frame")
+  if(!inherits(data,"data.frame"))
     stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
   if(!all(c('id', 'time', 'type', 'length', 'x', 'y') %in% names(data)))
     stop("data must be a data.frame with the variables 'id', 'time', 'type', 'length', 'x', and 'y'")
-  if(!(class(data$speed)=="numeric")) stop("'speed' must be numeric")
-  if(!(class(data$length)=="numeric" || class(data$length)=="integer")) stop("'length' must be numeric")
-  if(!(class(data$x)=="numeric")) stop("'x' must be numeric")
-  if(!(class(data$y)=="numeric")) stop("'y' must be numeric")
-  if(!(class(landsc)=="DeponsRaster")) stop("'landsc' must be a DeponsRaster object")
+  if(!inherits(data$speed,"numeric")) stop("'speed' must be numeric")
+  if(!(inherits(data$length,"numeric") || inherits(data$length,"integer"))) stop("'length' must be numeric")
+  if(!inherits(data$x,"numeric")) stop("'x' must be numeric")
+  if(!inherits(data$y,"numeric")) stop("'y' must be numeric")
+  if(!inherits(landsc,"DeponsRaster")) stop("'landsc' must be a DeponsRaster object")
   dots <- list(...)
   startday <- ifelse("startday" %in% names(dots), dots$startday, "NA")
   endday <- ifelse("endday" %in% names(dots), dots$endday, "NA")
-  if(!(class(startday)=="character")) stop(paste("'startday' must be character"))
-  if(!(class(endday)=="character")) stop("'endday' must be character")
+  if(!(inherits(startday,"character"))) stop(paste("'startday' must be character"))
+  if(!(inherits(endday,"character"))) stop("'endday' must be character")
   data <- interpolate.ais.data(data)
   message(paste0("Conversion assumes that 'x' and 'y' coordinates of ships use the '",
                  crs(landsc), "' projection"))
