@@ -28,6 +28,3 @@ time steps. The routes are defined by the fix-points provided in the
 json file, and the geographic projection is assumed to match that of the
 landscape.
 }
-\seealso{
-\code{\link{ais.to.DeponsShips}}, \code{\link[DEPONS2R]{write.DeponsShips}}
-}
