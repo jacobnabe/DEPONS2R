@@ -12,7 +12,7 @@ for (i in 1:length(routes(depons.ais))) {
 
 
 aisdata2 <- aisdata
-aisdata2$time <- as.character(as.POSIXct(aisdata$time)+300)
+aisdata2$time <- format(as.POSIXct(aisdata$time)+300)
 depons.ais2 <- ais.to.DeponsShips(data=aisdata2, bathymetry,
                                   startday="2015-12-20", endday="2015-12-21")
 for (i in 1:length(routes(depons.ais2))) {

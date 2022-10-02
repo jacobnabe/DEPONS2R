@@ -579,7 +579,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     # Save results
     data.all<-rbind(data.all, data_sub)
   }
-  data<-data.all
+  data <- data.all
 
   # For each track in 'data': find places where the track crosses bb and make
   # linear intrapolation to place new waypoint at the edge of the landscape --
@@ -642,9 +642,9 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       all.cropped.tracks <- rbind(all.cropped.tracks, cropped.track)
       next
     }
+
     # Find pos and time were edge is crossed. Crossing northern or southern edge?
     for (i in 1:length(cross.row)) {
-
       crossing.n.or.s <- (one.track$y[cross.row[i]] < bb["y", "max"] && one.track$y[cross.row[i]+1] > bb["y", "max"]) ||
         (one.track$y[cross.row[i]] < bb["y", "min"] && one.track$y[cross.row[i]+1] > bb["y", "min"]) ||
         (one.track$y[cross.row[i]] > bb["y", "max"] && one.track$y[cross.row[i]+1] < bb["y", "max"]) ||
@@ -668,11 +668,11 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   ids <- sort(unique(all.cropped.tracks$id))
   all.routes <- list()
 
-  if (!startday %in% c("NA")) {
+  if (!(startday %in% c("NA"))) {
     startday <- substr(startday, 1, 10) # keep only date
     startday <- as.POSIXct(startday, tz="GMT")
   }
-  if (!endday %in% c("NA")) {
+  if (!(endday %in% c("NA"))) {
     endday <- substr(endday, 1, 10)
     endday <- as.POSIXct(endday, tz="GMT")
     endday <- endday + 60 * 60 * 24 - 1
@@ -684,90 +684,88 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     one.track <- all.cropped.tracks[all.cropped.tracks$id==id,]
     one.track<-one.track[order(one.track$time),]
 
-    # Check all time stamps are full minutes if not they will need to be rounded up or down to nearest tick
+    # Check all time stamps are full minutes if not they will need to be rounded up or down
+    # to nearest tick.
     # This happens when porps leave or enter via the edges of the landscape
-    one.track$secs<-as.numeric(substr(one.track$time, 18, 19))
-    one.track$hour<-substr(one.track$time, 12, 13)
-    one.track$mins<-as.numeric(substr(one.track$time, 15, 16))
+    one.track$secs<-as.numeric(substr(format(one.track$time), 18, 19))
+    one.track$hour<-substr(format(one.track$time), 12, 13)
+    one.track$mins<-as.numeric(substr(format(one.track$time), 15, 16))
     one.track$mins<-ifelse(one.track$mins==30, 0, one.track$mins)
 
     # These are times to round
     times.to.round<-one.track[!one.track$mins==0 | !one.track$secs==0,]
 
     if (nrow(times.to.round)>0) {
-
-      all.times.to.round<-list()
-
+      all.times.to.round <- list()
       for (j in 1:nrow(times.to.round)) {
-
-        times.to.round.sub<-times.to.round[j,]
-        next.hour<-substr(times.to.round.sub$time + 60*60 , 12, 13)
-        times.to.round.sub$time.below<-ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30, as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", times.to.round.sub$hour, ":00:00"), tz="GMT"), as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", times.to.round.sub$hour, ":30:00"), tz="GMT"))
-        times.to.round.sub$time.above<-ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30, as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", times.to.round.sub$hour, ":30:00"), tz="GMT"), as.character(paste0(substr(times.to.round.sub$time, 1, 10), " ", next.hour, ":00:00"), tz="GMT"))
+        times.to.round.sub <- times.to.round[j,]
+        next.hour <- substr(format(times.to.round.sub$time + 60*60), 12, 13)
+        times.to.round.sub$time.below <- ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30,
+                                                as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
+                                                                    times.to.round.sub$hour, ":00:00"), tz="GMT"),
+                                                as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
+                                                                    times.to.round.sub$hour, ":30:00"), tz="GMT"))
+        times.to.round.sub$time.above <- ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30,
+                                                as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
+                                                                    times.to.round.sub$hour, ":30:00"), tz="GMT"),
+                                                as.character(paste0(substr(paste(times.to.round.sub$time), 1, 10), " ", next.hour, ":00:00"),
+                                                             tz="GMT"))
 
         # Determine which time is in the dataset already
-        track.compare<-one.track
-        track.compare$time<-as.character(track.compare$time)
-        time1<-track.compare[track.compare$time==times.to.round.sub$time.below,]
-        time2<-track.compare[track.compare$time==times.to.round.sub$time.above,]
+        track.compare <- one.track
+        track.compare$time <- as.character(track.compare$time)
+        time1 <- track.compare[track.compare$time==times.to.round.sub$time.below,]
+        time2 <- track.compare[track.compare$time==times.to.round.sub$time.above,]
 
         # Situation where both times are already in the landscape
-        if (nrow(time1)>0 & nrow(time2)>0) {
-
-          # Ship goes out at tick 1 and comes back at tick 2 (i.e. both surrounding times are in the dataset already)
-          times.to.round.sub$time<-times.to.round.sub$time.below
-          times.to.round.sub<-times.to.round.sub[,1:7]
+        if (nrow(time1)>0 && nrow(time2)>0) {
+          # Ship goes out at tick 1 and comes back at tick 2 (i.e. both surrounding times are in the
+          # dataset already)
+          times.to.round.sub$time <- times.to.round.sub$time.below
+          times.to.round.sub <- times.to.round.sub[,1:7]
           times.to.round.sub$remove<-"TRUE"
-
         } else {
-
           # Situations where one time isn't in the landscape
           if (nrow(time1)==0) {
-
-            times.to.round.sub$time<-times.to.round.sub$time.below
-            times.to.round.sub<-times.to.round.sub[,1:7]
-            times.to.round.sub$remove<-"FALSE"
-
+            times.to.round.sub$time <- times.to.round.sub$time.below
+            times.to.round.sub <- times.to.round.sub[,1:7]
+            times.to.round.sub$remove <- "FALSE"
           } else {
-
             times.to.round.sub$time<-times.to.round.sub$time.above
             times.to.round.sub<-times.to.round.sub[,1:7]
             times.to.round.sub$remove<-"FALSE"
-
           }
-
         }
 
-        all.times.to.round<-rbind(all.times.to.round, times.to.round.sub)
-
+        all.times.to.round <- rbind(all.times.to.round, times.to.round.sub)
       }
 
       # These are times to round
-      all.times.to.round<-all.times.to.round[all.times.to.round$remove==FALSE,]
-      all.times.to.round<-all.times.to.round[,1:7]
-      one.track.good<-one.track[one.track$mins==0 & one.track$secs==0,]
-      one.track.good<-one.track.good[,1:7]
-      one.track<-rbind(one.track.good, all.times.to.round)
-      one.track<-one.track[order(one.track$time),]
+      all.times.to.round <- all.times.to.round[all.times.to.round$remove==FALSE,]
+      all.times.to.round <- all.times.to.round[,1:7]
+      one.track.good <- one.track[one.track$mins==0 & one.track$secs==0,]
+      one.track.good <- one.track.good[,1:7]
+      one.track <- rbind(one.track.good, all.times.to.round)
+      one.track <- one.track[order(one.track$time),]
     }
 
-    one.track$time<-as.character(one.track$time)
-    one.track$time<-as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="GMT")
+    one.track$time <- paste(one.track$time)
+    one.track$time <- as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="GMT")
     # one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
-    one.track<-one.track[,1:7]
+    one.track <- one.track[,1:7]
 
-    if (!startday %in% c("NA")) {
-
+    if (!(startday %in% c("NA"))) {
       # Add more coordinates to pad out to max duration of simulation
-      startday.track<-min(one.track$time)
-      endday.track<-max(one.track$time)
-      all.ticks<-data.frame(seq(startday, endday + 30*60, 30*60)) # a multiple of 48 ticks +1 so that the ship knows where to keep going if it hasn't finished its track
+      startday.track <- min(one.track$time)
+      endday.track <- max(one.track$time)
+      all.ticks <- data.frame(seq(startday, endday + 30*60, 30*60)) # a multiple of 48 ticks +1
+      # so that the ship knows where to keep going if it hasn't finished its track
       colnames(all.ticks)<-c("time")
       no.ticks<-nrow(all.ticks)
       if ((no.ticks-1)%%48!=0)
         stop("Wrong number of ticks")
       # Add missing ticks at start of day
-      if(!startday.track==startday) {
+      if(!(startday.track==startday)) {
         first.row<-one.track[1,]
         time<-all.ticks[all.ticks$time < first.row$time,]
         id<-rep(one.track$id[1], length(time))
@@ -780,7 +778,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         one.track<-rbind(rows.add, one.track)
       }
       # Add missing ticks at end of day
-      if(!endday.track==(endday)) {
+      if(!(endday.track==endday)) {
         last.row<-one.track[nrow(one.track),]
         time<-all.ticks[all.ticks$time > last.row$time,]
         id<-rep(one.track$id[1], length(time))
@@ -793,7 +791,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         one.track<-rbind(one.track, rows.add)
       }
       # Add missing ticks in middle of day
-      match<-subset(all.ticks, !(time %in% one.track$time))
+      match <- subset(all.ticks, !(time %in% one.track$time))
       if(nrow(match)>0) {
         id<-rep(one.track$id[1], nrow(match))
         speed<-rep(0, nrow(match))
@@ -806,8 +804,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         one.track<-one.track[order(one.track$time),]
 
         # Fill missing coordinates with next x & y values
-        NAs<-one.track[is.na(one.track$x),]
-        NAS_info<-list()
+        NAs <- one.track[is.na(one.track$x),]
+        NAS_info <- list()
 
         for (k in 1:nrow(NAs)) {
           Na_sub<-NAs[k,]
@@ -826,23 +824,24 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         one.track<-one.track[order(one.track$time),]
       }
     }
+
     # Calculate duration of pauses & collapse rows where ship not moving:
     # Set 0.1 knots as a threshold for moving
-    new_speeds<-ifelse(one.track$speed<=0.1, 0, one.track$speed)
+    new_speeds <- ifelse(one.track$speed<=0.1, 0, one.track$speed)
 
     # Label recurring 0s as 1s & add lox/time information
-    recurringZero<-data.frame(new_speeds)
-    recurringZero$recurringSpeed<-ifelse(recurringZero$new_speeds==0, 1, 0)
-    recurringZero$x<-one.track$x
-    recurringZero$y<-one.track$y
-    recurringZero$time<-one.track$time
+    recurringZero <- data.frame(new_speeds)
+    recurringZero$recurringSpeed <- ifelse(recurringZero$new_speeds==0, 1, 0)
+    recurringZero$x <- one.track$x
+    recurringZero$y <- one.track$y
+    recurringZero$time <- one.track$time
 
     # Add a pause id so that pause duration can be summed by pause id
-    seq_length<-rle(recurringZero$recurringSpeed)$lengths # Calculate duration of pause ids
-    NoIds<-length(seq_length)
-    recurringZero$pause_no<-rep(1:NoIds, seq_length)
-    recurringZero$duration<-30
-    recurringZero$duration<-ifelse(recurringZero$recurringSpeed==0, 0, recurringZero$duration)
+    seq_length <- rle(recurringZero$recurringSpeed)$lengths # Calculate duration of pause ids
+    NoIds <- length(seq_length)
+    recurringZero$pause_no <- rep(1:NoIds, seq_length)
+    recurringZero$duration <- 30
+    recurringZero$duration <- ifelse(recurringZero$recurringSpeed==0, 0, recurringZero$duration)
 
     # Sum recurring zeros to calculate duration of pauses  &
     # Find out what the next non-zero speed is and re-label this row
@@ -852,57 +851,59 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       if (n > 0) c(rep(NA, n), head(v, length(v) - n))
       else c(tail(v, length(v) - abs(n)), rep(NA, abs(n)))
     }
-    recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==1, lead_lag(recurringZero$new_speeds, -1), recurringZero$new_speeds)
-    recurringZero$new_recurringSpeed<-ifelse(is.na(recurringZero$new_recurringSpeed), 0, recurringZero$new_recurringSpeed)
-    recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no, +1), recurringZero$pause_no)
+    recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==1,
+                                             lead_lag(recurringZero$new_speeds, -1), recurringZero$new_speeds)
+    recurringZero$new_recurringSpeed<-ifelse(is.na(recurringZero$new_recurringSpeed), 0,
+                                             recurringZero$new_recurringSpeed)
+    recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no,
+                                                                                +1), recurringZero$pause_no)
 
     # Only collapse dataset if there are pauses
     if (max(recurringZero$pauseTime, na.rm=TRUE)>0) {
-
       # Collapse recurring zeros & average x/y lox per pause as AIS coordinates can jitter around
       pauses<-recurringZero[recurringZero$recurringSpeed==1,]
-      max_speed<-aggregate(pauses$new_recurringSpeed, list(pauses$new_pauseno), FUN=max)
-      new_x<-aggregate(pauses$x, list(pauses$pause_no), FUN=mean)
-      new_y<-aggregate(pauses$y, list(pauses$pause_no), FUN=mean)
-      new_time<-aggregate(pauses$time, list(pauses$pause_no), FUN=min)
-      new_pauseTime<-aggregate(pauses$pauseTime, list(pauses$pause_no), FUN=max)
+      max_speed <- aggregate(pauses$new_recurringSpeed, list(pauses$new_pauseno), FUN=max)
+      new_x <- aggregate(pauses$x, list(pauses$pause_no), FUN=mean)
+      new_y <- aggregate(pauses$y, list(pauses$pause_no), FUN=mean)
+      new_time <- aggregate(pauses$time, list(pauses$pause_no), FUN=min)
+      new_pauseTime <- aggregate(pauses$pauseTime, list(pauses$pause_no), FUN=max)
 
       #Adjust last pause time (as should be -1)
       new_pauseTime$x[nrow(new_pauseTime)]<-new_pauseTime$x[nrow(new_pauseTime)] -1
 
       # Create new data frame with these values per pause id
-      pauses_collapsed<-data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x), max_speed$Group.1,
-                                   new_pauseTime$x, rep(1), max_speed$Group.1)
-      colnames(pauses_collapsed)<-c("new_speeds", "recurringSpeed", "x", "y", "time", "pause_no", "pauseTime",
-                                    "new_recurringSpeed", "new_pauseno")
+      pauses_collapsed <- data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x),
+                                     max_speed$Group.1, new_pauseTime$x, rep(1), max_speed$Group.1)
+      colnames(pauses_collapsed) <- c("new_speeds", "recurringSpeed", "x", "y", "time", "pause_no",
+                                      "pauseTime", "new_recurringSpeed", "new_pauseno")
 
       # Join with the rest of the dataset & arrange by time
-      #movingperiods<-recurringZero[recurringZero$recurringSpeed==0 |is.na(recurringZero$new_recurringSpeed) ,]
-      movingperiods<-recurringZero[!recurringZero$new_pauseno %in% c(pauses_collapsed$new_pauseno) ,]
-      movingperiods<-movingperiods[-c(7)]
-      #pauses_collapsed<-pauses_collapsed[-c(9)]
-      pauses_collapsed$new_recurringSpeed<-pauses_collapsed$new_speeds
-      pauses_joined<-rbind(movingperiods, pauses_collapsed)
-      pauses_joined<-pauses_joined[order(pauses_joined$time),]
-
+      movingperiods <- recurringZero[recurringZero$recurringSpeed==0 |
+        is.na(recurringZero$new_recurringSpeed) ,]
+movingperiods <- recurringZero[!recurringZero$new_pauseno %in% c(pauses_collapsed$new_pauseno) ,]
+movingperiods <- movingperiods[-c(7)]
+#pauses_collapsed<-pauses_collapsed[-c(9)]
+pauses_collapsed$new_recurringSpeed<-pauses_collapsed$new_speeds
+pauses_joined<-rbind(movingperiods, pauses_collapsed)
+pauses_joined<-pauses_joined[order(pauses_joined$time),]
     } else {
-
       pauses_joined<-recurringZero
-
     }
-    one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y, "speed"=pauses_joined$new_speeds, "pause"=pauses_joined$pauseTime)
+
+    one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y, "speed"=pauses_joined$new_speeds,
+                            "pause"=pauses_joined$pauseTime)
     names(one.route)[4] <- "pause"
 
-    if (!startday %in% c("NA")) {
+    if (!(startday %in% c("NA"))) {
       # Calculate number of ticks to make sure add up to 48
-      one.route2<-one.route
-      one.route2$index<-1:nrow(one.route2) # index the rows
-      one.route2$count.ticks<-1
+      one.route2 <- one.route
+      one.route2$index <- 1:nrow(one.route2) # index the rows
+      one.route2$count.ticks <- 1
       # Add pauses to ticks
-      one.route2$count.ticks<-ifelse(one.route2$pause>0, one.route2$count.ticks+one.route2$pause, one.route2$count.ticks)
-      ticks<-sum(one.route2$count.ticks)
-      if(!(ticks-1) %% 48 ==0)
-        stop("Tick number is wrong")
+      one.route2$count.ticks <- ifelse(one.route2$pause>0, one.route2$count.ticks+one.route2$pause,
+                                       one.route2$count.ticks)
+      ticks <- sum(one.route2$count.ticks)
+      if(!((ticks-1) %% 48)==0) stop("Tick number is wrong")
     }
 
     # Save route characteristics
