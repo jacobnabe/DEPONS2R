@@ -68,7 +68,7 @@ setMethod("summary", "DeponsBlockdyn",
             cat("class:    \t", "DeponsBlockdyn \n")
             cat("title:    \t", object@title, "\n")
             cat("landscape:\t", object@landscape, "\n")
-            cat("simtime:  \t", as.character(object@simtime), "\n")
+            cat("simtime:  \t", as.character(format(object@simtime)), "\n")
             cat("startday:  \t", as.character(object@startday), "\n")
             cat("n.ticks:  \t", as.character(max(object@dyn$tick)), "\n")
             cat("n.days:  \t", as.character(round(max(object@dyn$tick)/48, 2)), "\n\n")

@@ -124,7 +124,7 @@ get.latest.sim <- function(type="dyn", dir) {
   fnms <- dir(the.dir)[outfiles]
   fnms2 <- as.list(fnms)
   ftime <- lapply(fnms2, FUN="get.simtime")
-  for(i in 1:length(ftime)) ftime[[i]] <- as.character(ftime[[i]])
+  for(i in 1:length(ftime)) ftime[[i]] <- format(ftime[[i]])
   outfile.nos <- data.frame("file.no"=outfiles, "time.str"=unlist(ftime))
   newest.sim <- sort(outfile.nos$time.str, decreasing=TRUE, index.return=TRUE)
   no.of.newest.sim <- outfile.nos$file.no[newest.sim$ix][1]

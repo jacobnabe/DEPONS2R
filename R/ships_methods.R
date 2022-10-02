@@ -62,7 +62,7 @@ setMethod("initialize", "DeponsShips",
 #' plot(ais.testdata[c("x", "y")], asp=1, col="green", pch=16, xlim=c(780000, 837000))
 #' lines(ais.testdata[c("x", "y")])
 #' # Add 600 sec to 'time' to mis-allign with intervcal needed
-#' ais.testdata$time <- as.character(as.POSIXlt(ais.testdata$time)+600)
+#' ais.testdata$time <- format(as.POSIXlt(ais.testdata$time)+600)
 #' text(ais.testdata[c("x", "y")]-900, ais.testdata$time, adj=0, cex=0.5)
 #' interpolated <- interpolate.ais.data(ais.testdata)
 #' points(interpolated[,c("x", "y")], col="red")
@@ -96,11 +96,11 @@ interpolate.ais.data <- function (aisdata) {
       new.t.first <- t.first
     } else if (mins < 30) {
       secs.to.add <- 60 * (30 - mins)
-      new.t.first <- as.character(as.POSIXct(t.first) +
+      new.t.first <- format(as.POSIXct(t.first) +
                                     secs.to.add)
     } else {
       secs.to.add <- 60 * (60 - mins)
-      new.t.first <- as.character(as.POSIXct(t.first) +
+      new.t.first <- format(as.POSIXct(t.first) +
                                     secs.to.add)
     }
     t.last <- aisdata.one.id[nrow(aisdata.one.id), "time"]
@@ -138,7 +138,7 @@ interpolate.ais.data <- function (aisdata) {
     new.time <- as.POSIXct(aisdata.one.id$time[interp.start.pos]) +
       prop.of.step * (as.numeric(as.POSIXct(aisdata.one.id$time[interp.end.pos])) -
                         as.numeric(as.POSIXct(aisdata.one.id$time[interp.start.pos])))
-    new.time <- as.character(new.time)
+    new.time <- format(new.time)
 
     # Handle special case where last pos has minutes=0 or 30
     if(mins==0 || mins==30) {
@@ -524,7 +524,7 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #'    startday="2015-12-20", endday="2015-12-20")
 #' routes(depons.ais)
 #' aisdata2 <- aisdata
-#' aisdata2$time <- as.character(as.POSIXct(aisdata$time)+300)
+#' aisdata2$time <- format(as.POSIXct(aisdata$time)+300)
 #' depons.ais2 <- ais.to.DeponsShips(aisdata2, bathymetry,
 #'                                startday="2015-12-20", endday="2015-12-21")
 #' routes(depons.ais2)
@@ -751,7 +751,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       one.track<-one.track[order(one.track$time),]
     }
 
-    one.track$time<-as.character(one.track$time)
+    one.track$time<-format(one.track$time)
     one.track$time<-as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="GMT")
     # one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
     one.track<-one.track[,1:7]
