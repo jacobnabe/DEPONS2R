@@ -138,7 +138,7 @@ interpolate.ais.data <- function (aisdata) {
     new.time <- as.POSIXct(aisdata.one.id$time[interp.start.pos]) +
       prop.of.step * (as.numeric(as.POSIXct(aisdata.one.id$time[interp.end.pos])) -
                         as.numeric(as.POSIXct(aisdata.one.id$time[interp.start.pos])))
-    new.time <- format(new.time)
+    new.time <- as.character(format(new.time))
 
     # Handle special case where last pos has minutes=0 or 30
     if(mins==0 || mins==30) {
@@ -751,7 +751,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       one.track<-one.track[order(one.track$time),]
     }
 
-    one.track$time<-format(one.track$time)
+    one.track$time<-as.character(one.track$time)
     one.track$time<-as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="GMT")
     # one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
     one.track<-one.track[,1:7]
