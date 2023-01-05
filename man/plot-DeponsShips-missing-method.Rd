@@ -45,9 +45,6 @@ data(coastline)
 coastline2 <- spTransform(coastline, crs(bathymetry))
 bbox <- bbox(bathymetry)
 clip.poly <- make.clip.poly(bbox, crs(bathymetry))
-new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
-  drop_lower_td = TRUE)
-plot(new.coastline, col="lightyellow2")
 plot(shipdata, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
 plot(clip.poly, add=TRUE)
 }

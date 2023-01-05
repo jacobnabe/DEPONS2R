@@ -30,29 +30,4 @@ Plot the coordinates in a movement track simulated with DEPONS.
 data(porpoisetrack)
 data("porpoisetrack")
 plot(porpoisetrack)
-
-\donttest{
-data(coastline)
-data(bathymetry)
-coastline2 <- sp::spTransform(coastline, crs(bathymetry))
-
-data(porpoisetrack)
-bbox <- bbox(porpoisetrack)
-clip.poly <- make.clip.poly(bbox, crs(bathymetry))
-if(!identical(crs(bathymetry), crs(coastline2))) stop("Non-matching CRSs")
-new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
-    drop_lower_td = TRUE)
-
-plot(new.coastline, col="lightyellow2")
-plot(porpoisetrack, col="blue", add=TRUE)
-plot(clip.poly, add=TRUE)
-# Clip to zoom in on smaller region
-bbox <- cbind("min"=c(549517, 6155000), "max"=c(636000, 6210000))
-rownames(bbox) <- c("x", "y")
-clip.poly <- make.clip.poly(bbox, crs(bathymetry))
-new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE,
-                                      drop_lower_td = TRUE)
-plot(new.coastline, col="lightyellow2")
-plot(porpoisetrack, col="blue", add=TRUE)
-}
 }

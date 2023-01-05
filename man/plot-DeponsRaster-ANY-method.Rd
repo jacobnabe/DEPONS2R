@@ -29,23 +29,6 @@ No return value, called for side effects
 Plot the values in a DeponsRaster object. Porpoisetracks or
 other kinds of lines, poits etc. can be drawn on top of the plot by adding
 }
-\examples{
-\donttest{
-data("bathymetry")
-data(coastline)
-library(sp)
-coastline2 <- spTransform(coastline, crs(bathymetry))
-bbox <- bbox(bathymetry)
-clip.poly <- make.clip.poly(bbox, crs(bathymetry))
-if(!identical(crs(bathymetry), crs(coastline2))) stop("Non-matching CRSs")
-new.coastline <- rgeos::gIntersection(coastline2, clip.poly, byid = TRUE, drop_lower_td = TRUE)
-
-plot(new.coastline, lwd=0.001)
-plot(bathymetry, add=TRUE)
-plot(new.coastline, add=TRUE, col="lightyellow2")
-plot(clip.poly, add=TRUE)
-}
-}
 \seealso{
 See method for \code{\link[raster]{plot}} in the \code{raster}
 package for plotting parameters and \code{\link{plot.DeponsTrack}} for

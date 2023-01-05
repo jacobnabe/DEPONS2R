@@ -22,7 +22,7 @@ tracks generated with DEPONS.
 finished. This is read from the name of the imput file.}
 
 \item{\code{crs}}{CRS object providing the coordinate reference system used; see
-\code{\link[sp]{CRS}} for details}
+\code{\link[sf]{st_crs}} for details}
 
 \item{\code{tracks}}{Listwith one or more tracks, each stored
 as a \code{\link[sp]{SpatialPointsDataFrame}} object)}
