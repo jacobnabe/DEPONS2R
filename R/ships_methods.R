@@ -71,7 +71,7 @@ setMethod("initialize", "DeponsShips",
 #' legend("bottomright", bty="n", pch=c(16, 1), col=c("green", "red"),
 #'     legend=c("original positions", "interpolated"))
 #' @export interpolate.ais.data
-interpolate.ais.data <- function (aisdata) {
+interpolate.ais.data<- function (aisdata) {
   if (!("x" %in% names(aisdata)))
     stop("aisdata must contain the column 'x'")
   if (!("y" %in% names(aisdata)))
@@ -93,16 +93,16 @@ interpolate.ais.data <- function (aisdata) {
                               nchar(t.first) - 3))
     secs <- as.numeric(substr(t.first, nchar(t.first) - 1,
                               nchar(t.first)))
-    if (mins == 0 && secs == 0) {
+    if ((mins == 0 && secs == 0 ) || (mins == 30 && secs == 0 )) {
       new.t.first <- t.first
     } else if (mins < 30) {
       secs.to.add <- 60 * (30 - mins)
       new.t.first <- format(as.POSIXct(t.first) +
-                                    secs.to.add)
+                              secs.to.add)
     } else {
       secs.to.add <- 60 * (60 - mins)
       new.t.first <- format(as.POSIXct(t.first) +
-                                    secs.to.add)
+                              secs.to.add)
     }
     t.last <- aisdata.one.id[nrow(aisdata.one.id), "time"]
 
@@ -749,7 +749,10 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       all.times.to.round <- all.times.to.round[,1:7]
       one.track.good <- one.track[one.track$mins==0 & one.track$secs==0,]
       one.track.good <- one.track.good[,1:7]
+      one.track.good$time<-as.character(format(one.track.good$time))
+      all.times.to.round$time<-as.character(format(all.times.to.round$time))
       one.track <- rbind(one.track.good, all.times.to.round)
+      one.track$time<-as.POSIXct(one.track$time, tz="UTC")
       one.track <- one.track[order(one.track$time),]
     }
 
@@ -780,6 +783,10 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   # Function to add coordinates at start and end of individual ship tracks so that they repeat at regular intervals (occurs if ship track is shorter than simulation duration)
   addMissingTicksStartEnd<-function(all.ticks, one.track, startday, endday, startday.track, endday.track) {
+
+    # Remove time from list format as it makes the time operations further down not work properly
+    one.track$time<-paste(one.track$time)
+    one.track$time<-as.POSIXct(one.track$time, tz="UTC")
 
     # If ship route occurs after startday then add missing ticks at start of day
     if (startday.track[1]>startday[1]) {
@@ -813,11 +820,13 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Functon which adds coordinates in the middle of individual ship tracks so that they repeat at regular intervals (occurs if ship temporarily leaves landscape)
+  # Functon which adds coordinates in the middle of individual ship tracks so
+  # that they repeat at regular intervals (occurs if ship temporarily leaves
+  # landscape)
   addMissingTicksMiddle<-function(one.track, match) {
 
-    # Create data frame for missing rows (nrow(match)) by duplicating ship characteristics
-    # and setting speed to 0 knots
+    # Create data frame for missing rows (nrow(match)) by duplicating ship
+    # characteristics and setting speed to 0 knots
     id<-rep(one.track$id[1], nrow(match))
     speed<-rep(0, nrow(match))
     type<-rep(one.track$type[1], nrow(match))
@@ -905,8 +914,13 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       new_time <- aggregate(pauses$time, list(pauses$pause_no), FUN=min)
       new_pauseTime <- aggregate(pauses$pauseTime, list(pauses$pause_no), FUN=max)
 
-      #Adjust last pause time (as should be -1)
-      new_pauseTime$x[nrow(new_pauseTime)]<-new_pauseTime$x[nrow(new_pauseTime)] -1
+      # If there a pause at the end of the track? If so then remove one minute from this last pause
+      if (new_speeds[length(new_speeds)]==0) {
+
+        #Adjust last pause time (as should be -1)
+        new_pauseTime$x[nrow(new_pauseTime)]<-new_pauseTime$x[nrow(new_pauseTime)] -1
+
+      }
 
       # Create new data frame with these values per pause id
       pauses_collapsed <- data.frame(max_speed$x, rep(1), new_x$x, new_y$x, as.POSIXct(new_time$x),
@@ -929,7 +943,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     }
 
     # Create final dataset
-    one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y, "speed"=pauses_joined$new_speeds,
+    one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y,
+                            "speed"=pauses_joined$new_speeds,
                             "pause"=pauses_joined$pauseTime)
 
     names(one.route)[4] <- "pause"
@@ -939,8 +954,6 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   }
 
   for (i in 1:length(ids)) {
-
-    print(i)
 
     # Subset one track & arrange by time
     id <- ids[i]
@@ -954,9 +967,9 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     startday.track <- min(one.track$time)
     endday.track <- max(one.track$time)
 
-    # If start & endday are provided them calculate for how many ticks the ship track should last
-    # If no start & end are provided then duration is equal to number of 30 min steps between start & end of
-    # unique ship track
+    # If start & endday are provided them calculate for how many ticks the ship
+    # track should last. If no start & end are provided then duration is equal
+    # to number of 30 min steps between start & end of unique ship track
     if (!(startday %in% c("NA")) && !(endday %in% c("NA"))) {
       all.ticks<-numberTicks(startday, endday)
     } else {
@@ -964,15 +977,17 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       colnames(all.ticks)<-c("time")
     }
 
-    # If there is a start & end date, the next line adds coordinates and pauses at the start and end of ship track
-    # if required so that the simulation runs from startday to endday
+    # If there is a start & end date, the next line adds coordinates and pauses
+    # at the start and end of ship track if required so that the simulation runs
+    # from startday to endday
     if (!(startday %in% c("NA"))) {
       one.track<-addMissingTicksStartEnd(all.ticks, one.track, startday, endday, startday.track, endday.track)
     }
 
     # Add missing ticks in middle of day (this happens if ship temporarily leaves the landscape)
     # First we determine whether there are missing ticks
-    match <- subset(all.ticks, time != one.track$time)
+    one.track$time<-as.POSIXct(one.track$time, tz="UTC")
+    match <- subset(all.ticks, !time %in% c(one.track$time))
     if(nrow(match)>0) {
       one.track<-addMissingTicksMiddle(one.track, match)
     }
@@ -993,6 +1008,15 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       if(!((ticks-1) %% 48)==0) stop("Tick number is wrong")
     }
 
+    # Check that there are no NAs in any columns
+    checkNa<-apply(one.route, 2, function(x) is.na(x))
+    checkNa<-ifelse(checkNa==TRUE, 1, 0)
+    sums<-data.frame(sum(checkNa))
+    colnames(sums)<-c("NAs")
+    sumsNa<-subset(sums, NAs==1)
+
+    if (nrow(sumsNa)>0) {stop("NA values in ship route")}
+
     # Save route characteristics
     all.routes[[i]] <- one.route
 
@@ -1010,6 +1034,6 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   validObject(all.cropped.DS)
 
   return(all.cropped.DS)
-
-
 }
+
+
