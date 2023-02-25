@@ -102,7 +102,6 @@ get.simtime <- function(fname=NULL, tz="GMT") {
 }
 
 
-
 #' @title Get name of newest file
 #' @name get.latest.sim
 #' @description Returns the name of the newest simulation output of a particular
