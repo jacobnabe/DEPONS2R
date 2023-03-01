@@ -567,7 +567,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     }
     dx <- data_sub$x[2:length(data_sub$x)] - data_sub$x[1:(length(data_sub$x)-1)]
     dy <- data_sub$y[2:length(data_sub$y)] - data_sub$y[1:(length(data_sub$y)-1)]
-    dt <- difftime(data_sub$time[2:length(data_sub$time)], data_sub$time[1:(length(data_sub$time)-1)],
+    dt <- difftime(data_sub$time[2:length(data_sub$time)],
+                   data_sub$time[1:(length(data_sub$time)-1)],
                    units="secs")
     dist <- sqrt(dx^2 + dy^2)
     speed <- dist/as.numeric(dt)
@@ -683,9 +684,14 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   }
   if (endday < startday) stop("endday should not be before startday")
 
-  # This function rounds the times of coordinates which are no longer on a tick after the ship track cropping step. This happens when a ship leaves or enters the landscape.
-  # The function assigns the row the preceding or subsequent tick depending on what times already exists in the dataset. If both the previous and subsequent tick already exist then this row is just removed.
-  # This function enables us to add pauses to the function while the ship is outside of the landscape
+  # This function rounds the times of coordinates which are no longer on a tick
+  # after the ship track cropping step. This happens when a ship leaves or enters
+  # the landscape.
+  # The function assigns the row the preceding or subsequent tick depending on
+  # what times already exists in the dataset. If both the previous and subsequent
+  # tick already exist then this row is just removed.
+  # This function enables us to add pauses to the function while the ship is
+  # outside of the landscape
   roundTimes<-function(one.track) {
 
     # Check all time stamps are full minutes if not they will need to be rounded up or down
@@ -723,8 +729,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
         # Situation where both times are already in the landscape
         if (nrow(time1)>0 && nrow(time2)>0) {
-          # Ship goes out at tick 1 and comes back at tick 2 (i.e. both surrounding times are in the
-          # dataset already)
+          # Ship goes out at tick 1 and comes back at tick 2 (i.e. both surrounding
+          # times are in the dataset already)
           times.to.round.sub$time <- times.to.round.sub$time.below
           times.to.round.sub <- times.to.round.sub[,1:7]
           times.to.round.sub$remove<-"TRUE"
@@ -781,10 +787,13 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Function to add coordinates at start and end of individual ship tracks so that they repeat at regular intervals (occurs if ship track is shorter than simulation duration)
+  # Function to add coordinates at start and end of individual ship tracks so
+  # that they repeat at regular intervals (occurs if ship track is shorter than
+  # simulation duration)
   addMissingTicksStartEnd<-function(all.ticks, one.track, startday, endday, startday.track, endday.track) {
 
-    # Remove time from list format as it makes the time operations further down not work properly
+    # Remove time from list format as it makes the time operations further down
+    # not work properly
     one.track$time<-paste(one.track$time)
     one.track$time<-as.POSIXct(one.track$time, tz="UTC")
 
@@ -820,13 +829,12 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Functon which adds coordinates in the middle of individual ship tracks so
-  # that they repeat at regular intervals (occurs if ship temporarily leaves
-  # landscape)
+  # Functon which adds coordinates in the middle of individual ship tracks so that
+  # they repeat at regular intervals (occurs if ship temporarily leaves landscape)
   addMissingTicksMiddle<-function(one.track, match) {
 
-    # Create data frame for missing rows (nrow(match)) by duplicating ship
-    # characteristics and setting speed to 0 knots
+    # Create data frame for missing rows (nrow(match)) by duplicating ship characteristics
+    # and setting speed to 0 knots
     id<-rep(one.track$id[1], nrow(match))
     speed<-rep(0, nrow(match))
     type<-rep(one.track$type[1], nrow(match))
@@ -943,8 +951,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     }
 
     # Create final dataset
-    one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y,
-                            "speed"=pauses_joined$new_speeds,
+    one.route <- data.frame("x"=pauses_joined$x, "y"=pauses_joined$y, "speed"=pauses_joined$new_speeds,
                             "pause"=pauses_joined$pauseTime)
 
     names(one.route)[4] <- "pause"
@@ -1009,13 +1016,11 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     }
 
     # Check that there are no NAs in any columns
-    checkNa<-apply(one.route, 2, function(x) is.na(x))
-    checkNa<-ifelse(checkNa==TRUE, 1, 0)
-    sums<-data.frame(sum(checkNa))
-    colnames(sums)<-c("NAs")
-    sumsNa<-subset(sums, NAs==1)
+    row.nonas <- which(!is.na(one.route$x) & !is.na (one.route$y) & !is.na(one.route$speed) & !is.na(one.route$pause)) # This line records rows without NAs
+    subset.nonas<-one.route[row.nonas,] # This line subsets the dataset to these rows
 
-    if (nrow(sumsNa)>0) {stop("NA values in ship route")}
+    # If the subset dataset is smaller than the full one, then there are NAs and the function breaks.
+    if (nrow(subset.nonas)< nrow(one.route)) {stop("NA values in ship route")}
 
     # Save route characteristics
     all.routes[[i]] <- one.route
