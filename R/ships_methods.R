@@ -683,13 +683,17 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   }
   if (endday < startday) stop("endday should not be before startday")
 
-  # This function rounds the times of coordinates which are no longer on a tick after the ship track cropping step. This happens when a ship leaves or enters the landscape.
-  # The function assigns the row the preceding or subsequent tick depending on what times already exists in the dataset. If both the previous and subsequent tick already exist then this row is just removed.
-  # This function enables us to add pauses to the function while the ship is outside of the landscape
+  # This function rounds the times of coordinates which are no longer on a tick
+  # after the ship track cropping step. This happens when a ship leaves or enters
+  # the landscape.
+  # The function assigns the row the preceding or subsequent tick depending on
+  # what times already exists in the dataset. If both the previous and subsequent
+  # tick already exist then this row is just removed. This function enables us to
+  # add pauses to the function while the ship is outside of the landscape
   roundTimes<-function(one.track) {
 
-    # Check all time stamps are full minutes if not they will need to be rounded up or down
-    # to nearest tick.
+    # Check all time stamps are full minutes if not they will need to be rounded
+    # up or down to nearest tick.
     # This happens when porps leave or enter via the edges of the landscape
     one.track$secs<-as.numeric(substr(format(one.track$time), 18, 19))
     one.track$hour<-substr(format(one.track$time), 12, 13)
@@ -781,10 +785,13 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Function to add coordinates at start and end of individual ship tracks so that they repeat at regular intervals (occurs if ship track is shorter than simulation duration)
+  # Function to add coordinates at start and end of individual ship tracks so that
+  # they repeat at regular intervals (occurs if ship track is shorter than
+  # simulation duration)
   addMissingTicksStartEnd<-function(all.ticks, one.track, startday, endday, startday.track, endday.track) {
 
-    # Remove time from list format as it makes the time operations further down not work properly
+    # Remove time from list format as it makes the time operations further down
+    # not work properly
     one.track$time<-paste(one.track$time)
     one.track$time<-as.POSIXct(one.track$time, tz="UTC")
 
@@ -820,7 +827,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Functon which adds coordinates in the middle of individual ship tracks so that they repeat at regular intervals (occurs if ship temporarily leaves landscape)
+  # Functon which adds coordinates in the middle of individual ship tracks so that
+  # they repeat at regular intervals (occurs if ship temporarily leaves landscape)
   addMissingTicksMiddle<-function(one.track, match) {
 
     # Create data frame for missing rows (nrow(match)) by duplicating ship characteristics
@@ -912,7 +920,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       new_time <- aggregate(pauses$time, list(pauses$pause_no), FUN=min)
       new_pauseTime <- aggregate(pauses$pauseTime, list(pauses$pause_no), FUN=max)
 
-      # If there a pause at the end of the track? If so then remove one minute from this last pause
+      # If there a pause at the end of the track? If so then remove one minute from
+      # this last pause
       if (new_speeds[length(new_speeds)]==0) {
 
         #Adjust last pause time (as should be -1)
@@ -964,8 +973,9 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     startday.track <- min(one.track$time)
     endday.track <- max(one.track$time)
 
-    # If start & endday are provided them calculate for how many ticks the ship track should last
-    # If no start & end are provided then duration is equal to number of 30 min steps between start & end of
+    # If start & endday are provided them calculate for how many ticks the ship
+    # track should last. If no start & end are provided then duration is equal
+    # to number of 30 min steps between start & end of
     # unique ship track
     if (!(startday %in% c("NA")) && !(endday %in% c("NA"))) {
       all.ticks<-numberTicks(startday, endday)
@@ -974,13 +984,15 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       colnames(all.ticks)<-c("time")
     }
 
-    # If there is a start & end date, the next line adds coordinates and pauses at the start and end of ship track
-    # if required so that the simulation runs from startday to endday
+    # If there is a start & end date, the next line adds coordinates and pauses
+    # at the start and end of ship track if required so that the simulation runs
+    # from startday to endday
     if (!(startday %in% c("NA"))) {
       one.track<-addMissingTicksStartEnd(all.ticks, one.track, startday, endday, startday.track, endday.track)
     }
 
-    # Add missing ticks in middle of day (this happens if ship temporarily leaves the landscape)
+    # Add missing ticks in middle of day (this happens if ship temporarily leaves
+    # the landscape)
     # First we determine whether there are missing ticks
     one.track$time<-as.POSIXct(one.track$time, tz="UTC")
     match <- subset(all.ticks, !time %in% c(one.track$time))
