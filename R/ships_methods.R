@@ -787,13 +787,12 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Function to add coordinates at start and end of individual ship tracks so
-  # that they repeat at regular intervals (occurs if ship track is shorter than
-  # simulation duration)
+  # Function to add coordinates at start and end of individual ship tracks
+  # so that they repeat at regular intervals (occurs if ship track is shorter
+  # than simulation duration)
   addMissingTicksStartEnd<-function(all.ticks, one.track, startday, endday, startday.track, endday.track) {
 
-    # Remove time from list format as it makes the time operations further down
-    # not work properly
+    # Remove time from list format as it makes the time operations further down not work properly
     one.track$time<-paste(one.track$time)
     one.track$time<-as.POSIXct(one.track$time, tz="UTC")
 
@@ -829,11 +828,13 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Functon which adds coordinates in the middle of individual ship tracks so that
-  # they repeat at regular intervals (occurs if ship temporarily leaves landscape)
+  # Functon which adds coordinates in the middle of individual ship tracks so
+  # that they repeat at regular intervals (occurs if ship temporarily leaves
+  # landscape)
   addMissingTicksMiddle<-function(one.track, match) {
 
-    # Create data frame for missing rows (nrow(match)) by duplicating ship characteristics
+    # Create data frame for missing rows (nrow(match)) by duplicating ship
+    # characteristics
     # and setting speed to 0 knots
     id<-rep(one.track$id[1], nrow(match))
     speed<-rep(0, nrow(match))
@@ -1021,7 +1022,12 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
     # If the subset dataset is smaller than the full one, then there are NAs and the function breaks.
     if (nrow(subset.nonas)< nrow(one.route)) {stop("NA values in ship route")}
+    checkNa<-apply(one.route, 2, function(x) is.na(x))
+    checkNa<-ifelse(checkNa==TRUE, 1, 0)
+    sums<-data.frame(sum(checkNa))
+    sumsNa<-subset(sums, sum.checkNa.==1)
 
+    if (nrow(sumsNa)>0) {stop("NA values in ship route")}
     # Save route characteristics
     all.routes[[i]] <- one.route
 
@@ -1040,5 +1046,3 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
   return(all.cropped.DS)
 }
-
-
