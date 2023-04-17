@@ -649,6 +649,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     }
 
     # Find pos and time were edge is crossed. Crossing northern or southern edge?
+    one.track.join<-list()
     for (i in 1:length(cross.row)) {
       crossing.n.or.s <- (one.track$y[cross.row[i]] < bb["y", "max"] && one.track$y[cross.row[i]+1] > bb["y", "max"]) ||
         (one.track$y[cross.row[i]] < bb["y", "min"] &&
@@ -658,9 +659,19 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         (one.track$y[cross.row[i]] > bb["y", "min"] &&
            one.track$y[cross.row[i]+1] < bb["y", "min"])
 
-      if(crossing.n.or.s) one.track <- get.n.or.s.cross(one.track, cross.row[i])
-      else one.track <- get.e.or.w.cross(one.track, cross.row[i])
+      if(crossing.n.or.s) one.track.partial <- get.n.or.s.cross(one.track, cross.row[i])
+      else one.track.partial <- get.e.or.w.cross(one.track, cross.row[i])
+
+      # subset the new times which were changed
+      one.track.partial.sub<-subset(one.track.partial, !time==one.track$time)
+
+      one.track.join<-rbind(one.track.join, one.track.partial.sub)
     }
+
+    one.track<-subset(one.track, inside==TRUE)
+    one.track<-rbind(one.track, one.track.join)
+    one.track <- one.track[order(one.track$time),]
+
     cropped.track <- one.track[one.track$inside, c("id", "time", "speed", "type",
                                                    "length", "x", "y")]
     all.cropped.tracks <- rbind(all.cropped.tracks, cropped.track)
@@ -704,10 +715,14 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     one.track$secs<-as.numeric(substr(format(one.track$time), 18, 19))
     one.track$hour<-substr(format(one.track$time), 12, 13)
     one.track$mins<-as.numeric(substr(format(one.track$time), 15, 16))
-    one.track$mins<-ifelse(one.track$mins==30, 0, one.track$mins)
+    #one.track$mins<-ifelse(one.track$mins==30, 0, one.track$mins)
+
+    # Change mins to '00' if it is null as this happens sometimes when time is midnight
+    one.track$mins<-ifelse(is.na(one.track$mins), 0, one.track$mins)
+    one.track$secs<-ifelse(is.na(one.track$secs), 0, one.track$secs)
 
     # These are times to round
-    times.to.round<-one.track[!one.track$mins==0 | !one.track$secs==0,]
+    times.to.round<-one.track[!one.track$mins %in% c(0, 30) |!one.track$secs==0,]
 
     if (nrow(times.to.round)>0) {
       all.times.to.round <- list()
@@ -715,18 +730,28 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         times.to.round.sub <- times.to.round[j,]
         next.hour <- substr(format(times.to.round.sub$time + 60*60), 12, 13)
         times.to.round.sub$time.below <- ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30,
-                              as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
-                              times.to.round.sub$hour, ":00:00"), tz="UTC"),
-                              as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
-                              times.to.round.sub$hour, ":30:00"), tz="UTC"))
+                                                as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
+                                                                    times.to.round.sub$hour, ":00:00"), tz="UTC"),
+                                                as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
+                                                                    times.to.round.sub$hour, ":30:00"), tz="UTC"))
         times.to.round.sub$time.above <- ifelse(times.to.round.sub$mins>=0 & times.to.round.sub$mins<30,
-                              as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
-                              times.to.round.sub$hour, ":30:00"), tz="UTC"),
-                              as.character(paste0(substr(paste(times.to.round.sub$time), 1, 10), " ", next.hour, ":00:00"),
-                                tz="UTC"))
+                                                as.character(paste0(substr(format(times.to.round.sub$time), 1, 10), " ",
+                                                                    times.to.round.sub$hour, ":30:00"), tz="UTC"),
+                                                as.character(paste0(substr(paste(times.to.round.sub$time), 1, 10), " ", next.hour, ":00:00"),
+                                                             tz="UTC"))
 
         # Determine which time is in the dataset already
-        track.compare <- one.track
+
+        if (j > 1) {
+          all.times.to.round.compare <- all.times.to.round[,1:7]
+          all.times.to.round.compare$time<-as.POSIXct(all.times.to.round.compare$time, tz="UTC")
+          one.track.compare<-one.track[,1:7]
+          combine<-rbind(all.times.to.round.compare, one.track.compare)
+          track.compare<-combine[order(combine$time),]
+        } else {
+          track.compare<-one.track[,1:7]
+        }
+
         track.compare$time <- as.character(track.compare$time)
         time1 <- track.compare[track.compare$time==times.to.round.sub$time.below,]
         time2 <- track.compare[track.compare$time==times.to.round.sub$time.above,]
@@ -757,19 +782,22 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       # These are times to round
       all.times.to.round <- all.times.to.round[all.times.to.round$remove==FALSE,]
       all.times.to.round <- all.times.to.round[,1:7]
-      one.track.good <- one.track[one.track$mins==0 & one.track$secs==0,]
+      one.track.good <- one.track[one.track$mins %in% c(0, 30) & one.track$secs==0,]
       one.track.good <- one.track.good[,1:7]
       one.track.good$time<-as.character(format(one.track.good$time))
       all.times.to.round$time<-as.character(format(all.times.to.round$time))
       one.track <- rbind(one.track.good, all.times.to.round)
-      one.track$time<-as.POSIXct(one.track$time, tz="UTC")
+      #one.track$time<-as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="UTC")
+      #one.track$time<-ifelse(is.na(one.track$time), as.POSIXct(one.track$time, format=c("%Y-%m-%d"), tz="UTC"), one.track$time)
       one.track <- one.track[order(one.track$time),]
     }
 
     #one.track$time <- paste(format(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="UTC"))
-    #one.track$time <- as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="UTC")
+    one.track$time <- as.POSIXct(one.track$time, format=c("%Y-%m-%d %H:%M:%S"), tz="UTC")
     #one.track$speed[nrow(one.track)]<-0 # make sure porp stops at last coordinate
     one.track <- one.track[,1:7]
+
+    return(one.track)
 
   }
 
@@ -911,11 +939,11 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     # This is so the ship knows which speed to move at once it has finished pausing
 
     recurringZero$new_recurringSpeed<-ifelse(recurringZero$recurringSpeed==1,
-                          lead_lag(recurringZero$new_speeds, -1), recurringZero$new_speeds)
+                                             lead_lag(recurringZero$new_speeds, -1), recurringZero$new_speeds)
     recurringZero$new_recurringSpeed<-ifelse(is.na(recurringZero$new_recurringSpeed), 0,
-                          recurringZero$new_recurringSpeed)
+                                             recurringZero$new_recurringSpeed)
     recurringZero$new_pauseno<-ifelse(recurringZero$recurringSpeed==0, lead_lag(recurringZero$pause_no,
-                                                                 +1), recurringZero$pause_no)
+                                                                                +1), recurringZero$pause_no)
 
     # Collapse dataset if there are pauses
     if (max(recurringZero$pauseTime, na.rm=TRUE)>0) {
@@ -977,6 +1005,9 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
     one.track <- all.cropped.tracks[all.cropped.tracks$id==id,]
     one.track<-one.track[order(one.track$time),]
+    one.track$time<-paste(round(one.track$time, "secs")) # Up to here does not give an error
+    one.track$time<-ifelse(nchar(one.track$time) < 12, paste(one.track$time, "00:00:00", sep=" "), one.track$time)
+    one.track$time<-as.POSIXct(one.track$time, tz="UTC", format="%Y-%m-%d %H:%M:%S")
 
     # Adjust times if ship enters or leaves the landscape between ticks
     one.track<-roundTimes(one.track)
@@ -1037,7 +1068,6 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
     # Save route characteristics
     all.routes[[i]] <- one.route
-
   }
 
   # Save all routes
@@ -1052,96 +1082,5 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   validObject(all.cropped.DS)
 
   return(all.cropped.DS)
-
-} # end of ais.to.DeponsShips
-
-interpolate.ais.data<- function (aisdata) {
-  if (!("x" %in% names(aisdata)))
-    stop("aisdata must contain the column 'x'")
-  if (!("y" %in% names(aisdata)))
-    stop("aisdata must contain the column 'y'")
-  if (!("time" %in% names(aisdata)))
-    stop("aisdata must contain the column 'time'")
-  if (!("id" %in% names(aisdata)))
-    stop("aisdata must contain the column 'id'")
-  if (!inherits(aisdata$time, "character"))
-    stop("'time' must be character")
-  ids <- sort(unique(aisdata$id))
-  out.data <- data.frame()
-
-  # the.id <- ids[1]
-  for (the.id in ids) {
-    aisdata.one.id <- aisdata[aisdata$id == the.id, ]
-    t.first <- aisdata.one.id[1, "time"]
-    mins <- as.numeric(substr(t.first, nchar(t.first) - 4,
-                              nchar(t.first) - 3))
-    secs <- as.numeric(substr(t.first, nchar(t.first) - 1,
-                              nchar(t.first)))
-    if ((mins == 0 && secs == 0 ) || (mins == 30 && secs == 0 )) {
-      new.t.first <- t.first
-    } else if (mins < 30) {
-      secs.to.add <- 60 * (30 - mins)
-      new.t.first <- format(as.POSIXct(t.first) +
-                              secs.to.add)
-    } else {
-      secs.to.add <- 60 * (60 - mins)
-      new.t.first <- format(as.POSIXct(t.first) +
-                              secs.to.add)
-    }
-    t.last <- aisdata.one.id[nrow(aisdata.one.id), "time"]
-
-
-    mins <- as.numeric(substr(t.last, nchar(t.last) - 4,
-                              nchar(t.last) - 3))
-    new.mins <- ifelse(mins < 30, "00", "30")
-    substr(t.last, nchar(t.last) - 4, nchar(t.last) - 3) <- new.mins
-    new.t.last <- t.last
-
-
-    all.new.times <- seq(as.POSIXct(new.t.first), as.POSIXct(new.t.last),
-                         (60 * 30))
-
-    secs.org.pos <- as.numeric(as.POSIXlt(aisdata.one.id$time))
-    secs.new.pos <- as.numeric(all.new.times)
-    prev.org.pos <- function(x) max(which(secs.org.pos <=
-                                            secs.new.pos[x]))
-    next.org.pos <- function(x) {
-      if (!any(secs.org.pos > secs.new.pos[x]))
-        return(NA)
-      the.next.pos <- min(which(secs.org.pos > secs.new.pos[x]))
-    }
-    interp.start.pos <- sapply(1:length(all.new.times), FUN = "prev.org.pos")
-    interp.end.pos <- sapply(1:length(all.new.times), FUN = "next.org.pos")
-    secs.from.start.pos <- secs.new.pos - secs.org.pos[interp.start.pos]
-    secs.to.end.pos <- secs.org.pos[interp.end.pos] - secs.new.pos
-    prop.of.step <- secs.from.start.pos/(secs.from.start.pos +
-                                           secs.to.end.pos)
-    new.x <- aisdata.one.id$x[interp.start.pos] + prop.of.step *
-      (aisdata.one.id$x[interp.end.pos] - aisdata.one.id$x[interp.start.pos])
-    new.y <- aisdata.one.id$y[interp.start.pos] + prop.of.step *
-      (aisdata.one.id$y[interp.end.pos] - aisdata.one.id$y[interp.start.pos])
-    new.time <- as.POSIXct(aisdata.one.id$time[interp.start.pos]) +
-      prop.of.step * (as.numeric(as.POSIXct(aisdata.one.id$time[interp.end.pos])) -
-                        as.numeric(as.POSIXct(aisdata.one.id$time[interp.start.pos])))
-    new.time <- as.character(format(new.time))
-
-    # Handle special case where last pos has minutes=0 or 30
-    if(mins==0 || mins==30) {
-      new.x[length(new.x)] <- aisdata.one.id$x[length(aisdata.one.id$x)]
-      new.y[length(new.y)] <- aisdata.one.id$y[length(aisdata.one.id$y)]
-      new.time[length(new.time)] <- aisdata.one.id$time[length(aisdata.one.id$time)]
-    }
-    # set seconds to zero
-    substr(new.time, nchar(new.time) - 1, nchar(new.time)) <- "00"
-    other.columns <- names(aisdata.one.id)[(!(names(aisdata.one.id) %in%
-                                                c("id", "time", "x", "y")))]
-    other.columns <- aisdata.one.id[interp.start.pos, other.columns]
-    out.data.one.id <- data.frame(id = the.id, other.columns,
-                                  x = new.x, y = new.y, time = new.time)
-    out.data.one.id <- out.data.one.id[!is.na(out.data.one.id$x), ]
-    out.data <- rbind(out.data, out.data.one.id)
-  }
-  row.names(out.data) <- NULL
-  return(out.data)
 } # end of ais.to.DeponsShips
 
