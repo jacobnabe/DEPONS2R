@@ -668,12 +668,12 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       one.track.join<-rbind(one.track.join, one.track.partial.sub)
     }
 
-    one.track<-subset(one.track, inside==TRUE)
+    one.track<-subset(one.track, one.track$inside==TRUE)
     one.track<-rbind(one.track, one.track.join)
     one.track <- one.track[order(one.track$time),]
 
-    cropped.track <- one.track[one.track$inside, c("id", "time", "speed", "type",
-                                                   "length", "x", "y")]
+    cropped.track <- one.track[, c("id", "time", "speed", "type",
+                                   "length", "x", "y")]
     all.cropped.tracks <- rbind(all.cropped.tracks, cropped.track)
     rm(one.track, cropped.track)
   }
@@ -1068,6 +1068,8 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
     # Save route characteristics
     all.routes[[i]] <- one.route
+
+
   }
 
   # Save all routes
@@ -1082,5 +1084,6 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   validObject(all.cropped.DS)
 
   return(all.cropped.DS)
-} # end of ais.to.DeponsShips
 
+
+} # end of ais.to.DeponsShips
