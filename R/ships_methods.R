@@ -1066,6 +1066,14 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     # If the subset dataset is smaller than the full one, then there are NAs and the function breaks.
     if (nrow(subset.nonas)< nrow(one.route)) {stop("NA values in ship route")}
 
+    # Check whether any buoys are on the edge of the landscape
+    # If yes -> remove 1 m
+
+    one.route$x<-ifelse(one.route$x == bb[1,1], one.route$x + 0.01, one.route$x)
+    one.route$x<-ifelse(one.route$x == bb[1,2], one.route$x - 0.01, one.route$x)
+    one.route$y<-ifelse(one.route$y == bb[2,1], one.route$y + 0.01, one.route$y)
+    one.route$y<-ifelse(one.route$y == bb[2,2], one.route$y - 0.01, one.route$y)
+
     # Save route characteristics
     all.routes[[i]] <- one.route
 
@@ -1087,3 +1095,4 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
 
 } # end of ais.to.DeponsShips
+
