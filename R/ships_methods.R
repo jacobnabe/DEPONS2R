@@ -56,7 +56,7 @@ setMethod("initialize", "DeponsShips",
 #' 'time' (text string readable by \code{\link{as.POSIXct}}), 'x' and 'y'
 #' (recorded ship position, unit: meters), and potentially additional columns
 #' @return Returns a data frame with the same columns as the input data
-#' @seealso \code{\link{read.DeponsShips}}
+#' @seealso \code{\link{read.DeponsShips}} and \code{\link{ais.to.DeponsShips}}
 #' @examples
 #' data(aisdata)
 #' ais.testdata <- aisdata[c(12,14,16) ,]
@@ -89,6 +89,11 @@ interpolate.ais.data<- function (aisdata) {
   for (the.id in ids) {
     aisdata.one.id <- aisdata[aisdata$id == the.id, ]
     t.first <- aisdata.one.id[1, "time"]
+    # if there is not time (i.e. time = midnight, then need to manually add '00:00:00')
+    if (nchar(t.first)==10) {
+      t.first<-paste(t.first, "00:00:00", sep=" ")
+    }
+
     mins <- as.numeric(substr(t.first, nchar(t.first) - 4,
                               nchar(t.first) - 3))
     secs <- as.numeric(substr(t.first, nchar(t.first) - 1,
@@ -104,34 +109,38 @@ interpolate.ais.data<- function (aisdata) {
       new.t.first <- format(as.POSIXct(t.first) +
                               secs.to.add)
     }
-    t.last <- aisdata.one.id[nrow(aisdata.one.id), "time"]
 
+    t.last <- aisdata.one.id[nrow(aisdata.one.id), "time"]
 
     mins <- as.numeric(substr(t.last, nchar(t.last) - 4,
                               nchar(t.last) - 3))
     new.mins <- ifelse(mins < 30, "00", "30")
     substr(t.last, nchar(t.last) - 4, nchar(t.last) - 3) <- new.mins
     new.t.last <- t.last
-
-
+    if(as.POSIXct(new.t.first) >= as.POSIXct(new.t.last)) {
+      stop(paste("Track for id ", the.id, "too short to interpolate"))
+    }
     all.new.times <- seq(as.POSIXct(new.t.first), as.POSIXct(new.t.last),
                          (60 * 30))
+    aisdata.one.id$time <- ifelse(nchar(aisdata.one.id$time)==10,
+                                  paste(aisdata.one.id$time, "00:00:00"), aisdata.one.id$time)
 
-    secs.org.pos <- as.numeric(as.POSIXlt(aisdata.one.id$time))
+    secs.org.pos <- as.numeric(as.POSIXlt(aisdata.one.id$time, format=c("%Y-%m-%d %H:%M:%OS")) )
     secs.new.pos <- as.numeric(all.new.times)
     prev.org.pos <- function(x) max(which(secs.org.pos <=
                                             secs.new.pos[x]))
     next.org.pos <- function(x) {
+      # if (any(secs.org.pos == secs.new.pos[x]))
       if (!any(secs.org.pos > secs.new.pos[x]))
         return(NA)
       the.next.pos <- min(which(secs.org.pos > secs.new.pos[x]))
     }
     interp.start.pos <- sapply(1:length(all.new.times), FUN = "prev.org.pos")
     interp.end.pos <- sapply(1:length(all.new.times), FUN = "next.org.pos")
+
     secs.from.start.pos <- secs.new.pos - secs.org.pos[interp.start.pos]
     secs.to.end.pos <- secs.org.pos[interp.end.pos] - secs.new.pos
-    prop.of.step <- secs.from.start.pos/(secs.from.start.pos +
-                                           secs.to.end.pos)
+    prop.of.step <- secs.from.start.pos/(secs.from.start.pos + secs.to.end.pos)
     new.x <- aisdata.one.id$x[interp.start.pos] + prop.of.step *
       (aisdata.one.id$x[interp.end.pos] - aisdata.one.id$x[interp.start.pos])
     new.y <- aisdata.one.id$y[interp.start.pos] + prop.of.step *
@@ -160,6 +169,7 @@ interpolate.ais.data<- function (aisdata) {
   row.names(out.data) <- NULL
   return(out.data)
 }
+
 
 
 
@@ -288,7 +298,8 @@ setMethod("write", "DeponsShips",
 #' library(sp)
 #' data(bathymetry)
 #' data(coastline)
-#' coastline2 <- spTransform(coastline, crs(bathymetry))
+#' coastline_sf <- sf::st_as_sf(coastline)
+#' coastline2 <- sf::st_transform(coastline_sf, crs(bathymetry))
 #' bbox <- bbox(bathymetry)
 #' clip.poly <- make.clip.poly(bbox, crs(bathymetry))
 #' plot(shipdata, col=c("red", "green", "blue"), add=TRUE, add.legend=TRUE)
@@ -459,11 +470,6 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 
 
 
-
-
-
-
-
 #' @title Convert ship tracks to DeponsShips object
 #' @name ais.to.DeponsShips
 #' @description Convert Automatic Identification System (AIS) data for ships to
@@ -501,8 +507,10 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' intervals were ships 'pause' at a particular location, e.g. in a
 #' port. These are calculated based on the input AIS data.
 #' @seealso \code{\link{aisdata}} for an example of data that can be used as
-#' input to ais.to.DeponsShips and \code{\link{interpolate.ais.data}} interpolation
-#' of tracks. See \code{\link[DEPONS2R]{write.DeponsShips}} for conversion of
+#' input to ais.to.DeponsShips. The function builds on
+#' \code{\link{interpolate.ais.data}}, which interpolates tracks to ensure
+#' that there is a position every 30 minutes.
+#' See \code{\link[DEPONS2R]{write.DeponsShips}} for conversion of
 #' \code{DeponsShips} objects to json-files to be used in DEPONS. Use
 #' \code{\link{routes}}, \code{\link{ships}}, and \code{\link{title}} for
 #' inspection/modification of the ship tracks.

@@ -35,5 +35,5 @@ legend("bottomright", bty="n", pch=c(16, 1), col=c("green", "red"),
     legend=c("original positions", "interpolated"))
 }
 \seealso{
-\code{\link{read.DeponsShips}}
+\code{\link{read.DeponsShips}} and \code{\link{ais.to.DeponsShips}}
 }

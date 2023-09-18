@@ -7,7 +7,7 @@
 # devtools::check(cleanup=FALSE) # check timings of examples: read log
 # devtools::check
 
-# Prevent sp to call code in rgdal or rgeos, which are retiring
+# Prevent sp from callin code in rgdal or rgeos, which are retiring
 # (see https://r-spatial.org/r/2022/04/12/evolution.html#packages-depending-on-sp-and-raster)
 # devtools::install_github("rsbivand/sp@evolution")
 # Sys.setenv("_SP_EVOLUTION_STATUS_"=2)
