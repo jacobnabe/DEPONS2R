@@ -542,7 +542,7 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' routes(depons.ais2)
 #' @export ais.to.DeponsShips
 # setMethod("as", signature("data.frame", "DeponsRaster"), function(data, landsc, title="NA") {
-ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
+ais.to.DeponsShips<- function(data, landsc, title="NA", ...) {
   if(!inherits(data,"data.frame"))
     stop("data must be a data.frame with the variables 'id', 'time', 'speed', 'type', 'length', 'x', and 'y'")
   if(!all(c('id', 'time', 'type', 'length', 'x', 'y') %in% names(data)))
@@ -647,6 +647,13 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
     # Are positions inside the landscape?
     one.track$inside <- one.track$x>=bb["x", "min"] & one.track$x<=bb["x", "max"] &
       one.track$y>=bb["y", "min"] & one.track$y<=bb["y", "max"]
+
+    # If no points inside then go to next
+    inside<-subset(one.track, inside==TRUE)
+    if(nrow(inside)<1) {
+      next
+    }
+
     nrw <- nrow(one.track)
     # Find data row just before crossing edge of landsc
     cross.row <- which(one.track$inside[2:nrw] != one.track$inside[1:(nrw-1)])
@@ -670,18 +677,22 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
       if(crossing.n.or.s) one.track.partial <- get.n.or.s.cross(one.track, cross.row[i])
       else one.track.partial <- get.e.or.w.cross(one.track, cross.row[i])
 
-      # subset the new times which were changed
-      one.track.partial.sub<-subset(one.track.partial, !time==one.track$time)
-
-      one.track.join<-rbind(one.track.join, one.track.partial.sub)
+      one.track$time<-paste(round(one.track$time, "secs")) # Up to here does not give an error
+      one.track.partial$time<-paste(round(one.track.partial$time, "secs")) # Up to here does not give an error
+      one.track.partial.sub <- subset(one.track.partial,
+                                      !time %in% c( one.track$time))
+      one.track$time<-ifelse(nchar(one.track$time)<11, paste0(one.track$time, " 00:00:00"), one.track$time)
+      one.track$time<-as.POSIXct(one.track$time, tz="UTC", format="%Y-%m-%d %H:%M:%S")
+      one.track.partial.sub$time<-as.POSIXct(one.track.partial.sub$time, tz="UTC", format="%Y-%m-%d %H:%M:%S")
+      one.track.join <- rbind(one.track.join, one.track.partial.sub)
     }
 
-    one.track<-subset(one.track, one.track$inside==TRUE)
-    one.track<-rbind(one.track, one.track.join)
-    one.track <- one.track[order(one.track$time),]
+    one.track <- subset(one.track, one.track$inside == TRUE)
+    one.track <- rbind(one.track, one.track.join)
+    one.track <- one.track[order(one.track$time), ]
+    cropped.track <- one.track[, c("id", "time", "speed",
+                                   "type", "length", "x", "y")]
 
-    cropped.track <- one.track[, c("id", "time", "speed", "type",
-                                   "length", "x", "y")]
     all.cropped.tracks <- rbind(all.cropped.tracks, cropped.track)
     rm(one.track, cropped.track)
   }
@@ -761,6 +772,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
         }
 
         track.compare$time <- as.character(track.compare$time)
+        track.compare$time<-ifelse(nchar(track.compare$time)<11, paste0(track.compare$time, " 00:00:00"), track.compare$time)
         time1 <- track.compare[track.compare$time==times.to.round.sub$time.below,]
         time2 <- track.compare[track.compare$time==times.to.round.sub$time.above,]
 
@@ -1013,7 +1025,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
 
     one.track <- all.cropped.tracks[all.cropped.tracks$id==id,]
     one.track<-one.track[order(one.track$time),]
-    one.track$time<-paste(round(one.track$time, "secs")) # Up to here does not give an error
+    one.track$time<-paste(round(one.track$time, "secs"))
     one.track$time<-ifelse(nchar(one.track$time) < 12, paste(one.track$time, "00:00:00", sep=" "), one.track$time)
     one.track$time<-as.POSIXct(one.track$time, tz="UTC", format="%Y-%m-%d %H:%M:%S")
 
@@ -1100,7 +1112,7 @@ ais.to.DeponsShips <- function(data, landsc, title="NA", ...) {
   validObject(all.cropped.DS)
 
   return(all.cropped.DS)
-
-
 } # end of ais.to.DeponsShips
+
+
 
