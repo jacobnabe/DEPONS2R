@@ -881,7 +881,7 @@ ais.to.DeponsShips<- function(data, landsc, title="NA", ...) {
 
   }
 
-  # Functon which adds coordinates in the middle of individual ship tracks so that
+  # Function which adds coordinates in the middle of individual ship tracks so that
   # they repeat at regular intervals (occurs if ship temporarily leaves landscape)
   addMissingTicksMiddle<-function(one.track, match) {
 
