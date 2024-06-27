@@ -34,7 +34,7 @@ setMethod("crs", signature("DeponsShips"),
 #' Get or set map projection
 #' @name crs
 #' @description Get or set the map projection (also known as coordinate reference
-#' system, crs) of DeponsRaster and DeponsTrack objects. For {sp} objects the
+#' system, crs) of DeponsRaster and DeponsTrack objects. For \code{sp} objects the
 #' text string defining the crs is called the \code{\link[sp]{proj4string}}.
 #' @aliases crs,DeponsRaster-method
 #' @aliases crs,DeponsShips-method
