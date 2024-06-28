@@ -27,10 +27,9 @@
 \item{x}{Object of class class \code{DeponsRaster}, \code{DeponsShips} or
 \code{DeponsTrack}}
 
-\item{value}{\code{\link{proj4string}} identifying the map projection}
+\item{value}{(proj4string) identifying the map projection}
 }
 \description{
 Get or set the map projection (also known as coordinate reference
-system, crs) of DeponsRaster and DeponsTrack objects. For \code{sp} objects the
-text string defining the crs is called the \code{\link[sp]{proj4string}}.
+system, crs) of DeponsRaster and DeponsTrack objects.
 }
