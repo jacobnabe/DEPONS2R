@@ -147,6 +147,30 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 }
 
 
+#' @title Convert DEPONS track to data frame
+#' @description Function  for converting DEPONS movement track file to a
+#' data frame.
+#' @param x DeponsTrack object
+#' @param row.names NULL or a character vector giving the row names for the data
+#' frame. Missing values are not allowed.
+#' @param optional Logical (not used)
+#' @param ... additional arguments to be passed to or from methods.
+#' @exportMethod as.data.frame
+#' @return \code{data.frame} object
+#' @examples
+#' data(porpoisetrack)
+#' class(porpoisetrack)
+#' the.track <- as.data.frame(porpoisetrack)
+setMethod("as.data.frame", signature("DeponsTrack"),
+            function(x, row.names = NULL, optional = FALSE, ...) {
+              if (is.null(x))
+                return(as.data.frame(list()))
+              tracks <- as.data.frame(x@tracks)
+              return(tracks)
+            }
+)
+
+
 #' @title Plot a DeponsTrack object
 #' @description Plot the coordinates in a movement track simulated with DEPONS.
 #' @aliases plot.DeponsTrack
