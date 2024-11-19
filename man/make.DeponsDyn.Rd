@@ -44,7 +44,9 @@ DEPONS simulation output to a DeponsDyn object.
 }
 \examples{
 data(porpoisedyn)
-the.data <- porpoisedyn@dyn[,c(1:4)]
+the.data <- as.data.frame(porpoisedyn)
+the.data <- the.data[, c(1:4)]
+names(the.data) <- c("tick", "PorpoiseCount", "FoodEnergyLevel", "PorpoiseEnergyLevel")
 porpoisedyn2 <- make.DeponsDyn(the.data, startday="2010-01-01")
 porpoisedyn2
 

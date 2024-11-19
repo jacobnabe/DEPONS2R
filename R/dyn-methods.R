@@ -141,7 +141,9 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' @return \code{DeponsDyn} object containing simulation output
 #' @examples
 #' data(porpoisedyn)
-#' the.data <- porpoisedyn@dyn[,c(1:4)]
+#' the.data <- as.data.frame(porpoisedyn)
+#' the.data <- the.data[, c(1:4)]
+#' names(the.data) <- c("tick", "PorpoiseCount", "FoodEnergyLevel", "PorpoiseEnergyLevel")
 #' porpoisedyn2 <- make.DeponsDyn(the.data, startday="2010-01-01")
 #' porpoisedyn2
 #'
@@ -175,6 +177,9 @@ make.DeponsDyn <- function(oname, title="NA", landscape="NA", simtime="NA",
   all.data@dyn <- the.data
   return(all.data)
 }
+
+
+
 
 #' @title Convert DeponsDyn object to data frame
 #' @description Function  for converting DEPONS population dynamics object
