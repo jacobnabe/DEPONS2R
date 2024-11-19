@@ -32,7 +32,6 @@
 #' XXX is the date and time when the simulation was finished.
 NULL
 
-# Correction of typo - test
 
 #' @title Get simulation date
 #' @name get.simtime

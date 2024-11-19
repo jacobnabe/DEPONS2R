@@ -87,7 +87,8 @@ setMethod("summary", "DeponsDyn",
 #' DEPONS.
 #' @param tz Time zone.
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
-#' the output object.
+#' the output object and \code{\link{as.data.frame}} for converting from data
+#' frame.
 #' @return \code{DeponsDyn} object containing simulation output
 #' @examples \dontrun{
 #' dyn.file <- "/Applications/DEPONS 2.1/DEPONS/Statistics.2020.Sep.02.20_24_17.csv"
@@ -117,6 +118,87 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
   return(all.data)
 }
 
+
+#' @title Make DeponsDyn object from data stored in data frame
+#' @description Function  for reading converting a data frame containing
+#' DEPONS simulation output to a DeponsDyn object.
+#'
+#' @param oname Name of the object (data frame) that contains number of
+#' animals for each time step during the simulation, along with their energy and
+#' the amount of food in the landscape.
+#' @param title Optional character string giving name of simulation
+#' @param landscape The landscape used in the simulation
+#' @param simtime Optional character string with the date and time when the
+#' simulation finished (format yyyy-mm-dd).
+#' @param startday The start of the period that the  simulation represents, i.e.
+#' the real-world equivalent of 'tick 1' (character string of the
+#' form 'yyyy-mm-dd', or POSIXlt). Defaluts to 2000-01-01
+#' @param timestep Time step used in the model, in minutes. Defaults to 30
+#' minutes in DEPONS.
+#' @param tz Time zone.
+#' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
+#' the output object.
+#' @return \code{DeponsDyn} object containing simulation output
+#' @examples
+#' data(porpoisedyn)
+#' the.data <- porpoisedyn@dyn[,c(1:4)]
+#' porpoisedyn2 <- make.DeponsDyn(the.data, startday="2010-01-01")
+#' porpoisedyn2
+#'
+#' @export make.DeponsDyn
+make.DeponsDyn <- function(oname, title="NA", landscape="NA", simtime="NA",
+                           startday="2000-01-01", timestep=30, tz="GMT") {
+  # if (simtime=="NA")  simtime <- get.simtime(oname)
+  if(!is.character(startday)) stop("'startday' must be a character string")
+  if (startday=="NA" || is.na(startday))  startday <- NA
+  all.data <- new("DeponsDyn")
+  all.data@title <- title
+  all.data@landscape <- landscape
+  if (simtime!="NA") {
+    all.data@simtime <- as.POSIXlt(simtime)
+  }
+  all.data@startday <- as.POSIXlt(startday, tz=tz)
+  # the.data <- utils::read.csv(oname, sep=";")
+  the.data <- oname
+  # Convert column names if needed
+  names(the.data)[names(the.data)=="count"] <- "PorpoiseCount"
+  names(the.data)[names(the.data)=="lands.e"] <- "FoodEnergyLevel"
+  names(the.data)[names(the.data)=="anim.e"] <- "PorpoiseEnergyLevel"
+  if(!(all(the.data$tick %in% 1:max(the.data$tick)) && all(1:max(the.data$tick) %in% the.data$tick)))
+    stop ("All values of 'tick' from 1 to max(tick) must be present")
+  if(!all(names(the.data)==c("tick", "PorpoiseCount", "FoodEnergyLevel", "PorpoiseEnergyLevel"))) {
+    stop("The column names in the input data should be 'tick', 'PorpoiseCount', 'FoodEnergyLevel', and 'PorpoiseEnergyLevel'")
+  }
+  names(the.data) <- c("tick", "count", "lands.e", "anim.e")
+  the.time <- tick.to.time(the.data$tick, origin=startday, timestep=timestep)
+  the.data$real.time <- as.POSIXlt(the.time)
+  all.data@dyn <- the.data
+  return(all.data)
+}
+
+#' @title Convert DeponsDyn object to data frame
+#' @description Function  for converting DEPONS population dynamics object
+#' to a data frame.
+#' @param x DeponsDyn object
+#' @param row.names NULL or a character vector giving the row names for the data
+#' frame. Missing values are not allowed.
+#' @param optional Logical (not used)
+#' @param ... additional arguments to be passed to or from methods.
+#' @exportMethod as.data.frame
+#' @return \code{data.frame} object
+#' @examples
+#' data(porpoisedyn)
+#' class(porpoisedyn)
+#' the.dyn <- as.data.frame(porpoisedyn)
+setMethod("as.data.frame", signature("DeponsDyn"),
+          function(x, row.names = NULL, optional = FALSE, ...) {
+            if (is.null(x))
+              return(as.data.frame(list()))
+            dyns <- as.data.frame(x@dyn)
+            row.names(dyns) <- row.names
+            return(dyns)
+          }
+)
 
 
 #' @title Plot a DeponsDyn object

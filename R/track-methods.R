@@ -166,6 +166,7 @@ setMethod("as.data.frame", signature("DeponsTrack"),
               if (is.null(x))
                 return(as.data.frame(list()))
               tracks <- as.data.frame(x@tracks)
+              row.names(tracks) <- row.names
               return(tracks)
             }
 )

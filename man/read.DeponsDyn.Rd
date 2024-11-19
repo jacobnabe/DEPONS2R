@@ -53,5 +53,6 @@ porpoisedyn
 }
 \seealso{
 See \code{\link{DeponsDyn-class}} for details on what is stored in
-the output object.
+the output object and \code{\link{as.data.frame}} for converting from data
+frame.
 }
