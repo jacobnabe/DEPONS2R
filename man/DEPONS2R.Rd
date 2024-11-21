@@ -5,7 +5,7 @@
 \title{Package for analyzing DEPONS simulation output}
 \description{
 Methods for analyzing population dynamics and movement tracks
-simulated using the DEPONS model (v.3.0; \url{http://www.depons.eu}), for
+simulated using the DEPONS model (v.3.0; \url{https://www.depons.eu}), for
 manipulating input raster files, shipping routes and for analyzing sound
 propagated from ships.
 
