@@ -147,7 +147,7 @@ read.DeponsTrack <- function(fname, title="NA", landscape="NA", simtime="NA",
 }
 
 
-#' @title Convert DEPONS track to data frame
+#' @title Convert DeponsTrack to data frame
 #' @description Function  for converting DEPONS movement track file to a
 #' data frame.
 #' @param x DeponsTrack object

@@ -2,7 +2,7 @@
 % Please edit documentation in R/track-methods.R
 \name{as.data.frame,DeponsTrack-method}
 \alias{as.data.frame,DeponsTrack-method}
-\title{Convert DEPONS track to data frame}
+\title{Convert DeponsTrack to data frame}
 \usage{
 \S4method{as.data.frame}{DeponsTrack}(x, row.names = NULL, optional = FALSE, ...)
 }
