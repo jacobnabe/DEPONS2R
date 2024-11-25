@@ -171,6 +171,77 @@ interpolate.ais.data<- function (aisdata) {
 }
 
 
+#'Check if ships move at unrealistic speeds
+#'
+#'@description
+#'Checks if calculateds speeds in DeponsShips objects are unrealistic, which may result from inaccurate AIS positional records. As ship speed in DEPONS directly influences the amount of noise generated, it is advisable to detect and remove such instances to avoid the creation of extreme noise sources.
+#'
+#'@details
+#'The default replacement speeds (knots) for recognized ship types are as follows (class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4; Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1; Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5; Other, 7.4.
+#'
+#'@param x DeponsShips object
+#'@param threshold	The speed (knots) above which calculated values are considered unrealistic/excessive. Defaults to 35 knots.
+#'@param fix	Logical. If FALSE (default), the function returns a data frame of ship tracks containing speeds that exceed the threshold; if TRUE, the function returns a DeponsShips object where these instances have been replaced.
+#'@param replacements	Named list, where names are ship types and values are replacement speeds (knots) for speeds above the threshold within those types. Only ship types named in the list are processed. If NA (default), reference speeds from Table 1 in MacGillivray & de Jong (2021) are used.
+#'
+#'@returns
+#'If fix = FALSE, a data frame with columns "route number", "name", "type", "length", and "speed", containing one entry for each ship where an excessive speed occurred. If fix = True, a DeponsShip object where instances of excessive speed have been replaced.
+#'
+#'@section Reference:
+#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source levels of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
+#'
+#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
+
+check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA) {
+  if (!inherits(x, "DeponsShips"))
+    stop("'x' must be a DeponsShips object")
+  if (!inherits(replacements, "logical") && !inherits(replacements, "list"))
+    stop("'replacements' must be a named list, with names denoting ship types and values denoting replacement speeds")
+
+  if (fix == F) {
+    excesses <- data.frame(matrix(ncol=5, nrow=0))
+    for (i in 1:length(x@routes$name)) {
+      excess <- which(x@routes$route[[i]]$speed > threshold)
+      if (length(excess) > 0) {
+        for (i2 in 1:length(excess)) {
+          excesses <- rbind(excesses,
+                            c(i,
+                              x@ships$name[i],
+                              x@ships$type[i],
+                              x@ships$length[i],
+                              x@routes$route[[i]]$speed[excess[i2]]))
+        }
+      }
+    }
+    names(excesses) <- c("route number", "name", "type", "length", "speed")
+    return(excesses)
+  }
+
+  # mean speeds as per McGillivray & De Jong 2021 (Table 1)
+  mean_speeds <- list("Fishing" = 6.4,
+                      "Tug" = 3.7,
+                      "Naval" = 11.1,
+                      "Recreational" = 10.6,
+                      "Government/Research" = 8,
+                      "Cruise" = 17.1,
+                      "Passenger" = 9.7,
+                      "Bulker" = 13.9,
+                      "Containership" = 18.0,
+                      "Tanker" = 12.4,
+                      "Other" = 7.4,
+                      "Dredger" = 9.5)
+
+  if (is.na(replacements)) reps <- mean_speeds else reps <- replacements
+
+  # change speeds over thresholds to replacement values, for types for which replacements have been provided
+  for (i in 1:length(x@ships$name)) {
+    if (x@ships$type[i] %in% names(reps)) {
+      x@routes$route[[i]]$speed[as.numeric(x@routes$route[[i]]$speed) > threshold] <- reps[x@ships$type[i]]
+      x@routes$route[[i]]$speed <- unlist(x@routes$route[[i]]$speed)
+    }
+  }
+  return(x)
+}
 
 
 #' @title Read DEPONS ship files
@@ -185,7 +256,7 @@ interpolate.ais.data<- function (aisdata) {
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
 #' @param crs Character, coordinate reference system (map projection)
-# ##' @seealso \code{\link{ais.to.DeponsShips}}, \code{\link[DEPONS2R]{write.DeponsShips}}
+#' @seealso \code{\link{ais.to.DeponsShips}}, \code{\link[DEPONS2R]{write.DeponsShips}}
 #' @return Returns an object with the elements \code{title} \code{landscape},
 #' \code{crs}, \code{routes} and \code{ships}.
 #' @export read.DeponsShips
@@ -509,7 +580,8 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' @seealso \code{\link{aisdata}} for an example of data that can be used as
 #' input to ais.to.DeponsShips. The function builds on
 #' \code{\link{interpolate.ais.data}}, which interpolates tracks to ensure
-#' that there is a position every 30 minutes.
+#' that there is a position every 30 minutes. Use \code{\link{check.DeponsShips}}
+#' for testing if speeds are realistic.
 #' See \code{\link[DEPONS2R]{write.DeponsShips}} for conversion of
 #' \code{DeponsShips} objects to json-files to be used in DEPONS. Use
 #' \code{\link{routes}}, \code{\link{ships}}, and \code{\link{title}} for

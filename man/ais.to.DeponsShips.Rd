@@ -80,7 +80,8 @@ routes(depons.ais2)
 \code{\link{aisdata}} for an example of data that can be used as
 input to ais.to.DeponsShips. The function builds on
 \code{\link{interpolate.ais.data}}, which interpolates tracks to ensure
-that there is a position every 30 minutes.
+that there is a position every 30 minutes. Use \code{\link{check.DeponsShips}}
+for testing if speeds are realistic.
 See \code{\link[DEPONS2R]{write.DeponsShips}} for conversion of
 \code{DeponsShips} objects to json-files to be used in DEPONS. Use
 \code{\link{routes}}, \code{\link{ships}}, and \code{\link{title}} for
