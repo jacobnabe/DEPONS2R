@@ -129,7 +129,7 @@ setMethod("summary", "DeponsRaster",
 #' @export read.DeponsRaster
 read.DeponsRaster <- function(fname, type="NA", landscape="NA",
                               crs="NA") {
-  good.tps <- c("food", "patches", "bathymetry", "dtc", "salinity", "blocks", "NA")
+  good.tps <- c("food", "patches", "bathymetry", "dtc", "temperature", "salinity", "blocks", "NA")
   if (!type %in% good.tps) stop(paste("type =", type, "not allowed"))
   if (as.character(class(crs))=="CRS") crs <- as.character(crs)
   header <- utils::read.table(fname, nrows=6, header=FALSE)

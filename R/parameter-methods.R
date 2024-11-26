@@ -51,7 +51,7 @@ read.DeponsParam <- function(fname) {
   if(!all(param.nms %in% default.param)) {
     nm.not.default <- param.nms[which(!(param.nms %in% default.param))]
     nm2 <- paste(nm.not.default, collapse=", ")
-    warning(paste("Following parameter(s) are not derault:", nm2))
+    warning(paste("Following parameter(s) are not default:", nm2))
   }
   if(!all(default.param %in% param.nms)) {
     defaults.missing <- default.param[which(!(default.param %in% param.nms))]

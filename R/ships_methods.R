@@ -402,16 +402,16 @@ setMethod("plot", signature("DeponsShips", "missing"),
             legend.xy <- "topright"
             if("legend.xy" %in% names(dots)) legend.xy <- dots$legend.xy
             main <- ifelse(x@title=="NA", "DEPONS track", x@title)
-            if (!add) {
-              # Make empty plot of right size
-              comb.routes <- data.frame()
-              for(r in 1:length(x@routes[[2]])) {
-                comb.routes <- rbind(comb.routes, x@routes[[2]][[r]])
-              }
-              comb.routes <- comb.routes[,c("x", "y")]
-              plot(comb.routes, type="n", asp=1, xlab=xlab, ylab=ylab, main=main,
-                   axes=axes)
+
+            # Make empty plot of right size
+            comb.routes <- data.frame()
+             for(r in 1:length(x@routes[[2]])) {
+              comb.routes <- rbind(comb.routes, x@routes[[2]][[r]])
             }
+            comb.routes <- comb.routes[,c("x", "y")]
+            plot(comb.routes, type="n", asp=1, xlab=xlab, ylab=ylab, main=main,
+                 axes=axes)
+
             n.routes <- length(x@routes[[2]])
             if(length(col) != n.routes) col <- rep("black", n.routes)
             if(length(lwd) != n.routes) lwd <- rep(1, n.routes)

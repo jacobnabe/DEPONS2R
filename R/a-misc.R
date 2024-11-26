@@ -46,59 +46,35 @@ NULL
 #' @return Returns a \code{POSIXlt} object
 #' @seealso \code{\link{get.latest.sim}}
 #' @export get.simtime
-get.simtime <- function(fname=NULL, tz="GMT") {
-  # chg double-dots to _
-  fn <- gsub("..", "_", fname, fixed=TRUE)
+get.simtime <- function (fname = NULL, tz = "GMT") {
+  fn <- gsub("..", "_", fname, fixed = TRUE)
   ncf <- nchar(fn)
-  time.string <- substr(fn, ncf-23, ncf-4)
+  time.string <- substr(fn, ncf - 23, ncf - 4)
   time.string <- gsub("_", ":", time.string)
-  # Convert text months to numbers
-  template.months <- substr(100+(1:12), 2, 3)
+  template.months <- substr(100 + (1:12), 2, 3)
   template.dates <- paste0("2000-", template.months, "-01")
-  system.months <- months(as.POSIXlt(template.dates, tz="GMT"), abbreviate=TRUE)
-  time.string <- gsub("Jan", "01", time.string)
-  time.string <- gsub("jan", "01", time.string)
-  time.string <- gsub(system.months[1], "01", time.string)
-  time.string <- gsub("Feb", "02", time.string)
-  time.string <- gsub("feb", "02", time.string)
-  time.string <- gsub(system.months[2], "02", time.string)
-  time.string <- gsub("Mar", "03", time.string)
-  time.string <- gsub("mar", "03", time.string)
-  time.string <- gsub(system.months[3], "03", time.string)
-  time.string <- gsub("Apr", "04", time.string)
-  time.string <- gsub("apr", "04", time.string)
-  time.string <- gsub(system.months[4], "04", time.string)
-  time.string <- gsub("May", "05", time.string)
-  time.string <- gsub("maj", "05", time.string)
-  time.string <- gsub(system.months[5], "05", time.string)
-  time.string <- gsub("Jun", "06", time.string)
-  time.string <- gsub("jun", "06", time.string)
-  time.string <- gsub(system.months[6], "06", time.string)
-  time.string <- gsub("Jul", "07", time.string)
-  time.string <- gsub("jul", "07", time.string)
-  time.string <- gsub(system.months[7], "07", time.string)
-  time.string <- gsub("Aug", "08", time.string)
-  time.string <- gsub("aug", "08", time.string)
-  time.string <- gsub(system.months[8], "08", time.string)
-  time.string <- gsub("Sep", "09", time.string)
-  time.string <- gsub("sep", "09", time.string)
-  time.string <- gsub(system.months[9], "09", time.string)
-  time.string <- gsub("Oct", "10", time.string)
-  time.string <- gsub("okt", "10", time.string)
-  time.string <- gsub(system.months[10], "10", time.string)
-  time.string <- gsub("Nov", "11", time.string)
-  time.string <- gsub("nov", "11", time.string)
-  time.string <- gsub(system.months[11], "11", time.string)
-  time.string <- gsub("Dec", "12", time.string)
-  time.string <- gsub("dec", "12", time.string)
-  time.string <- gsub(system.months[12], "12", time.string)
+  system.months <- months(as.POSIXlt(template.dates, tz = "GMT"),
+                          abbreviate = TRUE)
+  time.string <- gsub(paste0("Jan|jan|", system.months[1]), "01", time.string)
+  time.string <- gsub(paste0("Feb|feb|", system.months[2]), "02", time.string)
+  time.string <- gsub(paste0("Mar|mar|", system.months[3]), "03", time.string)
+  time.string <- gsub(paste0("Apr|apr|", system.months[4]), "04", time.string)
+  time.string <- gsub(paste0("May|may|", system.months[5]), "05", time.string)
+  time.string <- gsub(paste0("Jun|jun|", system.months[6]), "06", time.string)
+  time.string <- gsub(paste0("Jul|jul|", system.months[7]), "07", time.string)
+  time.string <- gsub(paste0("Aug|aug|", system.months[8]), "08", time.string)
+  time.string <- gsub(paste0("Sep|sep|", system.months[9]), "09", time.string)
+  time.string <- gsub(paste0("Oct|oct|", system.months[10]), "10", time.string)
+  time.string <- gsub(paste0("Nov|nov|", system.months[11]), "11", time.string)
+  time.string <- gsub(paste0("Dec|dec|", system.months[12]), "12", time.string)
   substr(time.string, 5, 5) <- "-"
   substr(time.string, 8, 8) <- "-"
   substr(time.string, 11, 11) <- " "
-  time.posix <- as.POSIXlt(time.string, tz=tz)
-  if (any(inherits(time.posix,"POSIXlt")))
+  time.posix <- as.POSIXlt(time.string, tz = tz)
+  if (any(inherits(time.posix, "POSIXlt")))
     return(time.posix)
-  stop(paste0("Could not extract date correctly from ", fname), ". Got ", time.string)
+  stop(paste0("Could not extract date correctly from ", fname),
+       ". Got ", time.string)
 }
 
 
