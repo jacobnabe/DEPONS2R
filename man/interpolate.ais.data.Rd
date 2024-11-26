@@ -12,7 +12,8 @@ interpolate.ais.data(aisdata)
 (recorded ship position, unit: meters), and potentially additional columns}
 }
 \value{
-Returns a data frame with the same columns as the input data
+Returns a data frame with the same columns as the input data. Tracks
+that are too short to interpolate are omitted (with a warning)
 }
 \description{
 Interpolates ship movement tracks obtained from Automatic
