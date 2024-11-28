@@ -4,7 +4,7 @@
 \alias{get.simtime}
 \title{Get simulation date}
 \usage{
-get.simtime(fname = NULL, tz = "GMT")
+get.simtime(fname = NULL, tz = "UTC")
 }
 \arguments{
 \item{fname}{Character string with name of the file to extract the simulation

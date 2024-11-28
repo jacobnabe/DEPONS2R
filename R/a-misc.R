@@ -7,10 +7,6 @@
 # devtools::check(cleanup=FALSE) # check timings of examples: read log
 # devtools::check
 
-# Prevent sp from callin code in rgdal or rgeos, which are retiring
-# (see https://r-spatial.org/r/2022/04/12/evolution.html#packages-depending-on-sp-and-raster)
-# devtools::install_github("rsbivand/sp@evolution")
-# Sys.setenv("_SP_EVOLUTION_STATUS_"=2)
 
 #' @title  Package for analyzing DEPONS simulation output
 #' @name DEPONS2R
@@ -46,14 +42,14 @@ NULL
 #' @return Returns a \code{POSIXlt} object
 #' @seealso \code{\link{get.latest.sim}}
 #' @export get.simtime
-get.simtime <- function (fname = NULL, tz = "GMT") {
+get.simtime <- function (fname = NULL, tz = "UTC") {
   fn <- gsub("..", "_", fname, fixed = TRUE)
   ncf <- nchar(fn)
   time.string <- substr(fn, ncf - 23, ncf - 4)
   time.string <- gsub("_", ":", time.string)
   template.months <- substr(100 + (1:12), 2, 3)
   template.dates <- paste0("2000-", template.months, "-01")
-  system.months <- months(as.POSIXlt(template.dates, tz = "GMT"),
+  system.months <- months(as.POSIXlt(template.dates, tz = "UTC"),
                           abbreviate = TRUE)
   time.string <- gsub(paste0("Jan|jan|", system.months[1]), "01", time.string)
   time.string <- gsub(paste0("Feb|feb|", system.months[2]), "02", time.string)
@@ -306,7 +302,7 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
   if(!is.numeric(timestep)) stop("'timestep' should be numeric")
   if(!is.character(origin)) stop("'origin' should be character, in the format 'yyyy-mm-dd'")
   if(!hasArg(tz)) {
-    tz <- "GMT"
+    tz <- "UTC"
   } else {
     tz <- as.character(list(...)[["tz"]])
     tz <- tz

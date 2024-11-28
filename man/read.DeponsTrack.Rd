@@ -28,7 +28,7 @@ If not provided this is obtained from name of input file}
 
 \item{crs}{Character, coordinate reference system (map projection)}
 
-\item{tz}{Time zone used in simulations. Defaults to UTC/GMT.
+\item{tz}{Time zone used in simulations. Defaults to UTC.
 #'}
 }
 \value{

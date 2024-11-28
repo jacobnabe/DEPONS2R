@@ -43,8 +43,8 @@ setMethod("initialize", "DeponsDyn",
           function(.Object) {
             .Object@title <- "NA"
             .Object@landscape <- "NA"
-            .Object@simtime <- as.POSIXlt(NA)
-            .Object@startday <- as.POSIXlt(NA)
+            .Object@simtime <- as.POSIXlt(NA, tz = "UTC")
+            .Object@startday <- as.POSIXlt(NA, tz = "UTC")
             .Object@dyn <- data.frame("tick"=NA, "count"=NA, "anim.e"=NA, "lands.e"=NA,
                                        "real.time"=NA)
             return((.Object))
@@ -85,7 +85,8 @@ setMethod("summary", "DeponsDyn",
 #' form 'yyyy-mm-dd', or POSIXlt)
 #' @param timestep Time step used in the model, in minutes. Defaults to 30 in
 #' DEPONS.
-#' @param tz Time zone.
+#' @param tz Time zone. In DEPONS times are generally assumed to be in UTC
+#' (Coordinated Universal Time).
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object and \code{\link{as.data.frame}} for converting from data
 #' frame.
@@ -93,12 +94,12 @@ setMethod("summary", "DeponsDyn",
 #' @examples \dontrun{
 #' dyn.file <- "/Applications/DEPONS 2.1/DEPONS/Statistics.2020.Sep.02.20_24_17.csv"
 #' file.exists(dyn.file)
-#' porpoisedyn <- read.DeponsDyn(dyn.file, startday=as.POSIXlt("2010-01-01"))
+#' porpoisedyn <- read.DeponsDyn(dyn.file, startday=as.POSIXlt("2010-01-01", tz = "UTC"))
 #' porpoisedyn
 #' }
 #' @export read.DeponsDyn
 read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
-                           startday="NA", timestep=30, tz="GMT") {
+                           startday="NA", timestep=30, tz="UTC") {
   if (simtime=="NA")  simtime <- get.simtime(fname)
   if(!is.character(startday)) stop("'startday' must be a character string")
   if (startday=="NA" || is.na(startday))  startday <- NA
@@ -113,7 +114,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
   }
   names(the.data) <- c("tick", "count", "lands.e", "anim.e")
   the.time <- tick.to.time(the.data$tick, origin=startday, timestep=timestep)
-  the.data$real.time <- as.POSIXlt(the.time)
+  the.data$real.time <- as.POSIXlt(the.time, tz=tz)
   all.data@dyn <- the.data
   return(all.data)
 }
@@ -132,7 +133,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #' simulation finished (format yyyy-mm-dd).
 #' @param startday The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (character string of the
-#' form 'yyyy-mm-dd', or POSIXlt). Defaluts to 2000-01-01
+#' form 'yyyy-mm-dd', or POSIXlt). Defaluts to 2000-01-01 (UTC time).
 #' @param timestep Time step used in the model, in minutes. Defaults to 30
 #' minutes in DEPONS.
 #' @param tz Time zone.
@@ -149,7 +150,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
 #'
 #' @export make.DeponsDyn
 make.DeponsDyn <- function(oname, title="NA", landscape="NA", simtime="NA",
-                           startday="2000-01-01", timestep=30, tz="GMT") {
+                           startday="2000-01-01", timestep=30, tz="UTC") {
   # if (simtime=="NA")  simtime <- get.simtime(oname)
   if(!is.character(startday)) stop("'startday' must be a character string")
   if (startday=="NA" || is.na(startday))  startday <- NA
@@ -157,7 +158,7 @@ make.DeponsDyn <- function(oname, title="NA", landscape="NA", simtime="NA",
   all.data@title <- title
   all.data@landscape <- landscape
   if (simtime!="NA") {
-    all.data@simtime <- as.POSIXlt(simtime)
+    all.data@simtime <- as.POSIXlt(simtime, tz=tz)
   }
   all.data@startday <- as.POSIXlt(startday, tz=tz)
   # the.data <- utils::read.csv(oname, sep=";")
@@ -173,7 +174,7 @@ make.DeponsDyn <- function(oname, title="NA", landscape="NA", simtime="NA",
   }
   names(the.data) <- c("tick", "count", "lands.e", "anim.e")
   the.time <- tick.to.time(the.data$tick, origin=startday, timestep=timestep)
-  the.data$real.time <- as.POSIXlt(the.time)
+  the.data$real.time <- as.POSIXlt(the.time, tz=tz)
   all.data@dyn <- the.data
   return(all.data)
 }
@@ -222,7 +223,7 @@ setMethod("as.data.frame", signature("DeponsDyn"),
 #' data("porpoisedyn")
 #'
 #' # Plot for specific range of years
-#' rg <- c(as.POSIXlt("2011-01-01"), as.POSIXlt("2018-12-31"))
+#' rg <- c(as.POSIXlt("2011-01-01", tz = "UTC"), as.POSIXlt("2018-12-31", tz = "UTC"))
 #' plot(porpoisedyn, xlim=as.POSIXct(rg), plot.energy=TRUE)
 #'
 #' \dontrun{

@@ -299,7 +299,7 @@ setMethod("startday", signature=("DeponsDyn"), function(x) { return(x@startday) 
 
 assign.startday <- function(x, value) {
   if(as.character(value)=="NA" || is.na(value)) value <- as.POSIXlt(NA)
-  if(any(inherits(value, "character"))) value <- as.POSIXlt(value)
+  if(any(inherits(value, "character"))) value <- as.POSIXlt(value, tz = "UTC")
   if(!any(inherits(value, "POSIXlt"))) stop("The input value could not be converted to POSIXlt")
   x@startday <- value
   # Calc real time corresponding to new startday
@@ -308,13 +308,13 @@ assign.startday <- function(x, value) {
     # tick.to.time only works on loops ???
     for(i in 1:nrow(x@dyn)) {
       the.tick <- x@dyn$tick[i]
-      the.tick.seconds <- as.numeric(as.POSIXct(tick.to.time(the.tick)))
+      the.tick.seconds <- as.numeric(as.POSIXct(tick.to.time(the.tick), tz = "UTC"))
       secs.since.start <- the.tick.seconds - tick.1.secs
       x@dyn$real.time[i] <- as.POSIXct(value) + secs.since.start
     }
   } else {
     for(i in 1:nrow(x@dyn)) {
-      x@dyn$real.time[i] <- as.POSIXct(NA)
+      x@dyn$real.time[i] <- as.POSIXct(NA, tz = "UTC")
     }
   }
   validObject(x)

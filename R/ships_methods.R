@@ -64,7 +64,7 @@ setMethod("initialize", "DeponsShips",
 #' plot(ais.testdata[c("x", "y")], asp=1, col="green", pch=16, xlim=c(780000, 837000))
 #' lines(ais.testdata[c("x", "y")])
 #' # Add 600 sec to 'time' to mis-allign with intervcal needed
-#' ais.testdata$time <- format(as.POSIXlt(ais.testdata$time)+600)
+#' ais.testdata$time <- format(as.POSIXlt(ais.testdata$time, tz = "UTC")+600)
 #' text(ais.testdata[c("x", "y")]-900, ais.testdata$time, adj=0, cex=0.5)
 #' interpolated <- interpolate.ais.data(ais.testdata)
 #' points(interpolated[,c("x", "y")], col="red")
@@ -1024,7 +1024,8 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
           1
       }
       pauses_collapsed <- data.frame(max_speed$x, rep(1),
-                                     new_x$x, new_y$x, as.POSIXct(new_time$x), max_speed$Group.1,
+                                     new_x$x, new_y$x, as.POSIXct(new_time$x, tz = "UTC"),
+                                     max_speed$Group.1,
                                      new_pauseTime$x, rep(1), max_speed$Group.1)
       colnames(pauses_collapsed) <- c("new_speeds", "recurringSpeed",
                                       "x", "y", "time", "pause_no", "pauseTime", "new_recurringSpeed",

@@ -11,7 +11,7 @@ make.DeponsDyn(
   simtime = "NA",
   startday = "2000-01-01",
   timestep = 30,
-  tz = "GMT"
+  tz = "UTC"
 )
 }
 \arguments{
@@ -28,7 +28,7 @@ simulation finished (format yyyy-mm-dd).}
 
 \item{startday}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (character string of the
-form 'yyyy-mm-dd', or POSIXlt). Defaluts to 2000-01-01}
+form 'yyyy-mm-dd', or POSIXlt). Defaluts to 2000-01-01 (UTC time).}
 
 \item{timestep}{Time step used in the model, in minutes. Defaults to 30
 minutes in DEPONS.}

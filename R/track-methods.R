@@ -32,7 +32,7 @@ setMethod("initialize", "DeponsTrack",
           function(.Object) {
             .Object@title <- "NA"
             .Object@landscape <- "NA"
-            .Object@simtime <- as.POSIXlt(NA)
+            .Object@simtime <- as.POSIXlt(NA, tz = "UTC")
             .Object@crs <- "NA"
             one.track <- sp::SpatialPointsDataFrame(as.matrix(data.frame("x"=0,
                           "y"=0), ncol=2), proj4string=sp::CRS(as.character(NA)),
@@ -88,7 +88,7 @@ setMethod("summary", "DeponsTrack",
 #' @param simtime Character sting with date of simulation (format yyyy-mm-dd).
 #' If not provided this is obtained from name of input file
 #' @param crs Character, coordinate reference system (map projection)
-#' @param tz Time zone used in simulations. Defaults to UTC/GMT.
+#' @param tz Time zone used in simulations. Defaults to UTC.
 #' #'
 #' @return Returns a \code{DeponsTrack} object with the elements \code{title},
 #' \code{simtime}, \code{crs}, and \code{tracks}. The \code{date} is extracted

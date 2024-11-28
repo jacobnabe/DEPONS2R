@@ -11,7 +11,7 @@ read.DeponsDyn(
   simtime = "NA",
   startday = "NA",
   timestep = 30,
-  tz = "GMT"
+  tz = "UTC"
 )
 }
 \arguments{
@@ -35,7 +35,8 @@ form 'yyyy-mm-dd', or POSIXlt)}
 \item{timestep}{Time step used in the model, in minutes. Defaults to 30 in
 DEPONS.}
 
-\item{tz}{Time zone.}
+\item{tz}{Time zone. In DEPONS times are generally assumed to be in UTC
+(Coordinated Universal Time).}
 }
 \value{
 \code{DeponsDyn} object containing simulation output
@@ -47,7 +48,7 @@ Function  for reading simulation output produced by DEPONS.
 \dontrun{
 dyn.file <- "/Applications/DEPONS 2.1/DEPONS/Statistics.2020.Sep.02.20_24_17.csv"
 file.exists(dyn.file)
-porpoisedyn <- read.DeponsDyn(dyn.file, startday=as.POSIXlt("2010-01-01"))
+porpoisedyn <- read.DeponsDyn(dyn.file, startday=as.POSIXlt("2010-01-01", tz = "UTC"))
 porpoisedyn
 }
 }
