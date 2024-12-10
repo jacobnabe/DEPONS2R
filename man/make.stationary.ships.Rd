@@ -90,19 +90,27 @@ de Jong (2021).
 When 'distcrit = "shore"', pause instances are additionally tested against the
 following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to
 exclude berthed ships; 2) not in a cell at the map boundary, as ais.to.DeponsShips()
-will create inactive (pausing) placeholder positions at the point of entry if
-a ship enters the map with a delay after the object's start, or at the point of
-exit if it leaves before the end of the object's duration; 3) not in the first
-or last position of the ship's track (same reason).
+will create inactive (pausing) placeholder positions at the point of entry if a ship enters the map with a delay after the object's start, or at the point of exit if it leaves before the end of the object's duration; 3) not in the first or last position of the ship's track (same reason).
 
-When candidates are identified based on proximity to a list of structures, a
-maximum distance of 97.72 m is allowed, based on an estimate of mean AIS
-positioning error (Jankowski et al. 2021).
+When candidates are identified based on proximity to a list of structures, a maximum distance of 97.72 m is allowed, based on an estimate of mean AIS positioning error (Jankowski et al. 2021).
+}
+\examples{
+\dontrun{
+data(shipdata)
+data(bathymetry)
+candidates <- make.stationary.ships(shipdata,
+                                   landscape = bathymetry,
+                                   verbose = T)
+shipdata.updated <- make.stationary.ships(shipdata,
+                                         action = "replace",
+                                         candidates = candidates,
+                                         landscape = bathymetry)}
+
 }
 \references{
-MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
-Source Levels of Marine Shipping Based on Automated Identification System
-Data. J Mar Sci Eng 9:369. \doi{10.3390/jmse9040369}
+MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating
+source levels of marine shipping based on Automated Identification System data.
+Journal of Marince Science and Engineering, 9(4), 369. \doi{10.3390/jmse9040369}
 
 Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy
 and evaluation of reconstruction methods for maritime observation data.

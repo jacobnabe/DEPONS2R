@@ -1146,7 +1146,6 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 
 
 
-
 #'Identify and parameterize stationary active ships in a DeponsShips object
 #'
 #'@description
@@ -1194,21 +1193,16 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'vessels by their MMSI code, and remove any false positives from the table before
 #'processing it in a "replace" run.
 #'
-#'The inserted speed values are 7.4 knots for "Other" and 8 knots for
-#'"Government/Research", based on the class reference speeds in MacGillivray &
-#'de Jong (2021).
+#' The inserted speed values are 7.4 knots for "Other" and 8 knots for
+#' "Government/Research", based on the class reference speeds in MacGillivray &
+#' de Jong (2021).
 #'
-#'When 'distcrit = "shore"', pause instances are additionally tested against the
-#'following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to
-#'exclude berthed ships; 2) not in a cell at the map boundary, as ais.to.DeponsShips()
-#'will create inactive (pausing) placeholder positions at the point of entry if
-#'a ship enters the map with a delay after the object's start, or at the point of
-#'exit if it leaves before the end of the object's duration; 3) not in the first
-#'or last position of the ship's track (same reason).
+#' When 'distcrit = "shore"', pause instances are additionally tested against the
+#' following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to
+#' exclude berthed ships; 2) not in a cell at the map boundary, as ais.to.DeponsShips()
+#' will create inactive (pausing) placeholder positions at the point of entry if a ship enters the map with a delay after the object's start, or at the point of exit if it leaves before the end of the object's duration; 3) not in the first or last position of the ship's track (same reason).
 #'
-#'When candidates are identified based on proximity to a list of structures, a
-#'maximum distance of 97.72 m is allowed, based on an estimate of mean AIS
-#'positioning error (Jankowski et al. 2021).
+#'When candidates are identified based on proximity to a list of structures, a maximum distance of 97.72 m is allowed, based on an estimate of mean AIS positioning error (Jankowski et al. 2021).
 #'
 #'@param x DeponsShips object
 #'@param action Character. If "check" (default), returns a data frame of pause positions that are candidates for stationary activity based on the selected criteria. If "replace" and a candidates data frame is provided, returns a DeponsShip object where the pauses identified in the data frame have been converted to stationary active status (i.e., a non-zero speed has been assigned)
@@ -1220,20 +1214,33 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'@param start_times A data frame with columns "time" (character string or POSIX of format 'YYYY-MM-DD HH:MM:SS') and "id", and one row for each structure that is to be used as a proximity criterion for finding candidates. Defines time from which onward the structure is present. Optional; can be provided together with start_day if distcrit != 'shore', to allow checking whether structures under construction are present at a given time point
 #'@param verbose Logical (default False). If True, writes a summary of each candidate to the console during "check" runs
 #'
-#'@return
+#'@returns
 #'If 'action = "check"' (default), returns a data frame with columns "route_number", "ship_name", "ship_type", "route_pos" (position number along route), and "pauses" (number of pauses at this position), with one row for each position that is a candidate for stationary activity based on the selected criteria. If "replace" and a candidates data frame is provided, returns a DeponsShip object where the pauses identified in the data frame have been converted to stationary active status (i.e., a non-zero speed has been assigned).
 #'
-#' @references
-#' MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
-#' Source Levels of Marine Shipping Based on Automated Identification System
-#' Data. J Mar Sci Eng 9:369. \doi{10.3390/jmse9040369}
+#'@references
+#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating
+#'source levels of marine shipping based on Automated Identification System data.
+#'Journal of Marince Science and Engineering, 9(4), 369. \doi{10.3390/jmse9040369}
 #'
 #'Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy
 #'and evaluation of reconstruction methods for maritime observation data.
-#' IFAC-PapersOnLine, 54(16), 97-104. \doi{10.1016/j.ifacol.2021.10.079}
+#'IFAC-PapersOnLine, 54(16), 97-104. \doi{10.1016/j.ifacol.2021.10.079}
+#'
+#'@examples
+#'\dontrun{
+#'data(shipdata)
+#'data(bathymetry)
+#'candidates <- make.stationary.ships(shipdata,
+#'                                    landscape = bathymetry,
+#'                                    verbose = T)
+#'shipdata.updated <- make.stationary.ships(shipdata,
+#'                                          action = "replace",
+#'                                          candidates = candidates,
+#'                                          landscape = bathymetry)}
 #'
 #'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
 #'(including calculated speeds) from AIS data
+
 make.stationary.ships <- function(x,
                                   action = "check",
                                   candidates = NULL,
@@ -1438,5 +1445,5 @@ make.stationary.ships <- function(x,
     }
     return(new.x)
   }
-}
+}  # end of 'make.stationary.ships'
 
