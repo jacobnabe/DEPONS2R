@@ -19,5 +19,8 @@ Authors@R: c(person(given = "Jacob",
                       email = "jnn@ecos.au.dk"),
                person(given = c("Caitlin", "K."),
                       family = "Frankish",
+                      role = "aut"),
+               person(given = c("Florian", "G."),
+                      family = "Weller",
                       role = "aut"))
 
