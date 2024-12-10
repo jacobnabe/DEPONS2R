@@ -343,6 +343,124 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
 
 
 
+
+#'Convert date to tick number
+#'
+#'@description
+#'Convert a date to the number of ticks since simulation start while taking
+#'into account that DEPONS assumes that there are 360 days in a simulation year.
+#'
+#'@usage
+#'time.to.tick(time, timestep = 30, origin = "2010-01-01", tz = "UTC", ...)
+#'
+#'@details
+#'Times are rounded down to the current 30-minute interval during conversion.
+#'The function assumes that there are 30 days in each month, except in January,
+#'February and March with 31, 28 and 31 days, respectively. Provided dates that
+#'fall on days that are not accommodated (February 29, and the 31st day of the
+#'months May, July, August, October, and December) are returned as NA.
+#'
+#'The function may be used to, e.g., convert recorded piling dates to ticks for
+#'use in wind farm scenarios (see \code{\link{make.windfarms}} for construction
+#'of hypothetical scenarios from parametric inputs).
+#'
+#'@param time Character, or character vector, of the form 'YYYY-MM-DD'
+#'(or 'YYYY-MM-DD HH:MM:SS'), or equivalent POSIX object. Date to be converted
+#'to ticks.
+#'@param timestep Numeric (default 30). Length of each simulation time step in
+#'minutes.
+#'@param origin Character of the form 'YYYY-MM-DD' (or 'YYYY-MM-DD HH:MM:SS')
+#'or equivalent POSIX object (default "2010-01-01"). Start date of simulation.
+#'@param tz Valid time zone code (default UTC).
+#'@param ... Optional parameters.
+#'
+#'@returns
+#'Numeric vector of tick numbers.
+#'
+#'@examples
+#'\dontrun{
+#'#Uses date column of AIS data.
+#'#Times are in 30-minute intervals, and converting back yields the same times
+#'data(aisdata)
+#'ticks <- time.to.tick(aisdata$time, origin = "2015-12-20")
+#'times_reconverted <- tick.to.time(ticks, origin = "2015-12-20")
+#'
+#'#Uses dates at other intervals.
+#'#Converting back yields times rounded down to the current 30-minute interval
+#'times <- c("2016-12-20 00:10:00",
+#'           "2016-12-20 02:45:30",
+#'           "2016-12-20 05:01:05",
+#'           "2016-12-22 01:30:00")
+#'ticks <- time.to.tick(times, origin = "2015-12-20")
+#'times_reconverted <- tick.to.time(ticks, origin = "2015-12-20")}
+#'
+#'@seealso \code{\link{tick.to.time}} is the inverse of this function, converting
+#'ticks to dates
+time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC", ...) {
+  old <- options()
+  on.exit(options(old))
+  origin <- try(as.POSIXct(origin, tz = "UTC"))
+  if (!("POSIXct" %in% class(origin))) {
+    stop("'origin' must be of the form 'YYYY-MM-DD' (optionally 'YYYY-MM-DD HH:MM:SS') for conversion to POSIX")
+  }
+  if (!is.numeric(timestep))
+    stop("'timestep' should be numeric")
+
+  origin <- as.POSIXct(origin, tz = tz)
+  monlng <- as.list(c(31,28,31, rep(30, times=9))) # list of expected month lengths
+  names(monlng) <- seq(1:12)-1
+
+  # function to step through months of appropriate length and add up ticks
+  count.ticks.from.origin <- function(origin, target) {
+    if (origin > target) stop ("origin is later than time")
+    cur.or <- origin
+    cur.count <- 0
+    cur.diff <- as.numeric(target) - as.numeric(cur.or) #difference between dates in seconds
+    if (cur.diff > 365 * 24 * 60 * 60) { # account for complete NORMAL years of difference
+      z <- floor(cur.diff / (365 * 24 * 60 * 60)) # calculate number of full NORMAL years
+      lt.cur.or <- as.POSIXlt(cur.or) # add NORMAL years' worth of seconds to moving origin
+      lt.cur.or$year <- lt.cur.or$year + z
+      cur.or <- as.POSIXct(lt.cur.or)
+      cur.count <- cur.count + z * (360 * 24 * 60 * 60) # but MODEL years' worth to count
+    }
+    repeat { # then proceed through remaining months
+      if (cur.or > target) stop (paste0("tick accumulation overshot target date. Failed at ", time[instance]))
+      cur.diff <- as.numeric(target) - as.numeric(cur.or)
+      if (as.POSIXlt(cur.or)$mon == as.POSIXlt(target)$mon) { # if reached same month, add remainder secs to count and exit
+        cur.count <- cur.count + cur.diff
+        break
+      }
+      # else add one months' (of correct length) worth of seconds to moving origin and count, and repeat
+      lt.cur.or <- as.POSIXlt(cur.or) # add NORMAL month's worth of seconds to moving origin
+      lt.cur.or$mon <- lt.cur.or$mon + 1
+      cur.or <- as.POSIXct(lt.cur.or)
+      cur.count <- cur.count + monlng[[as.POSIXlt(cur.or)$mon + 1]] * 24 * 60 * 60 # but MODEL month's worth to count
+    }
+    ticks <- floor(cur.count / 1800)
+    return (ticks)
+  }
+
+  time.converted <- time
+  for (instance in 1:length(time)) {
+    test <- try(as.POSIXct(time[instance], tz = tz))
+    if (!("POSIXct" %in% class(test))) {
+      stop(paste0("'time' values must be of the form 'YYYY-MM-DD' (optionally 'YYYY-MM-DD HH:MM:SS') for conversion to POSIX. Failed at ", time[instance]))
+    }
+    target <- as.POSIXct(time[instance], tz = tz)
+    if (as.POSIXlt(target)$mday > monlng[[as.POSIXlt(target)$mon + 1]]) { # if a date (start or end) is on a day beyond expected month length, set instance to NA and continue to next instance
+      time.converted[instance] <- NA
+      message(paste0("time set to NA due to date outside expected month length: ", time[instance]))
+      next
+    } else {
+      time.converted[instance] <- count.ticks.from.origin (origin, target) # else process ticks for date
+    }
+  }
+  return(as.numeric(time.converted))
+}
+
+
+
+
 setGeneric("make.clip.poly", function(bbox, ...){})
 
 #' @name make.clip.poly
