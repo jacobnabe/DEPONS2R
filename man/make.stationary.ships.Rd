@@ -83,19 +83,32 @@ carefully scrutinize the candidates table produced in a "check" run, look up
 vessels by their MMSI code, and remove any false positives from the table before
 processing it in a "replace" run.
 
-The inserted speed values are 7.4 knots for "Other" and 8 knots for "Government/Research", based on the class reference speeds in MacGillivray & de Jong (2021).
+The inserted speed values are 7.4 knots for "Other" and 8 knots for
+"Government/Research", based on the class reference speeds in MacGillivray &
+de Jong (2021).
 
-When 'distcrit = "shore"', pause instances are additionally tested against the following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to exclude berthed ships; 2) not in a cell at the map boundary, as [ais.to.DeponsShips()] will create inactive (pausing) placeholder positions at the point of entry if a ship enters the map with a delay after the object's start, or at the point of exit if it leaves before the end of the object's duration; 3) not in the first or last position of the ship's track (same reason).
+When 'distcrit = "shore"', pause instances are additionally tested against the
+following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to
+exclude berthed ships; 2) not in a cell at the map boundary, as ais.to.DeponsShips()
+will create inactive (pausing) placeholder positions at the point of entry if
+a ship enters the map with a delay after the object's start, or at the point of
+exit if it leaves before the end of the object's duration; 3) not in the first
+or last position of the ship's track (same reason).
 
-When candidates are identified based on proximity to a list of structures, a maximum distance of 97.72 m is allowed, based on an estimate of mean AIS positioning error (Jankowski et al. 2021).
+When candidates are identified based on proximity to a list of structures, a
+maximum distance of 97.72 m is allowed, based on an estimate of mean AIS
+positioning error (Jankowski et al. 2021).
 }
-\section{References}{
+\references{
+MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
+Source Levels of Marine Shipping Based on Automated Identification System
+Data. J Mar Sci Eng 9:369. \doi{10.3390/jmse9040369}
 
-MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source lev els of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369"
-
-Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy and evaluation of reconstruction methods for maritime observation data. IFAC-PapersOnLine, 54(16), 97-104. doi:10.1016/j.ifacol.2021.10.079
+Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy
+and evaluation of reconstruction methods for maritime observation data.
+IFAC-PapersOnLine, 54(16), 97-104. \doi{10.1016/j.ifacol.2021.10.079}
 }
-
 \seealso{
-\code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
+\code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
+(including calculated speeds) from AIS data
 }

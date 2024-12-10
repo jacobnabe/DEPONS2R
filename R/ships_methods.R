@@ -170,23 +170,48 @@ interpolate.ais.data <- function (aisdata)
 #'Check if ships move at unrealistic speeds
 #'
 #'@description
-#'Checks if calculateds speeds in DeponsShips objects are unrealistic, which may result from inaccurate AIS positional records. As ship speed in DEPONS directly influences the amount of noise generated, it is advisable to detect and remove such instances to avoid the creation of extreme noise sources.
+#'Checks if calculated speeds in DeponsShips objects are unrealistic, which may
+#'result from inaccurate AIS positional records. As ship speed in DEPONS directly
+#'influences the amount of noise generated, it is advisable to detect and remove
+#'such instances to avoid the creation of extreme noise sources.
 #'
 #'@details
-#'The default replacement speeds (knots) for recognized ship types are as follows (class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4; Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1; Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5; Other, 7.4.
+#'The default replacement speeds (knots) for recognized ship types are as follows
+#'(class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4;
+#'Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1;
+#'Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5;
+#'Other, 7.4.
 #'
 #'@param x DeponsShips object
-#'@param threshold	The speed (knots) above which calculated values are considered unrealistic/excessive. Defaults to 35 knots.
-#'@param fix	Logical. If FALSE (default), the function returns a data frame of ship tracks containing speeds that exceed the threshold; if TRUE, the function returns a DeponsShips object where these instances have been replaced.
-#'@param replacements	Named list, where names are ship types and values are replacement speeds (knots) for speeds above the threshold within those types. Only ship types named in the list are processed. If NA (default), reference speeds from Table 1 in MacGillivray & de Jong (2021) are used.
+#'@param threshold The speed (knots) above which calculated values are considered
+#'unrealistic/excessive. Defaults to 35 knots.
+#'@param fix Logical. If FALSE (default), the function returns a data frame of
+#'ship tracks containing speeds that exceed the threshold; if TRUE, the function
+#'returns a DeponsShips object where these instances have been replaced.
+#'@param replacements Named list, where names are ship types and values are
+#'replacement speeds (knots) for speeds above the threshold within those types.
+#'Only ship types named in the list are processed. If NA (default), reference
+#'speeds from Table 1 in MacGillivray & de Jong (2021) are used.
+#' @return If fix = FALSE, a data frame with columns "route number", "name",
+#' "type", "length", and "speed", containing one entry for each ship where an
+#' excessive speed occurred. If fix = TRUE, a DeponsShip object where instances
+#' of excessive speed have been replaced.
 #'
-#'@returns
-#'If fix = FALSE, a data frame with columns "route number", "name", "type", "length", and "speed", containing one entry for each ship where an excessive speed occurred. If fix = True, a DeponsShip object where instances of excessive speed have been replaced.
+#' @references
+#'  MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
+#'  Source Levels of Marine Shipping Based on Automated Identification System
+#'  Data. J Mar Sci Eng 9:369. \doi{10.3390/jmse9040369}
 #'
-#'@section Reference:
-#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source levels of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
+#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
+#'(including calculated speeds) from AIS data
+#'@examples
+#'\dontrun{
+#'x <- shipdata
+#'check.DeponsShips(x)
 #'
-#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
+#'x@routes$route[[1]]$speed <- x@routes$route[[1]]$speed * 3
+#'check.DeponsShips(x)
+#'x <- check.DeponsShips(x, fix = T)}
 
 check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA) {
   if (!inherits(x, "DeponsShips"))
@@ -210,6 +235,7 @@ check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA) {
       }
     }
     names(excesses) <- c("route number", "name", "type", "length", "speed")
+    if (nrow(excesses) == 0) return(message("No excessive speeds found"))
     return(excesses)
   }
 
@@ -1168,11 +1194,21 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'vessels by their MMSI code, and remove any false positives from the table before
 #'processing it in a "replace" run.
 #'
-#'The inserted speed values are 7.4 knots for "Other" and 8 knots for "Government/Research", based on the class reference speeds in MacGillivray & de Jong (2021).
+#'The inserted speed values are 7.4 knots for "Other" and 8 knots for
+#'"Government/Research", based on the class reference speeds in MacGillivray &
+#'de Jong (2021).
 #'
-#'When 'distcrit = "shore"', pause instances are additionally tested against the following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to exclude berthed ships; 2) not in a cell at the map boundary, as [ais.to.DeponsShips()] will create inactive (pausing) placeholder positions at the point of entry if a ship enters the map with a delay after the object's start, or at the point of exit if it leaves before the end of the object's duration; 3) not in the first or last position of the ship's track (same reason).
+#'When 'distcrit = "shore"', pause instances are additionally tested against the
+#'following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to
+#'exclude berthed ships; 2) not in a cell at the map boundary, as ais.to.DeponsShips()
+#'will create inactive (pausing) placeholder positions at the point of entry if
+#'a ship enters the map with a delay after the object's start, or at the point of
+#'exit if it leaves before the end of the object's duration; 3) not in the first
+#'or last position of the ship's track (same reason).
 #'
-#'When candidates are identified based on proximity to a list of structures, a maximum distance of 97.72 m is allowed, based on an estimate of mean AIS positioning error (Jankowski et al. 2021).
+#'When candidates are identified based on proximity to a list of structures, a
+#'maximum distance of 97.72 m is allowed, based on an estimate of mean AIS
+#'positioning error (Jankowski et al. 2021).
 #'
 #'@param x DeponsShips object
 #'@param action Character. If "check" (default), returns a data frame of pause positions that are candidates for stationary activity based on the selected criteria. If "replace" and a candidates data frame is provided, returns a DeponsShip object where the pauses identified in the data frame have been converted to stationary active status (i.e., a non-zero speed has been assigned)
@@ -1184,15 +1220,20 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'@param start_times A data frame with columns "time" (character string or POSIX of format 'YYYY-MM-DD HH:MM:SS') and "id", and one row for each structure that is to be used as a proximity criterion for finding candidates. Defines time from which onward the structure is present. Optional; can be provided together with start_day if distcrit != 'shore', to allow checking whether structures under construction are present at a given time point
 #'@param verbose Logical (default False). If True, writes a summary of each candidate to the console during "check" runs
 #'
-#'@returns
+#'@return
 #'If 'action = "check"' (default), returns a data frame with columns "route_number", "ship_name", "ship_type", "route_pos" (position number along route), and "pauses" (number of pauses at this position), with one row for each position that is a candidate for stationary activity based on the selected criteria. If "replace" and a candidates data frame is provided, returns a DeponsShip object where the pauses identified in the data frame have been converted to stationary active status (i.e., a non-zero speed has been assigned).
 #'
-#'@section References:
-#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source lev els of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369"
+#' @references
+#' MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
+#' Source Levels of Marine Shipping Based on Automated Identification System
+#' Data. J Mar Sci Eng 9:369. \doi{10.3390/jmse9040369}
 #'
-#'Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy and evaluation of reconstruction methods for maritime observation data. IFAC-PapersOnLine, 54(16), 97-104. doi:10.1016/j.ifacol.2021.10.079
+#'Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy
+#'and evaluation of reconstruction methods for maritime observation data.
+#' IFAC-PapersOnLine, 54(16), 97-104. \doi{10.1016/j.ifacol.2021.10.079}
 #'
-#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
+#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
+#'(including calculated speeds) from AIS data
 make.stationary.ships <- function(x,
                                   action = "check",
                                   candidates = NULL,
