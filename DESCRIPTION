@@ -8,7 +8,7 @@ Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
 Depends: R (>= 3.5.0)
-Imports: raster, methods, sp, sf, terra, utils, grDevices, xml2, jsonlite
+Imports: raster, methods, sp, sf, terra, utils, grDevices, xml2, jsonlite, adehabitatLT
 RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0)
@@ -19,6 +19,9 @@ Authors@R: c(person(given = "Jacob",
                       email = "jnn@ecos.au.dk"),
                person(given = c("Caitlin", "K."),
                       family = "Frankish",
+                      role = "aut"),
+               person(given = "Axelle",
+                      family = "Cordier",
                       role = "aut"),
                person(given = c("Florian", "G."),
                       family = "Weller",
