@@ -288,25 +288,22 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
 #' @param tick Numeric, or numeric vector; tick number
 #' @param timestep Numeric; length of each simulation time step, in minutes.
 #' Defaults to 30 minutes.
-#' @param origin Character. The first day in the period that the simulation represents,
+#' @param origin Character. The first day of the period that the simulation represents,
 #' format: 'yyyy-mm-dd'.
-#' @param ... Optional parameters, including time zone (tz)
+#' @param tz Character. Valid time zone code (default UTC).
+#' @param ... Optional parameters
 #' @note The function assumes that there are 30 days in each month, except in
 #' January, February and March with 31, 28 and 31 days, respectively.
 #' @return object of class \code{\link{as.POSIXlt}}
 #' @export tick.to.time
-tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
+#' @seealso \code{\link{time.to.tick}} is the inverse of this function, converting dates to ticks
+tick.to.time <- function(tick, timestep=30, origin="2010-01-01", tz = "UTC", ...) {
   old <- options()
   on.exit(options(old))  # Reset user options on exit
   if(min(tick)<0) stop("tick should be positive and numeric")
   if(!is.numeric(timestep)) stop("'timestep' should be numeric")
   if(!is.character(origin)) stop("'origin' should be character, in the format 'yyyy-mm-dd'")
-  if(!hasArg(tz)) {
-    tz <- "UTC"
-  } else {
-    tz <- as.character(list(...)[["tz"]])
-    tz <- tz
-  }
+
   doy <- 1:360
   # Make months and days in sim year
   mm <- rep(NA, length(doy))
@@ -326,15 +323,16 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
   start.d <- as.numeric(substr(origin, 9, 10))
   start.doy <- which(mm==start.m & dd==start.d)
   # Date that the sim is supposed to correspond to
-  sim.day <- trunc((tick-1)/((24*60)/timestep))+1
+  sim.day <- ceiling((tick + 1)/((24 * 60)/timestep))
   min.vector.lgt <- max(sim.day)+start.doy
   mm2 <- rep(mm, ceiling(min.vector.lgt/360))
   dd2 <- rep(dd, ceiling(min.vector.lgt/360))
   sim.month <- mm2[sim.day + start.doy - 1]
   sim.day.of.month <- dd2[sim.day + start.doy - 1]
-  sim.year <- start.y+trunc((sim.day  + start.doy - 1)/360)
+  sim.year <- start.y+trunc((sim.day  + start.doy - 2)/360)
   sim.date <- paste(sim.year, substr(sim.month+100, 2, 3), substr(sim.day.of.month+100, 2, 3), sep="-")
   sim.date <- as.POSIXlt(sim.date, tz=tz)
+  start.hms <- as.POSIXlt(origin)$hour * 3600 + as.POSIXlt(origin)$min * 60 + as.POSIXlt(origin)$sec
   sim.second.of.day <- (tick*timestep*60) %% (24*60*60)
   out <- sim.date+sim.second.of.day
   return(out)
@@ -365,13 +363,13 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
 #'of hypothetical scenarios from parametric inputs).
 #'
 #'@param time Character, or character vector, of the form 'YYYY-MM-DD'
-#'(or 'YYYY-MM-DD HH:MM:SS'), or equivalent POSIX object. Date to be converted
+#'(or 'YYYY-MM-DD HH:MM:SS'), or equivalent POSIX object. Date(s) to be converted
 #'to ticks.
 #'@param timestep Numeric (default 30). Length of each simulation time step in
 #'minutes.
-#'@param origin Character of the form 'YYYY-MM-DD' (or 'YYYY-MM-DD HH:MM:SS')
-#'or equivalent POSIX object (default "2010-01-01"). Start date of simulation.
-#'@param tz Valid time zone code (default UTC).
+#'@param origin Character of the form 'YYYY-MM-DD' or equivalent POSIX object
+#'(default "2010-01-01"). Start date of simulation.
+#'@param tz Character. Valid time zone code (default UTC).
 #'@param ... Optional parameters.
 #'
 #'@returns
@@ -396,17 +394,19 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", ...) {
 #'
 #'@seealso \code{\link{tick.to.time}} is the inverse of this function, converting
 #'ticks to dates
+
 time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC", ...) {
+
   old <- options()
   on.exit(options(old))
-  origin <- try(as.POSIXct(origin, tz = "UTC"))
-  if (!("POSIXct" %in% class(origin))) {
-    stop("'origin' must be of the form 'YYYY-MM-DD' (optionally 'YYYY-MM-DD HH:MM:SS') for conversion to POSIX")
+  origin <- try(as.POSIXlt(origin, tz = "UTC"))
+  if (!("POSIXlt" %in% class(origin))) {
+    stop("'origin' must be of the form 'YYYY-MM-DD' for conversion to POSIX")
   }
   if (!is.numeric(timestep))
     stop("'timestep' should be numeric")
 
-  origin <- as.POSIXct(origin, tz = tz)
+  origin <- as.POSIXlt(origin, tz = tz)
   monlng <- as.list(c(31,28,31, rep(30, times=9))) # list of expected month lengths
   names(monlng) <- seq(1:12)-1
 
@@ -415,48 +415,54 @@ time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC"
     if (origin > target) stop ("origin is later than time")
     cur.or <- origin
     cur.count <- 0
-    cur.diff <- as.numeric(target) - as.numeric(cur.or) #difference between dates in seconds
-    if (cur.diff > 365 * 24 * 60 * 60) { # account for complete NORMAL years of difference
-      z <- floor(cur.diff / (365 * 24 * 60 * 60)) # calculate number of full NORMAL years
-      lt.cur.or <- as.POSIXlt(cur.or) # add NORMAL years' worth of seconds to moving origin
-      lt.cur.or$year <- lt.cur.or$year + z
-      cur.or <- as.POSIXct(lt.cur.or)
-      cur.count <- cur.count + z * (360 * 24 * 60 * 60) # but MODEL years' worth to count
+    if (cur.or$year < target$year || cur.or$mon < target$mon) { # at start, if not in target month & year yet, bottom up to next month to enable simple month-length additions in the following
+      new.or <- cur.or
+      new.or$mon <- new.or$mon + 1
+      new.or$mday <- 1
+      new.or$hour <- 0
+      new.or$min <- 0
+      new.or$sec <- 0
+      difference <- as.numeric(difftime(new.or, cur.or, units = "secs"))
+      cur.diff <- (monlng[[as.character(cur.or$mon)]] - (cur.or$mday - 1)) * (24 * 60 * 60) # account for skipped time, observing expected duration of MODEL month
+      cur.count <- cur.count + cur.diff
+      cur.or <- new.or
     }
-    repeat { # then proceed through remaining months
+    breaks <- 0
+    while (breaks == 0) { # then proceed through remaining months
+      cur.or <- as.POSIXlt(as.POSIXct(cur.or, tz = "UTC"), tz = "UTC") # reset format to roll over added months
       if (cur.or > target) stop (paste0("tick accumulation overshot target date. Failed at ", time[instance]))
-      cur.diff <- as.numeric(target) - as.numeric(cur.or)
-      if (as.POSIXlt(cur.or)$mon == as.POSIXlt(target)$mon) { # if reached same month, add remainder secs to count and exit
+      cur.diff <- as.numeric(difftime(target, cur.or, units = "secs"))
+      if (cur.or$year == target$year && cur.or$mon == target$mon) { # if reached same month and same year, add remainder secs to count
         cur.count <- cur.count + cur.diff
-        break
-      }
-      # else add one months' (of correct length) worth of seconds to moving origin and count, and repeat
-      lt.cur.or <- as.POSIXlt(cur.or) # add NORMAL month's worth of seconds to moving origin
-      lt.cur.or$mon <- lt.cur.or$mon + 1
-      cur.or <- as.POSIXct(lt.cur.or)
-      cur.count <- cur.count + monlng[[as.POSIXlt(cur.or)$mon + 1]] * 24 * 60 * 60 # but MODEL month's worth to count
+        breaks <- 1 # and exit
+      } else { # else add one months' (of correct length) worth of seconds to moving origin and count
+        cur.count <- cur.count + monlng[[as.character(cur.or$mon)]] * 24 * 60 * 60 # but MODEL month's worth of seconds to count
+        cur.or$mon <- cur.or$mon + 1
+      } # and repeat
     }
-    ticks <- floor(cur.count / 1800)
+    ticks <- floor(cur.count / (60 * timestep))
     return (ticks)
   }
 
   time.converted <- time
   for (instance in 1:length(time)) {
-    test <- try(as.POSIXct(time[instance], tz = tz))
-    if (!("POSIXct" %in% class(test))) {
+    test <- try(as.POSIXlt(time[instance], tz = tz))
+    if (!("POSIXlt" %in% class(test))) {
       stop(paste0("'time' values must be of the form 'YYYY-MM-DD' (optionally 'YYYY-MM-DD HH:MM:SS') for conversion to POSIX. Failed at ", time[instance]))
     }
-    target <- as.POSIXct(time[instance], tz = tz)
-    if (as.POSIXlt(target)$mday > monlng[[as.POSIXlt(target)$mon + 1]]) { # if a date (start or end) is on a day beyond expected month length, set instance to NA and continue to next instance
+    target <- as.POSIXlt(time[instance], tz = tz)
+    if (target$mday > monlng[[target$mon + 1]]) { # if a date (start or end) is on a day beyond expected month length, set instance to NA and continue to next instance
       time.converted[instance] <- NA
-      message(paste0("time set to NA due to date outside expected month length: ", time[instance]))
+      message(paste0("time set to NA due to date outside accommodated month length: ", time[instance]))
       next
     } else {
       time.converted[instance] <- count.ticks.from.origin (origin, target) # else process ticks for date
     }
   }
+
   return(as.numeric(time.converted))
 }
+
 
 
 

@@ -8,16 +8,16 @@ time.to.tick(time, timestep = 30, origin = "2010-01-01", tz = "UTC", ...)
 }
 \arguments{
 \item{time}{Character, or character vector, of the form 'YYYY-MM-DD'
-(or 'YYYY-MM-DD HH:MM:SS'), or equivalent POSIX object. Date to be converted
+(or 'YYYY-MM-DD HH:MM:SS'), or equivalent POSIX object. Date(s) to be converted
 to ticks.}
 
 \item{timestep}{Numeric (default 30). Length of each simulation time step in
 minutes.}
 
-\item{origin}{Character of the form 'YYYY-MM-DD' (or 'YYYY-MM-DD HH:MM:SS')
-or equivalent POSIX object (default "2010-01-01"). Start date of simulation.}
+\item{origin}{Character of the form 'YYYY-MM-DD' or equivalent POSIX object
+(default "2010-01-01"). Start date of simulation.}
 
-\item{tz}{Valid time zone code (default UTC).}
+\item{tz}{Character. Valid time zone code (default UTC).}
 
 \item{...}{Optional parameters.}
 }

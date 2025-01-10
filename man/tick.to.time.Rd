@@ -4,7 +4,7 @@
 \alias{tick.to.time}
 \title{Convert tick number to date}
 \usage{
-tick.to.time(tick, timestep = 30, origin = "2010-01-01", ...)
+tick.to.time(tick, timestep = 30, origin = "2010-01-01", tz = "UTC", ...)
 }
 \arguments{
 \item{tick}{Numeric, or numeric vector; tick number}
@@ -12,10 +12,12 @@ tick.to.time(tick, timestep = 30, origin = "2010-01-01", ...)
 \item{timestep}{Numeric; length of each simulation time step, in minutes.
 Defaults to 30 minutes.}
 
-\item{origin}{Character. The first day in the period that the simulation represents,
+\item{origin}{Character. The first day of the period that the simulation represents,
 format: 'yyyy-mm-dd'.}
 
-\item{...}{Optional parameters, including time zone (tz)}
+\item{tz}{Character. Valid time zone code (default UTC).}
+
+\item{...}{Optional parameters}
 }
 \value{
 object of class \code{\link{as.POSIXlt}}
@@ -28,4 +30,7 @@ are 360 days in a simulation year.
 \note{
 The function assumes that there are 30 days in each month, except in
 January, February and March with 31, 28 and 31 days, respectively.
+}
+\seealso{
+\code{\link{time.to.tick}} is the inverse of this function, converting dates to ticks
 }

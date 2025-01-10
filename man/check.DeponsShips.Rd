@@ -2,44 +2,43 @@
 % Please edit documentation in R/ships_methods.R
 \name{check.DeponsShips}
 \alias{check.DeponsShips}
-\title{Check if ships move at unrealistic speeds}
+\title{Check if ships move at unrealistic speeds or are outside the map boundary}
 \usage{
-check.DeponsShips(x, threshold = 35, fix = F, replacements = NA)
+check.DeponsShips(
+  x,
+  threshold = 35,
+  fix = F,
+  replacements = NA,
+  landscape = NULL
+)
 }
 \arguments{
 \item{x}{DeponsShips object}
 
-\item{threshold}{The speed (knots) above which calculated values are considered
-unrealistic/excessive. Defaults to 35 knots.}
+\item{threshold}{The speed (knots) above which calculated values are considered unrealistic/excessive. Defaults to 35 knots.}
 
-\item{fix}{Logical. If FALSE (default), the function returns a data frame of
-ship tracks containing speeds that exceed the threshold; if TRUE, the function
-returns a DeponsShips object where these instances have been replaced.}
+\item{fix}{Logical. If FALSE (default), the function returns a data frame of ship tracks containing speeds that exceed the threshold; if TRUE, the function returns a DeponsShips object where these instances have been replaced.}
 
-\item{replacements}{Named list, where names are ship types and values are
-replacement speeds (knots) for speeds above the threshold within those types.
-Only ship types named in the list are processed. If NA (default), reference
-speeds from Table 1 in MacGillivray & de Jong (2021) are used.}
+\item{replacements}{Named list, where names are ship types and values are replacement speeds (knots) for speeds above the threshold within those types. Only ship types named in the list are processed. If NA (default), reference speeds from Table 1 in MacGillivray & de Jong (2021) are used.}
+
+\item{landscape}{DeponsRaster object. Optional; a map representative of the simulation map extent (usually the bathymetry map). If provided and fix = TRUE, ship positions on the boundary will be adjusted to avoid errors from fractional mis-positioning.}
 }
 \value{
-If fix = FALSE, a data frame with columns "route number", "name",
-"type", "length", and "speed", containing one entry for each ship where an
-excessive speed occurred. If fix = TRUE, a DeponsShip object where instances
-of excessive speed have been replaced.
+If fix = FALSE, a data frame with columns "route number", "name", "type", "length", and "speed", containing one entry for each ship where an excessive speed occurred. If fix = TRUE, a DeponsShip object where instances of excessive speed have been replaced, and (if a map has been provided) where ship positions on the boundary have been adjusted.
 }
 \description{
-Checks if calculated speeds in DeponsShips objects are unrealistic, which may
-result from inaccurate AIS positional records. As ship speed in DEPONS directly
-influences the amount of noise generated, it is advisable to detect and remove
-such instances to avoid the creation of extreme noise sources.
+Checks if calculated speeds in DeponsShips objects are unrealistic, which may result from inaccurate AIS positional records or from ships leaving the map area, then re-entering at a remote position. As ship speed in DEPONS directly influences the amount of noise generated, it is advisable to detect and remove such instances to avoid the creation of extreme noise sources. The function can also repair issues arising from ship positions that are a fraction of a meter outside the map boundary (causing loading errors on simulation start).
 }
 \details{
-The default replacement speeds (knots) for recognized ship types are as follows
-(class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4;
-Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1;
-Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5;
-Other, 7.4.
+The default replacement speeds (knots) for recognized ship types are as follows (class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4; Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1; Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5; Other, 7.4.
+
+If a simulation fails during data loading with an error that indicates ship positions outside the simulation area, this may be caused by a mismatch in rounding between the map extent of the map used with \code{\link{ais.to.DeponsShips}}, and of generated ship position exactly on the boundary. If a map representative of the simulation area extent is provided (usually the bathymetry map), the function will also repair these positions by rounding them up/down to the floor/ceiling of the map extent (fractional meter adjustments).
 }
+\section{Reference}{
+
+MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source levels of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
+}
+
 \examples{
 \dontrun{
 x <- shipdata
@@ -49,12 +48,6 @@ x@routes$route[[1]]$speed <- x@routes$route[[1]]$speed * 3
 check.DeponsShips(x)
 x <- check.DeponsShips(x, fix = T)}
 }
-\references{
-MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
- Source Levels of Marine Shipping Based on Automated Identification System
- Data. J Mar Sci Eng 9:369. \doi{10.3390/jmse9040369}
-}
 \seealso{
-\code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
-(including calculated speeds) from AIS data
+\code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
 }

@@ -167,43 +167,27 @@ interpolate.ais.data <- function (aisdata)
 
 
 
-#'Check if ships move at unrealistic speeds
+#'Check if ships move at unrealistic speeds or are outside the map boundary
 #'
 #'@description
-#'Checks if calculated speeds in DeponsShips objects are unrealistic, which may
-#'result from inaccurate AIS positional records. As ship speed in DEPONS directly
-#'influences the amount of noise generated, it is advisable to detect and remove
-#'such instances to avoid the creation of extreme noise sources.
+#'Checks if calculated speeds in DeponsShips objects are unrealistic, which may result from inaccurate AIS positional records or from ships leaving the map area, then re-entering at a remote position. As ship speed in DEPONS directly influences the amount of noise generated, it is advisable to detect and remove such instances to avoid the creation of extreme noise sources. The function can also repair issues arising from ship positions that are a fraction of a meter outside the map boundary (causing loading errors on simulation start).
 #'
 #'@details
-#'The default replacement speeds (knots) for recognized ship types are as follows
-#'(class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4;
-#'Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1;
-#'Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5;
-#'Other, 7.4.
+#'The default replacement speeds (knots) for recognized ship types are as follows (class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4; Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1; Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5; Other, 7.4.
 #'
+#'If a simulation fails during data loading with an error that indicates ship positions outside the simulation area, this may be caused by a mismatch in rounding between the map extent of the map used with \code{\link{ais.to.DeponsShips}}, and of generated ship position exactly on the boundary. If a map representative of the simulation area extent is provided (usually the bathymetry map), the function will also repair these positions by rounding them up/down to the floor/ceiling of the map extent (fractional meter adjustments).
 #'@param x DeponsShips object
-#'@param threshold The speed (knots) above which calculated values are considered
-#'unrealistic/excessive. Defaults to 35 knots.
-#'@param fix Logical. If FALSE (default), the function returns a data frame of
-#'ship tracks containing speeds that exceed the threshold; if TRUE, the function
-#'returns a DeponsShips object where these instances have been replaced.
-#'@param replacements Named list, where names are ship types and values are
-#'replacement speeds (knots) for speeds above the threshold within those types.
-#'Only ship types named in the list are processed. If NA (default), reference
-#'speeds from Table 1 in MacGillivray & de Jong (2021) are used.
-#' @return If fix = FALSE, a data frame with columns "route number", "name",
-#' "type", "length", and "speed", containing one entry for each ship where an
-#' excessive speed occurred. If fix = TRUE, a DeponsShip object where instances
-#' of excessive speed have been replaced.
+#'@param threshold The speed (knots) above which calculated values are considered unrealistic/excessive. Defaults to 35 knots.
+#'@param fix Logical. If FALSE (default), the function returns a data frame of ship tracks containing speeds that exceed the threshold; if TRUE, the function returns a DeponsShips object where these instances have been replaced.
+#'@param replacements Named list, where names are ship types and values are replacement speeds (knots) for speeds above the threshold within those types. Only ship types named in the list are processed. If NA (default), reference speeds from Table 1 in MacGillivray & de Jong (2021) are used.
+#'@param landscape DeponsRaster object. Optional; a map representative of the simulation map extent (usually the bathymetry map). If provided and fix = TRUE, ship positions on the boundary will be adjusted to avoid errors from fractional mis-positioning.
 #'
-#' @references
-#'  MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
-#'  Source Levels of Marine Shipping Based on Automated Identification System
-#'  Data. J Mar Sci Eng 9:369. \doi{10.3390/jmse9040369}
+#'@returns
+#'If fix = FALSE, a data frame with columns "route number", "name", "type", "length", and "speed", containing one entry for each ship where an excessive speed occurred. If fix = TRUE, a DeponsShip object where instances of excessive speed have been replaced, and (if a map has been provided) where ship positions on the boundary have been adjusted.
 #'
-#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
-#'(including calculated speeds) from AIS data
+#'@section Reference:
+#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source levels of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
+#'
 #'@examples
 #'\dontrun{
 #'x <- shipdata
@@ -212,21 +196,26 @@ interpolate.ais.data <- function (aisdata)
 #'x@routes$route[[1]]$speed <- x@routes$route[[1]]$speed * 3
 #'check.DeponsShips(x)
 #'x <- check.DeponsShips(x, fix = T)}
+#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
 
-check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA) {
+check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA, landscape = NULL) {
   if (!inherits(x, "DeponsShips"))
     stop("'x' must be a DeponsShips object")
   if (!inherits(replacements, "logical") && !inherits(replacements, "list"))
     stop("'replacements' must be a named list, with names denoting ship types and values denoting replacement speeds")
-
+  if (!is.null(landscape)) {
+    if (!inherits(landscape, "DeponsRaster"))
+      stop("'landscape' must be a DeponsRaster")
+  }
   if (fix == F) {
-    excesses <- data.frame(matrix(ncol=5, nrow=0))
+    excesses <- data.frame(matrix(ncol=6, nrow=0))
     for (i in 1:length(x@routes$name)) {
       excess <- which(x@routes$route[[i]]$speed > threshold)
       if (length(excess) > 0) {
         for (i2 in 1:length(excess)) {
           excesses <- rbind(excesses,
                             c(i,
+                              excess[i2],
                               x@ships$name[i],
                               x@ships$type[i],
                               x@ships$length[i],
@@ -234,8 +223,10 @@ check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA) {
         }
       }
     }
-    names(excesses) <- c("route number", "name", "type", "length", "speed")
-    if (nrow(excesses) == 0) return(message("No excessive speeds found"))
+    names(excesses) <- c("route number", "route position", "name", "type", "length", "speed")
+    if (nrow(excesses) == 0) {
+      message("No excessive speeds found")
+      return()}
     return(excesses)
   }
 
@@ -262,8 +253,19 @@ check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA) {
       x@routes$route[[i]]$speed <- unlist(x@routes$route[[i]]$speed)
     }
   }
+
+  # if calibration landscape provided, round positions on border up/down to floor/ceiling of map extent
+  if (!is.null(landscape)) {
+    for (i in 1:length(x@ships$name)) {
+      x@routes$route[[i]]$x[x@routes$route[[i]]$x < landscape@ext[1]] <- ceiling(x@routes$route[[i]]$x)
+      x@routes$route[[i]]$x[x@routes$route[[i]]$x > landscape@ext[3]] <- floor(x@routes$route[[i]]$x)
+      x@routes$route[[i]]$y[x@routes$route[[i]]$y < landscape@ext[2]] <- ceiling(x@routes$route[[i]]$y)
+      x@routes$route[[i]]$y[x@routes$route[[i]]$y > landscape@ext[3]] <- floor(x@routes$route[[i]]$y)
+    }
+  }
   return(x)
 }
+
 
 
 #' @title Read DEPONS ship files
@@ -678,7 +680,7 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
   # remove instances with dates not accommodated in the model year
   testdates <- as.POSIXlt(data$time, tz = "UTC")
   bad.dates <- which(((testdates$mon %in% c(4,6,7,9,11)) & (testdates$mday == 31)) |
-                       ((testdates$mon == 1) & (testdates$mday = 29)))
+                       ((testdates$mon == 1) & (testdates$mday == 29)))
   if (length(bad.dates) > 0) {
     data <- data[-bad.dates,]
     message("Some entries with dates not accommodated in the model year (Feb 29, May/Jul/Aug/Oct/Dec 31) were omitted")
@@ -826,7 +828,7 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
     startday <- as.POSIXct(startday, tz = "UTC")
     testday <- as.POSIXlt(startday, tz = "UTC")
     if (((testday$mon %in% c(4,6,7,9,11)) && (testday$mday == 31)) ||
-        ((testday$mon == 1) && (testday$mday = 29))) {
+        ((testday$mon == 1) && (testday$mday == 29))) {
       stop("startday and endday cannot be on dates not accommodated in the model year (Feb 29, May/Jul/Aug/Oct/Dec 31)")
     }
   }
@@ -835,7 +837,7 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
     endday <- as.POSIXct(endday, tz = "UTC")
     testday <- as.POSIXlt(endday, tz = "UTC")
     if (((testday$mon %in% c(4,6,7,9,11)) && (testday$mday == 31)) ||
-        ((testday$mon == 1) && (testday$mday = 29))) {
+        ((testday$mon == 1) && (testday$mday == 29))) {
       stop("startday and endday cannot be on dates not accommodated in the model year (Feb 29, May/Jul/Aug/Oct/Dec 31)")
     }
     endday <- endday + 60 * 60 * 24 - 1
@@ -1193,14 +1195,9 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'vessels by their MMSI code, and remove any false positives from the table before
 #'processing it in a "replace" run.
 #'
-#' The inserted speed values are 7.4 knots for "Other" and 8 knots for
-#' "Government/Research", based on the class reference speeds in MacGillivray &
-#' de Jong (2021).
+#'The inserted speed values are 7.4 knots for "Other" and 8 knots for "Government/Research", based on the class reference speeds in MacGillivray & de Jong (2021).
 #'
-#' When 'distcrit = "shore"', pause instances are additionally tested against the
-#' following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to
-#' exclude berthed ships; 2) not in a cell at the map boundary, as ais.to.DeponsShips()
-#' will create inactive (pausing) placeholder positions at the point of entry if a ship enters the map with a delay after the object's start, or at the point of exit if it leaves before the end of the object's duration; 3) not in the first or last position of the ship's track (same reason).
+#'When 'distcrit = "shore"', pause instances are additionally tested against the following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to exclude berthed ships; 2) not in a cell at the map boundary, as [ais.to.DeponsShips()] will create inactive (pausing) placeholder positions at the point of entry if a ship enters the map with a delay after the object's start, or at the point of exit if it leaves before the end of the object's duration; 3) not in the first or last position of the ship's track (same reason).
 #'
 #'When candidates are identified based on proximity to a list of structures, a maximum distance of 97.72 m is allowed, based on an estimate of mean AIS positioning error (Jankowski et al. 2021).
 #'
@@ -1217,14 +1214,10 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'@returns
 #'If 'action = "check"' (default), returns a data frame with columns "route_number", "ship_name", "ship_type", "route_pos" (position number along route), and "pauses" (number of pauses at this position), with one row for each position that is a candidate for stationary activity based on the selected criteria. If "replace" and a candidates data frame is provided, returns a DeponsShip object where the pauses identified in the data frame have been converted to stationary active status (i.e., a non-zero speed has been assigned).
 #'
-#'@references
-#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating
-#'source levels of marine shipping based on Automated Identification System data.
-#'Journal of Marince Science and Engineering, 9(4), 369. \doi{10.3390/jmse9040369}
+#'@section References:
+#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source levels of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369"
 #'
-#'Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy
-#'and evaluation of reconstruction methods for maritime observation data.
-#'IFAC-PapersOnLine, 54(16), 97-104. \doi{10.1016/j.ifacol.2021.10.079}
+#'Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy and evaluation of reconstruction methods for maritime observation data. IFAC-PapersOnLine, 54(16), 97-104. doi:10.1016/j.ifacol.2021.10.079
 #'
 #'@examples
 #'\dontrun{
@@ -1238,9 +1231,7 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'                                          candidates = candidates,
 #'                                          landscape = bathymetry)}
 #'
-#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
-#'(including calculated speeds) from AIS data
-
+#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
 make.stationary.ships <- function(x,
                                   action = "check",
                                   candidates = NULL,
@@ -1405,6 +1396,12 @@ make.stationary.ships <- function(x,
         }
       }
     }
+    if (nrow(recording.table) == 0) {
+      message("No candidates found")
+      return()
+    }
+    recording.table[,4] <- as.numeric(unlist(recording.table[,4]))
+    recording.table[,5] <- as.numeric(unlist(recording.table[,5]))
     return(recording.table)
 
   } else { # replace mode: returns updated DeponsShips object
@@ -1445,5 +1442,5 @@ make.stationary.ships <- function(x,
     }
     return(new.x)
   }
-}  # end of 'make.stationary.ships'
+} # end of 'make.stationary.ships'
 
