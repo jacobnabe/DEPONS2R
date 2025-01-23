@@ -82,10 +82,9 @@ setMethod("summary", "DeponsDyn",
 #' from name of input file
 #' @param startday The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (character string of the
-#' form 'yyyy-mm-dd', or POSIXlt)
-#' @param timestep Time step used in the model, in minutes. Defaults to 30 in
-#' DEPONS.
-#' @param tz Time zone. In DEPONS times are generally assumed to be in UTC
+#' form 'yyyy-mm-dd', or POSIXlt). Default "2010-01-01"
+#' @param timestep Time step used in the model, in minutes. Default 30 minutes.
+#' @param tz Time zone. In DEPONS times are generally assumed to be in "UTC"
 #' (Coordinated Universal Time).
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object and \code{\link{as.data.frame}} for converting from data
@@ -99,10 +98,9 @@ setMethod("summary", "DeponsDyn",
 #' }
 #' @export read.DeponsDyn
 read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
-                           startday="NA", timestep=30, tz="UTC") {
+                           startday="2010-01-01", timestep=30, tz="UTC") {
   if (simtime=="NA")  simtime <- get.simtime(fname)
   if(!is.character(startday)) stop("'startday' must be a character string")
-  if (startday=="NA" || is.na(startday))  startday <- NA
   all.data <- new("DeponsDyn")
   all.data@title <- title
   all.data@landscape <- landscape
@@ -118,6 +116,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
   all.data@dyn <- the.data
   return(all.data)
 }
+
 
 
 #' @title Make DeponsDyn object from data stored in data frame

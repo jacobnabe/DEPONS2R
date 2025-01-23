@@ -49,7 +49,7 @@ get.simtime <- function (fname = NULL, tz = "UTC") {
   time.string <- gsub("_", ":", time.string)
   template.months <- substr(100 + (1:12), 2, 3)
   template.dates <- paste0("2000-", template.months, "-01")
-  system.months <- months(as.POSIXlt(template.dates, tz = "UTC"),
+  system.months <- months(as.POSIXlt(template.dates, tz = "GMT"),
                           abbreviate = TRUE)
   time.string <- gsub(paste0("Jan|jan|", system.months[1]), "01", time.string)
   time.string <- gsub(paste0("Feb|feb|", system.months[2]), "02", time.string)
@@ -72,6 +72,7 @@ get.simtime <- function (fname = NULL, tz = "UTC") {
   stop(paste0("Could not extract date correctly from ", fname),
        ". Got ", time.string)
 }
+
 
 
 #' @title Get name of newest file
@@ -168,19 +169,19 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
   wf.area <- raster::trim(wf.area)
   wf.ext <- raster::extent(wf.area)
   # Select coords for bottom-left corner of all wind farms
-  get.start.pos <- function(the.wf.ext=wf.ext, wf.area=wf.area) {
+  get.start.pos <- function(the.wf.ext=wf.ext, the.wf.area=wf.area) {
     x <- stats::runif(iterate, min=the.wf.ext[1], max=the.wf.ext[2])
     y <- stats::runif(iterate, min=the.wf.ext[3], max=the.wf.ext[4])
     xy.pos <- data.frame(x,y)
-    xy.val <- raster::extract(wf.area, xy.pos)
+    xy.val <- raster::extract(the.wf.area, xy.pos)
     # Use only pos within the wf area
     sel.rows <- which(xy.val==area.def)
     xy.pos <- xy.pos[sel.rows, ]
     row.names(xy.pos) <- NULL
     return(xy.pos)
   }
-  get.turb.pos <- function(n.turb=n.turb, n.wf=n.wf, start.pos) {
-    n.turb.per.wf <- ceiling(n.turb / n.wf)
+  get.turb.pos <- function(the.n.turb=n.turb, the.n.wf=n.wf, start.pos) {
+    n.turb.per.wf <- ceiling(the.n.turb / the.n.wf)
     n.cols <- floor(sqrt(n.turb.per.wf))
     n.rows <- ceiling(n.turb.per.wf/n.cols)
     x.vals <- start.pos$x + seq(from=0, to=(n.cols-1)*turb.dist, by=turb.dist)
@@ -280,7 +281,8 @@ make.windfarms <- function(area.file, area.def, n.wf, n.turb, turb.dist,
 }
 
 
-#' @title Convert tick number to date
+
+#' @title Convert tick number to time object
 #' @name tick.to.time
 #' @description Converts the number of ticks since the start of the simulation
 #' to a specific date while taking into account that DEPONS assumes that there
@@ -303,7 +305,6 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", tz = "UTC", ...
   if(min(tick)<0) stop("tick should be positive and numeric")
   if(!is.numeric(timestep)) stop("'timestep' should be numeric")
   if(!is.character(origin)) stop("'origin' should be character, in the format 'yyyy-mm-dd'")
-
   doy <- 1:360
   # Make months and days in sim year
   mm <- rep(NA, length(doy))
@@ -337,6 +338,7 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", tz = "UTC", ...
   out <- sim.date+sim.second.of.day
   return(out)
 }
+
 
 
 
@@ -429,21 +431,23 @@ time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC"
     }
     breaks <- 0
     while (breaks == 0) { # then proceed through remaining months
-      cur.or <- as.POSIXlt(as.POSIXct(cur.or, tz = "UTC"), tz = "UTC") # reset format to roll over added months
+      # reset format to roll over added months
+      cur.or <- as.POSIXlt(as.POSIXct(cur.or, tz = "UTC"), tz = "UTC")
       if (cur.or > target) stop (paste0("tick accumulation overshot target date. Failed at ", time[instance]))
       cur.diff <- as.numeric(difftime(target, cur.or, units = "secs"))
       if (cur.or$year == target$year && cur.or$mon == target$mon) { # if reached same month and same year, add remainder secs to count
         cur.count <- cur.count + cur.diff
         breaks <- 1 # and exit
-      } else { # else add one months' (of correct length) worth of seconds to moving origin and count
-        cur.count <- cur.count + monlng[[as.character(cur.or$mon)]] * 24 * 60 * 60 # but MODEL month's worth of seconds to count
+      } else {
+        # else add one months' (of correct length) worth of seconds to moving origin and count
+        # but MODEL month's worth of seconds to count
+        cur.count <- cur.count + monlng[[as.character(cur.or$mon)]] * 24 * 60 * 60
         cur.or$mon <- cur.or$mon + 1
       } # and repeat
     }
     ticks <- floor(cur.count / (60 * timestep))
     return (ticks)
   }
-
   time.converted <- time
   for (instance in 1:length(time)) {
     test <- try(as.POSIXlt(time[instance], tz = tz))
@@ -451,7 +455,9 @@ time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC"
       stop(paste0("'time' values must be of the form 'YYYY-MM-DD' (optionally 'YYYY-MM-DD HH:MM:SS') for conversion to POSIX. Failed at ", time[instance]))
     }
     target <- as.POSIXlt(time[instance], tz = tz)
-    if (target$mday > monlng[[target$mon + 1]]) { # if a date (start or end) is on a day beyond expected month length, set instance to NA and continue to next instance
+    if (target$mday > monlng[[target$mon + 1]]) {
+      # if a date (start or end) is on a day beyond expected month length, set
+      # instance to NA and continue to next instance
       time.converted[instance] <- NA
       message(paste0("time set to NA due to date outside accommodated month length: ", time[instance]))
       next
@@ -459,9 +465,9 @@ time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC"
       time.converted[instance] <- count.ticks.from.origin (origin, target) # else process ticks for date
     }
   }
-
   return(as.numeric(time.converted))
 }
+
 
 
 

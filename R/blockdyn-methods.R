@@ -108,8 +108,12 @@ setMethod("summary", "DeponsBlockdyn",
 #' @param landscape The landscape used in the simulation
 #' @param simtime Optional text string with date of simulation (format:
 #' yyyy-mm-dd). If not provided this is obtained from name of input file
+#' @param timestep Time step used in the model, in minutes. Default 30 minutes
 #' @param startday The start of the period that the  simulation represents, i.e.
-#' the real-world equivalent of 'tick 1' (POSIXlt)
+#' the real-world equivalent of 'tick 1' (character string of the form 'yyyy-mm-dd',
+#' or POSIXlt). Default "2010-01-01"
+#' @param tz Time zone. In DEPONS times are generally assumed to be in "UTC"
+#' (Coordinated Universal Time).
 #' @seealso See \code{\link{DeponsBlockdyn-class}} for details on what is stored in
 #' the output object and \code{\link{read.DeponsParam}} for reading the parameters
 #' used in the simulation.
@@ -131,9 +135,9 @@ setMethod("summary", "DeponsBlockdyn",
 #' porpoise.blockdyn <- read.DeponsBlockdyn(fname=the.file)
 #' setwd(owd)
 #' }
-read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
-                           startday="NA") {
-  raw.data <- utils::read.csv(fname, sep=";")
+read.DeponsBlockdyn <- function (fname, title = "NA", landscape = "NA", simtime = "NA", timestep = 30,
+                                 startday = "2010-01-01", tz = "UTC")
+{
   # Get sim date and time from file name
   if (simtime=="NA")  simtime <- get.simtime(fname)
   if (startday=="NA")  startday <- NA
@@ -144,10 +148,9 @@ read.DeponsBlockdyn <- function(fname, title="NA", landscape="NA", simtime="NA",
   all.data@startday <- as.POSIXlt(startday)
   the.data <- utils::read.csv(fname, sep=",")
   names(the.data) <- c("tick", "block", "count")
-  # Add "real time" if startday is not NA
-  tick.1.secs <- as.numeric(tick.to.time(1))
-  secs.since.start <- the.data$tick-tick.1.secs
-  the.data$real.time <- as.POSIXct(startday)+secs.since.start
+  unique.blocks <- unique(the.data$block[1:min(nrow(the.data), 1000)]) # find number of different blocks (checking at most the first 1000 entries)
+  real.time.1stblock <- tick.to.time(the.data$tick[the.data$block == unique.blocks[1]], timestep = timestep, origin = startday) # calculate date for 1st block of each tick only
+  the.data$real.time <- rep(real.time.1stblock, each = length(unique.blocks)) # replicate date for each other block of each tick; i.e., make n reps of each date, were n is number of blocks
   all.data@dyn <- the.data
   return(all.data)
 }

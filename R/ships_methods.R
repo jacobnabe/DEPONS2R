@@ -167,26 +167,58 @@ interpolate.ais.data <- function (aisdata)
 
 
 
+
 #'Check if ships move at unrealistic speeds or are outside the map boundary
 #'
 #'@description
-#'Checks if calculated speeds in DeponsShips objects are unrealistic, which may result from inaccurate AIS positional records or from ships leaving the map area, then re-entering at a remote position. As ship speed in DEPONS directly influences the amount of noise generated, it is advisable to detect and remove such instances to avoid the creation of extreme noise sources. The function can also repair issues arising from ship positions that are a fraction of a meter outside the map boundary (causing loading errors on simulation start).
+#'Checks if calculated speeds in DeponsShips objects are unrealistic, which may
+#'result from inaccurate AIS positional records or from ships leaving the map
+#'area, then re-entering at a remote position. As ship speed in DEPONS directly
+#'influences the amount of noise generated, it is advisable to detect and remove
+#'such instances to avoid the creation of extreme noise sources. The function can
+#'also repair issues arising from ship positions that are a fraction of a meter
+#'outside the map boundary (causing loading errors on simulation start).
 #'
 #'@details
-#'The default replacement speeds (knots) for recognized ship types are as follows (class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing, 6.4; Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise, 17.1; Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger, 9.5; Other, 7.4.
+#'The default replacement speeds (knots) for recognized ship types are as follows
+#'(class reference speeds from MacGillivray & de Jong, 2021, Table 1): Fishing,
+#'6.4; Tug, 3.7; Naval, 11.1; Recreational, 10.6; Government/Research, 8; Cruise,
+#'17.1; Passenger, 9.7; Bulker, 13.9; Containership, 18.0; Tanker, 12.4; Dredger,
+#'9.5; Other, 7.4.
 #'
-#'If a simulation fails during data loading with an error that indicates ship positions outside the simulation area, this may be caused by a mismatch in rounding between the map extent of the map used with \code{\link{ais.to.DeponsShips}}, and of generated ship position exactly on the boundary. If a map representative of the simulation area extent is provided (usually the bathymetry map), the function will also repair these positions by rounding them up/down to the floor/ceiling of the map extent (fractional meter adjustments).
+#'If a simulation fails during data loading with an error that indicates ship
+#'positions outside the simulation area, this may be caused by a mismatch in
+#'rounding between the map extent of the map used with \code{\link{ais.to.DeponsShips}},
+#'and of generated ship position exactly on the boundary. If a map representative
+#'of the simulation area extent is provided (usually the bathymetry map), the
+#'function will also repair these positions by rounding them up/down to the
+#'floor/ceiling of the map extent (fractional meter adjustments).
 #'@param x DeponsShips object
-#'@param threshold The speed (knots) above which calculated values are considered unrealistic/excessive. Defaults to 35 knots.
-#'@param fix Logical. If FALSE (default), the function returns a data frame of ship tracks containing speeds that exceed the threshold; if TRUE, the function returns a DeponsShips object where these instances have been replaced.
-#'@param replacements Named list, where names are ship types and values are replacement speeds (knots) for speeds above the threshold within those types. Only ship types named in the list are processed. If NA (default), reference speeds from Table 1 in MacGillivray & de Jong (2021) are used.
-#'@param landscape DeponsRaster object. Optional; a map representative of the simulation map extent (usually the bathymetry map). If provided and fix = TRUE, ship positions on the boundary will be adjusted to avoid errors from fractional mis-positioning.
+#'@param threshold The speed (knots) above which calculated values are considered
+#'unrealistic/excessive. Defaults to 35 knots.
+#'@param fix Logical. If FALSE (default), the function returns a data frame of
+#'ship tracks containing speeds that exceed the threshold; if TRUE, the function
+#'returns a DeponsShips object where these instances have been replaced.
+#'@param replacements Named list, where names are ship types and values are
+#'replacement speeds (knots) for speeds above the threshold within those types.
+#'Only ship types named in the list are processed. If NA (default), reference
+#'speeds from Table 1 in MacGillivray & de Jong (2021) are used.
+#'@param landscape DeponsRaster object. Optional; a map representative of the
+#'simulation map extent (usually the bathymetry map). If provided and fix = TRUE,
+#'ship positions on the boundary will be adjusted to avoid errors from fractional
+#'mis-positioning.
 #'
 #'@returns
-#'If fix = FALSE, a data frame with columns "route number", "name", "type", "length", and "speed", containing one entry for each ship where an excessive speed occurred. If fix = TRUE, a DeponsShip object where instances of excessive speed have been replaced, and (if a map has been provided) where ship positions on the boundary have been adjusted.
+#'If fix = FALSE, a data frame with columns "route number", "name", "type",
+#'"length", and "speed", containing one entry for each ship where an excessive
+#'speed occurred. If fix = TRUE, a DeponsShip object where instances of excessive
+#'speed have been replaced, and (if a map has been provided) where ship positions
+#'on the boundary have been adjusted.
 #'
 #'@section Reference:
-#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source levels of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
+#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating
+#'source levels of marine shipping based on Automated Identification System data.
+#'Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
 #'
 #'@examples
 #'\dontrun{
@@ -265,6 +297,7 @@ check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA, lan
   }
   return(x)
 }
+
 
 
 
@@ -426,16 +459,14 @@ setMethod("plot", signature("DeponsShips", "missing"),
             legend.xy <- "topright"
             if("legend.xy" %in% names(dots)) legend.xy <- dots$legend.xy
             main <- ifelse(x@title=="NA", "DEPONS track", x@title)
-
             # Make empty plot of right size
             comb.routes <- data.frame()
-             for(r in 1:length(x@routes[[2]])) {
+            for(r in 1:length(x@routes[[2]])) {
               comb.routes <- rbind(comb.routes, x@routes[[2]][[r]])
             }
             comb.routes <- comb.routes[,c("x", "y")]
             plot(comb.routes, type="n", asp=1, xlab=xlab, ylab=ylab, main=main,
                  axes=axes)
-
             n.routes <- length(x@routes[[2]])
             if(length(col) != n.routes) col <- rep("black", n.routes)
             if(length(lwd) != n.routes) lwd <- rep(1, n.routes)
@@ -451,6 +482,7 @@ setMethod("plot", signature("DeponsShips", "missing"),
             }
           }
 )
+
 
 
 setGeneric("ships", function(x, value) {
@@ -1159,7 +1191,7 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'those that are close to specific structures of interest, such as wind turbines.
 #'
 #'@details
-#'When a DeponsShips object is created using [ais.to.DeponsShips()], positions
+#'When a DeponsShips object is created using \code{\link{ais.to.DeponsShips}}, positions
 #'are interpolated at 30-minute intervals (ticks). If a ship's position does not
 #'change during sequential ticks, these ticks are combined into a pause of the
 #'appropriate duration, with a movement speed of 0. However, in some cases, an
@@ -1195,29 +1227,78 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'vessels by their MMSI code, and remove any false positives from the table before
 #'processing it in a "replace" run.
 #'
-#'The inserted speed values are 7.4 knots for "Other" and 8 knots for "Government/Research", based on the class reference speeds in MacGillivray & de Jong (2021).
+#'The inserted speed values are 7.4 knots for "Other" and 8 knots for
+#'"Government/Research", based on the class reference speeds in MacGillivray &
+#'de Jong (2021).
 #'
-#'When 'distcrit = "shore"', pause instances are additionally tested against the following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to exclude berthed ships; 2) not in a cell at the map boundary, as [ais.to.DeponsShips()] will create inactive (pausing) placeholder positions at the point of entry if a ship enters the map with a delay after the object's start, or at the point of exit if it leaves before the end of the object's duration; 3) not in the first or last position of the ship's track (same reason).
+#'When 'distcrit = "shore"', pause instances are additionally tested against the
+#'following criteria: 1) not in a cell (400x400 m) directly adjacent to land, to
+#'exclude berthed ships; 2) not in a cell at the map boundary, as
+#'\code{\link{ais.to.DeponsShips}} will create inactive (pausing) placeholder
+#'positions at the point of entry if a ship enters the map with a delay after
+#'the object's start, or at the point of exit if it leaves before the end of
+#'the object's duration; 3) not in the first or last position of the ship's
+#'track (same reason).
 #'
-#'When candidates are identified based on proximity to a list of structures, a maximum distance of 97.72 m is allowed, based on an estimate of mean AIS positioning error (Jankowski et al. 2021).
+#'When candidates are identified based on proximity to a list of structures, a
+#'maximum distance of 97.72 m is allowed, based on an estimate of mean AIS
+#'positioning error (Jankowski et al. 2021).
 #'
 #'@param x DeponsShips object
-#'@param action Character. If "check" (default), returns a data frame of pause positions that are candidates for stationary activity based on the selected criteria. If "replace" and a candidates data frame is provided, returns a DeponsShip object where the pauses identified in the data frame have been converted to stationary active status (i.e., a non-zero speed has been assigned)
-#'@param candidates A data frame of pause positions that are candidates for stationary activity. Required if 'action = "replace"'. Generated by using 'action = "check"'
-#'@param distcrit Character. Main criterion for finding candidates for stationary activity. If "shore" (default), all ship positions in open water are eligible, subject to a number of secondary criteria (see Details). In this case, a DeponsRaster must be provided that allows determination of distance from land (see below). If any other value or NA, only ship positions close to specified structure locations (such as turbine piles) are eligible, and these locations must be provided via 'structure_locations' (see below). In this case, a start day for the ship records and individual start times for the structure locations may also be provided to allow simulation of an ongoing construction process (see below)
-#'@param landscape A DeponsRaster where land areas are indicated as NA (e.g., the prey map for the simulation). Required if 'distcrit = "shore"' to determine distance of candidate positions from land
-#'@param structure_locations A data frame with columns "id", "x" (numerical) and "y" (numerical), and one row for each structure that is to be used as a proximity criterion for finding candidates. Required if distcrit != 'shore'
-#'@param start_day A character string or POSIX object of the form 'YYYY-MM-DD HH:MM:SS'. Defines the start time of x. Optional; can be provided together with start_times if distcrit != 'shore', to allow checking whether structures under construction are present at a given time point
-#'@param start_times A data frame with columns "time" (character string or POSIX of format 'YYYY-MM-DD HH:MM:SS') and "id", and one row for each structure that is to be used as a proximity criterion for finding candidates. Defines time from which onward the structure is present. Optional; can be provided together with start_day if distcrit != 'shore', to allow checking whether structures under construction are present at a given time point
-#'@param verbose Logical (default False). If True, writes a summary of each candidate to the console during "check" runs
+#'@param action Character. If "check" (default), returns a data frame of pause
+#'positions that are candidates for stationary activity based on the selected
+#'criteria. If "replace" and a candidates data frame is provided, returns a
+#'DeponsShip object where the pauses identified in the data frame have been
+#'converted to stationary active status (i.e., a non-zero speed has been assigned)
+#'@param candidates A data frame of pause positions that are candidates for
+#'stationary activity. Required if 'action = "replace"'. Generated by using
+#''action = "check"'
+#'@param distcrit Character. Main criterion for finding candidates for stationary
+#'activity. If "shore" (default), all ship positions in open water are eligible,
+#'subject to a number of secondary criteria (see Details). In this case, a
+#'DeponsRaster must be provided that allows determination of distance from land
+#'(see below). If any other value or NA, only ship positions close to specified
+#'structure locations (such as turbine piles) are eligible, and these locations
+#'must be provided via 'structure_locations' (see below). In this case, a start
+#'day for the ship records and individual start times for the structure locations
+#'may also be provided to allow simulation of an ongoing construction process
+#'(see below)
+#'@param landscape A DeponsRaster where land areas are indicated as NA (e.g.,
+#'the prey map for the simulation). Required if 'distcrit = "shore"' to determine
+#'distance of candidate positions from land
+#'@param structure_locations A data frame with columns "id", "x" (numerical) and
+#'"y" (numerical), and one row for each structure that is to be used as a proximity
+#'criterion for finding candidates. Required if distcrit != 'shore'
+#'@param start_day A character string or POSIX object of the form
+#''YYYY-MM-DD HH:MM:SS'. Defines the start time of x. Optional; can be provided
+#'together with start_times if distcrit != 'shore', to allow checking whether
+#'structures under construction are present at a given time point
+#'@param start_times A data frame with columns "time" (character string or POSIX
+#'of format 'YYYY-MM-DD HH:MM:SS') and "id", and one row for each structure that
+#'is to be used as a proximity criterion for finding candidates. Defines time
+#'from which onward the structure is present. Optional; can be provided together
+#'with start_day if distcrit != 'shore', to allow checking whether structures
+#'under construction are present at a given time point
+#'@param verbose Logical (default False). If True, writes a summary of each
+#'candidate to the console during "check" runs
 #'
 #'@returns
-#'If 'action = "check"' (default), returns a data frame with columns "route_number", "ship_name", "ship_type", "route_pos" (position number along route), and "pauses" (number of pauses at this position), with one row for each position that is a candidate for stationary activity based on the selected criteria. If "replace" and a candidates data frame is provided, returns a DeponsShip object where the pauses identified in the data frame have been converted to stationary active status (i.e., a non-zero speed has been assigned).
+#'If 'action = "check"' (default), returns a data frame with columns
+#'"route_number", "ship_name", "ship_type", "route_pos" (position number along
+#'route), and "pauses" (number of pauses at this position), with one row for each
+#'position that is a candidate for stationary activity based on the selected
+#'criteria. If "replace" and a candidates data frame is provided, returns a
+#'DeponsShip object where the pauses identified in the data frame have been
+#'converted to stationary active status (i.e., a non-zero speed has been assigned).
 #'
 #'@section References:
-#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source levels of marine shipping based on Automated Identification System data. Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369"
+#'MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating
+#'source levels of marine shipping based on Automated Identification System data.
+#'Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369"
 #'
-#'Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy and evaluation of reconstruction methods for maritime observation data. IFAC-PapersOnLine, 54(16), 97-104. doi:10.1016/j.ifacol.2021.10.079
+#'Jankowski, D, Lamm A, & Hahn, A (2021). Determination of AIS position accuracy
+#'and evaluation of reconstruction methods for maritime observation data.
+#'IFAC-PapersOnLine, 54(16), 97-104. doi:10.1016/j.ifacol.2021.10.079
 #'
 #'@examples
 #'\dontrun{
@@ -1231,7 +1312,9 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'                                          candidates = candidates,
 #'                                          landscape = bathymetry)}
 #'
-#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
+#'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
+#'(including calculated speeds) from AIS data
+
 make.stationary.ships <- function(x,
                                   action = "check",
                                   candidates = NULL,
@@ -1246,7 +1329,8 @@ make.stationary.ships <- function(x,
     stop("'x' must be a DeponsShips object")
   }
 
-  neighbors <- function(routepos) { # define function to test if any neighboring cell is land. Return TRUE if no land as neighbor
+  neighbors <- function(routepos) { # define function to test if any neighboring
+    # cell is land. Return TRUE if no land as neighbor
     cell <- raster::cellFromXY(landscape, routepos)
     cellrow <- raster::rowFromCell(landscape, cell)
     cellcol <- raster::colFromCell(landscape, cell)
@@ -1265,7 +1349,8 @@ make.stationary.ships <- function(x,
       if (!inherits(landscape, "DeponsRaster")) {
         stop("'landscape' must be a DeponsRaster")
       }
-      ext <- as.numeric(unname(landscape@ext)) # get extent from DeponsRaster, create basic raster with same extent
+      ext <- as.numeric(unname(landscape@ext)) # get extent from DeponsRaster,
+      # create basic raster with same extent
       ext <- matrix(ext, nrow=2, ncol=2)
       landscape <- raster::raster(landscape@data)
       raster::extent(landscape) <- ext
@@ -1303,16 +1388,11 @@ make.stationary.ships <- function(x,
         }
       }
     }
-
     recording.table <- data.frame()
-
     for (i2 in 1:length(x@routes$name)) {
-
       if (x@ships$type[i2] %in% c("Other", "Government/Research")) {  # test 1: correct ship type
         shipmatrix <- as.matrix(x@routes$route[[i2]][1:2]) # get all route positions
-
         if (distcrit == "shore") { # check by criterion: distance to shoreline
-
           good.pos <- which(unname(apply(shipmatrix, 1, neighbors))) # vector of route positions that have no land neighbors
           if (length(good.pos > 0)) {
             for (i3 in 1:length(good.pos)) { # test 2: no land neighbors
@@ -1324,7 +1404,6 @@ make.stationary.ships <- function(x,
                   !(shipmatrix[good.pos[i3], 1] > raster::extent(landscape)[2] - 400) &&
                   !(shipmatrix[good.pos[i3], 2] < raster::extent(landscape)[3] + 400) &&
                   !(shipmatrix[good.pos[i3], 2] > raster::extent(landscape)[4] - 400)) {
-
                 new.records <- as.data.frame(rbind(c(i2,
                                                      x@ships$name[i2],
                                                      x@ships$type[i2],
@@ -1342,13 +1421,9 @@ make.stationary.ships <- function(x,
               }
             }
           }
-        }
-
-        else { # check by criterion: proximity to list of structures
-
+        } else { # check by criterion: proximity to list of structures
           # calculate matrix of distances between each route position and each structure position
           distmatrix <- apply(shipmatrix, 1, function(x) apply(structure_locations[,3:4], 1, function(y) sqrt(crossprod(x-y))))
-
           near.pos <- which(distmatrix <= 97.72, arr.ind = T) # test 2: close enough to structure. Resultant array indices correspond to row (containing number of structure) and column (containing route position number) of instances that satisfy distance requirement
 
           if (nrow(near.pos > 0)) {
@@ -1403,29 +1478,22 @@ make.stationary.ships <- function(x,
     recording.table[,4] <- as.numeric(unlist(recording.table[,4]))
     recording.table[,5] <- as.numeric(unlist(recording.table[,5]))
     return(recording.table)
-
   } else { # replace mode: returns updated DeponsShips object
-
     if (!inherits(candidates, "data.frame")) {
       stop("'candidates' must be a data frame including columns 'route_number', 'route_pos', 'pauses', and 'ship_type', with a row for each instance to be replaced")
     }
     if (!all(c("route_number", "route_pos", "pauses", "ship_type") %in% names(candidates))) {
       stop("'candidates' must be a data frame including columns 'route_number', 'route_pos', 'pauses', and 'ship_type', with a row for each instance to be replaced")
     }
-
     recording.table <- candidates
     new.x <- x
-
     recording.table$route_number <- as.numeric(recording.table$route_number)
     recording.table$route_pos <- as.numeric(recording.table$route_pos)
     recording.table$pauses <- as.numeric(recording.table$pauses)
-
     the.routes <- unique(recording.table$route_number)
-
     for (i2 in 1:length(the.routes)) {
       one.route <- recording.table[recording.table$route_number %in% the.routes[i2],]
       route.as.list <- split(x@routes$route[[the.routes[i2]]], seq(nrow(x@routes$route[[the.routes[i2]]]))) # create list in which each entry is one route position
-
       for (i3 in 1:nrow(one.route)) {
         slice <- x@routes$route[[one.route$route_number[i3]]][one.route$route_pos[i3],]
         new.slice <- slice
@@ -1433,7 +1501,6 @@ make.stationary.ships <- function(x,
         new.slice$pause <- 0
         new.slice <- do.call("rbind", replicate(one.route$pauses[i3] + 1, new.slice, simplify = F)) # pauses converted to stationary speed positions, plus add on one to represent the original position
         new.slice$speed[nrow(new.slice)] <- slice$speed # set speed of last position back to original (denoting the speed at which the ship eventually leaves the position)
-
         route.as.list[[one.route$route_pos[i3]]] <- new.slice # insert created positions into list-form route
       }
       new.route <- do.call(rbind, route.as.list) # convert into data frame again
@@ -1442,5 +1509,6 @@ make.stationary.ships <- function(x,
     }
     return(new.x)
   }
-} # end of 'make.stationary.ships'
+}
+# end of 'make.stationary.ships'
 

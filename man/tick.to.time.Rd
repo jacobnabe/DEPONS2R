@@ -2,7 +2,7 @@
 % Please edit documentation in R/a-misc.R
 \name{tick.to.time}
 \alias{tick.to.time}
-\title{Convert tick number to date}
+\title{Convert tick number to time object}
 \usage{
 tick.to.time(tick, timestep = 30, origin = "2010-01-01", tz = "UTC", ...)
 }

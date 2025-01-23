@@ -9,7 +9,9 @@ read.DeponsBlockdyn(
   title = "NA",
   landscape = "NA",
   simtime = "NA",
-  startday = "NA"
+  timestep = 30,
+  startday = "2010-01-01",
+  tz = "UTC"
 )
 }
 \arguments{
@@ -24,8 +26,14 @@ not the current working directory.}
 \item{simtime}{Optional text string with date of simulation (format:
 yyyy-mm-dd). If not provided this is obtained from name of input file}
 
+\item{timestep}{Time step used in the model, in minutes. Default 30 minutes}
+
 \item{startday}{The start of the period that the  simulation represents, i.e.
-the real-world equivalent of 'tick 1' (POSIXlt)}
+the real-world equivalent of 'tick 1' (character string of the form 'yyyy-mm-dd',
+or POSIXlt). Default "2010-01-01"}
+
+\item{tz}{Time zone. In DEPONS times are generally assumed to be in "UTC"
+(Coordinated Universal Time).}
 }
 \value{
 \code{DeponsBlockdyn} object

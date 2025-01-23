@@ -9,7 +9,7 @@ read.DeponsDyn(
   title = "NA",
   landscape = "NA",
   simtime = "NA",
-  startday = "NA",
+  startday = "2010-01-01",
   timestep = 30,
   tz = "UTC"
 )
@@ -30,12 +30,11 @@ from name of input file}
 
 \item{startday}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (character string of the
-form 'yyyy-mm-dd', or POSIXlt)}
+form 'yyyy-mm-dd', or POSIXlt). Default "2010-01-01"}
 
-\item{timestep}{Time step used in the model, in minutes. Defaults to 30 in
-DEPONS.}
+\item{timestep}{Time step used in the model, in minutes. Default 30 minutes.}
 
-\item{tz}{Time zone. In DEPONS times are generally assumed to be in UTC
+\item{tz}{Time zone. In DEPONS times are generally assumed to be in "UTC"
 (Coordinated Universal Time).}
 }
 \value{

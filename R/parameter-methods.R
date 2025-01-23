@@ -11,7 +11,8 @@
 #' @details The parameter file can be generated from within DEPONS by pressing the
 #' 'Save' icon after modifying the user settings on the 'Parameters' tab within
 #' the main DEPONS model window. See TRACE document for details regarding the
-#' parameters in the model: \url{https://github.com/jacobnabe/DEPONS}. It is strongly recommended that the parameter
+#' parameters in the model: \url{https://github.com/jacobnabe/DEPONS}. It is
+#' strongly recommended that the parameter
 #' list is stored with the simulation output.
 #' @return Data frame containing all parameters used in a specific
 #' simulation
@@ -60,3 +61,4 @@ read.DeponsParam <- function(fname) {
   }
   return(all.param)
 }
+
