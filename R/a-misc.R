@@ -396,7 +396,7 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", tz = "UTC", ...
 #'
 #'@seealso \code{\link{tick.to.time}} is the inverse of this function, converting
 #'ticks to dates
-
+#' @export time.to.tick
 time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC", ...) {
 
   old <- options()

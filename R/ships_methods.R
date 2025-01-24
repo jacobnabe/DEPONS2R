@@ -229,7 +229,7 @@ interpolate.ais.data <- function (aisdata)
 #'check.DeponsShips(x)
 #'x <- check.DeponsShips(x, fix = T)}
 #'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects (including calculated speeds) from AIS data
-
+#' @export check.DeponsShips
 check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA, landscape = NULL) {
   if (!inherits(x, "DeponsShips"))
     stop("'x' must be a DeponsShips object")
@@ -1314,7 +1314,7 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
 #'
 #'@seealso \code{\link{ais.to.DeponsShips}} for creation of DeponsShips objects
 #'(including calculated speeds) from AIS data
-
+#' @export make.stationary.ships
 make.stationary.ships <- function(x,
                                   action = "check",
                                   candidates = NULL,
