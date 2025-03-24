@@ -5,7 +5,7 @@
 #    stored in 'PorpoisePerBlock'-files, i.e. population dynamics for different
 #    parts of the landscape.
 
-
+# XXXX
 #' @title  DeponsBlockdyn-class
 #' @description Stores objects containing population size for different parts of
 #' the landscape (i.e. different 'blocks')
