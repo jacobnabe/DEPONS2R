@@ -108,6 +108,9 @@ interpolate.ais.data <- function (aisdata)
       new.t.first <- format(as.POSIXct(t.first, tz = "UTC") + secs.to.add)
     }
     t.last <- aisdata.one.id[nrow(aisdata.one.id), "time"]
+    if (nchar(t.last) == 10) {
+      t.first <- paste(t.last, "00:00:00", sep = " ")
+    }
     mins <- as.numeric(substr(t.last, nchar(t.last) - 4,
                               nchar(t.last) - 3))
     new.mins <- ifelse(mins < 30, "00", "30")
