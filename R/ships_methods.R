@@ -1771,6 +1771,104 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
                                                                
                                                                
 
+#' @title Convert AIS vessel type identifiers into the ship types recognized by DEPONS
+#' @name set.ship.type
+#' @description Processes a \code{DeponsShips} object to convert numerical (and some written-out) AIS vessel type identifiers
+#' into the types recognized by DEPONS, if the correct types have not already been provided when generating the object (see \code{\link{ais.to.DeponsShips}}).
+#' Type assignment follows MacGillivray & de Jong (2021) and is augmented in some cases by the ship's length and calculated speed.
+#' @details The safe way to identify ship type is by numeric AIS code - all numbers are handled. Not all of the written-out type names and none
+#' of the detailed type names (Standby Safety, Fire Ship, etc.) are recognized, and these instances will be recoded to "Other". Note
+#' that ships in the "Other" category are also considered as candidates for the assignment of active pauses using \code{\link{make.stationary.ships}}
+#' (e.g., crew transfer vessels and offshore supply ships), thus it is recommended to avoid overloading the category with random vessels.
+#' @param data A \code{DeponsShips} object
+#' @param list.ur If true, will print a message when a ship type identifier is not recognized and set to the catch-all of "Other".
+#' Defaults to FALSE.
+#' @return A \code{DeponsShips} object with ship types that are recognized by DEPONS
+#' @section Reference:
+#' MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating
+#' source levels of marine shipping based on Automated Identification System data.
+#' Journal of Marince Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
+#' @examples
+#' data(shipdata)
+#' shipdata@ships$type <- c(60,99,"Cruise",60,55,"Dredger",60,33,33,31,60,60,60,60,"Cruise")
+#' ships(shipdata)
+#' shipdata <- set.ship.type(shipdata)
+#' ships(shipdata)
+#' @export set.ship.type
+
+set.ship.type <- function(data, list.ur = FALSE) {
+
+  if (!inherits(data, "DeponsShips")) {
+    stop("'data' must be a DeponsShips object")
+  }
+
+  # function to test an individual entry
+  getAIStype <- function(id, type, length, speed) {
+
+    type.out <- ""
+    if (!grepl("\\D", type)) { # this tests for "does not match any non-number", i.e., is it only numeric?
+
+      type <- as.numeric(type)
+      if (type == 30) type.out <- "Fishing"
+      else if (type %in% c(31,32,52)) type.out <- "Tug"
+      else if (type == 35) type.out <- "Naval"
+      else if (type %in% c(36,37)) type.out <- "Recreational"
+      else if (type %in% c(51,53,55)) type.out <- "Government/Research"
+      else if (type %in% c(71:74)) type.out <- "Containership"
+      else if (type %in% c(80:89)) type.out <- "Tanker"
+      else if (type == 33) type.out <- "Dredger"
+      else if (type %in% c(60:69)) {
+        if (length > 100) type.out <- "Cruise"
+        else type.out <- "Passenger"
+      }
+      else if (type %in% c(70,75:79)) {
+        if (speed > 16) type.out <- "Containership"
+        else type.out <- "Bulker"
+      }
+      else type.out <- "Other"
+      return(type.out)
+    }
+
+    if (type %in% c("Government/Research","Pilot tender","Port Tender","Law enforcement vessel","Research/Rescue","Rescue vessel","Research/Survey")) type.out <- "Government/Research"
+    else if (type %in% c("Pleasure Craft", "Recreational")) type.out <- "Recreational"
+    else if (type %in% "Tanker") type.out <- "Tanker"
+    else if (type %in% c("Pusher/Tug","Tug")) type.out <- "Tug"
+    else if (type %in% "Dredger") type.out <- "Dredger"
+    else if (type %in% c("Fishing vessel", "Fishing")) type.out <- "Fishing"
+    else if (type %in% c("Naval vessel", "Naval")) type.out <- "Naval"
+    else if (type %in% c("Passenger ship","Cruise", "Passenger")) {
+      if (length > 100) type.out <- "Cruise"
+      else type.out <- "Passenger"
+    }
+    else if (type %in% c("Cargo ship", "Containership", "Bulker")) {
+      if (speed > 16) type.out <- "Containership"
+      else type.out <- "Bulker"
+    }
+    else if (type %in% c("Other", "Pollution and surface clearance vessel","High speed craft","Ship used by divers","Wing in ground craft")) type.out <- "Other"
+    else {
+      if (list.ur) {
+        message(paste0(id,", AIS identifier: ", type, " - not recognized, set to 'Other'"))
+      }
+      type.out <- "Other"
+    }
+    return(type.out)
+  }
+
+  for (track in 1:nrow(data@ships)) {
+    the.id <- data@ships$name[[track]]
+    the.type <- data@ships$type[[track]]
+    the.length <- data@ships$length[[track]]
+    route.index <- which(data@routes$name == data@ships$route[[track]])
+    the.speed <- max(data@routes$route[[route.index]]$speed) # get max calculated speed on the route
+
+    data@ships$type[[track]] <- getAIStype(the.id, the.type, the.length, the.speed)
+  }
+
+  return(data)
+}
+
+                                                               
+
 #' Ships on example routes through the Kattegat
 #'
 #' @description
