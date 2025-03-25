@@ -1513,6 +1513,260 @@ make.stationary.ships <- function(x,
 # end of 'make.stationary.ships'
 
 
+                                                               
+#' @title Generate artificial AIS data representing ship traffic during wind farm construction
+#' @name make.construction.traffic
+#' @description Generates artificial Automatic Identification System (AIS) data to represent ship traffic connected with the construction
+#' of a wind farm, to supplement scenarios where no real records of such data are available. A list of ship characteristics may be
+#' supplied, or a built-in default set of ships may be used. Ship routes are constructed such that all ships start at a chosen harbour position,
+#' attend each piling event observing individual stay durations, and between pilings either return to the harbour or traverse as much of the
+#' route back to the harbour as time allows. Route data can afterwards be converted to a \code{DeponsShips} object (using
+#' \code{\link{ais.to.DeponsShips}}) which can be read by DEPONS.
+#' @details All ships will attend each piling event. The route of each ship over the wind farm construction period is created in this manner:
+#' 1) The ship will try to be in position at a piling for the duration of its 'pause.length'; this is considered an active pause, i.e. the ship
+#' holds position by engine use and generates noise. The pause is timed such that the piling event's midpoint is in the middle of the pause.
+#' 2) The ship starts at the harbour location at the beginning of the data set, and will leave for the first piling in time to reach it at
+#' its given speed.
+#' 3) Between any two piling events, the ship will attempt to go back to the harbour if there is sufficient time to do so, and wait there until
+#' the next event (see ship ID_1 in example). If there is insufficient time to cover the whole distance back and forth, the ship will go back as far as possible along the
+#' route, and turn around in time to reach the next piling event (see ship ID_2 in example). If the time between pilings is shorter than the active pause duration, the ship
+#' will move straight between piling events, spending half of the remaining time pausing at each location. Pausing at the harbour is not considered
+#' an active pause, i.e. no noise is generated.
+#' 4) After the last piling event, the ship will return to the harbour and wait there until the end of the simulation.
+#'
+#' If the number of ticks until the first piling event is too low for the slowest ship in the set to reach it from the harbour,
+#' an error is thrown, in which case the time of all piling events should be shifted backward. If the ticks were converted from real dates using
+#' \code{\link{time.to.tick}}, this can be done by choosing an earlier 'origin' in that conversion.
+#'
+#' Ships can only move in a straight line between the harbour and any piling event. The harbour position should therefore be chosen so that such
+#' routes do not cut across islands, headlands etc. (land intersections will however not interfere with movement, and the user may consider ignoring
+#' minor irregularities for the sake of convenience).
+#'
+#' Function \code{\link{make.windfarms}} generates hypothetical piling data that can be used with this function. If real piling data are used,
+#' dates should be converted to ticks using \code{\link{time.to.tick}}.
+#'
+#' The type of all ships is set to "Other", since this category includes those vessel classes expected to be present at piling operations.
+#'
+#' After the data have been generated, the user's next step will probably be conversion to a \code{DeponsShips} object with \code{\link{ais.to.DeponsShips}},
+#' and parameterization of active pauses using \code{\link{make.stationary.ships}}. It is recommended to also use \code{\link{check.DeponsShips}} to
+#' verify ship speeds.
+#'
+#' If no ship data are provided, a set of 13 ships based on data from piling operations at the Moray East wind farm in 2019 is used:
+#' \tabular{ccc}{
+#'  \strong{vessel class} \tab \strong{length (m)} \tab \strong{active pause duration (ticks)} \cr
+#' CTV \tab 14 \tab 0\cr
+#' CTV \tab 15 \tab 1\cr
+#' CTV \tab 19 \tab 8\cr
+#' CTV \tab 23 \tab 1\cr
+#' CTV \tab 24 \tab 1\cr
+#' CTV \tab 25 \tab 4\cr
+#' CTV \tab 25.75 \tab 1\cr
+#' CTV \tab 25.75 \tab 2\cr
+#' CTV \tab 27 \tab 1\cr
+#' Dive \tab 20 \tab 1\cr
+#' OS \tab 88.4 \tab 11\cr
+#' OS \tab 89 \tab 41\cr
+#' OS \tab 120 \tab 9
+#' }
+#' (CTV: crew transfer vessel, Dive: dive support ship, OS: offshore supply ship)
+#'
+#' The type of these ships is set to "Other" and the speed to 7.4 knots (see \code{\link{make.stationary.ships}} for the source of these conventions).
+#' @param pilings A data frame containing the positions and times of piling operations during the construction of a wind farm.
+#' May contain real data but must be in the format as produced by \code{\link{make.windfarms}}: columns 'id', 'x.coordinate' (num),
+#' 'y.coordinate' (num),	'impact' (num; optional - not required for this function),	'tick.start' (num), and	'tick.end' (num).
+#' @param ships A data frame with the characteristics of the ships that should be simulated. Must contain one entry for each ship and
+#' the columns 'id', length' (num; ship length, meters), 'speed' (num; knots), and 'daily.pause' (num; length of active, i.e. noisy,
+#' pause at each piling event, ticks). If no data are provided, a set of 13 ships based on data from piling operations at the Moray East wind farm in 2019 is used (see details).
+#' @param x.harbour Numeric. X coordinates (meters) of originating harbour for all ships
+#' @param y.harbour Numeric. Y coordinates (meters) of originating harbour for all ships
+#' @param startday Character. Intended start date of the simulation. If ticks provided in 'pilings' were converted from real dates using \code{\link{time.to.tick}},
+#' this should be the same as the 'origin' used in that conversion. Defaults to "2010-01-01".
+#' @return A data frame of ship positions and the times at which the positions are set, with columns 'id', 'time' (of the form
+#' "%Y-%m-%d %H:%M:%S", character, see \code{\link{as.POSIXct}}), 'type' (char; ship' type, set to "Other"), 'length' (num; ship length, meters),
+#' 'x', and 'y' (num; position, meters). This data frame is suitable for conversion using \code{\link{ais.to.DeponsShips}}.
+#' @seealso \code{\link{make.windfarms}} for creation of hypothetical wind farm piling data.
+#' @examples
+#' x.harbour <- 0
+#' y.harbour <- 0
+#' ships <- as.data.frame(rbind(c("ID_1", 20, 14, 2),
+#'                               c("ID_2", 20, 8, 20)))
+#' ships[,2:4] <- as.numeric(unlist(ships[,2:4]))
+#' colnames(ships) <- c("id", "length", "speed", "pause.length")
+#' pilings <- as.data.frame(rbind(c("Piling_1", 100000, 100000, 50, 54),
+#'                                c("Piling_2", 102000, 100000, 80, 84),
+#'                                c("Piling_3", 100000, 102000, 110, 114),
+#'                                c("Piling_4", 102000, 102000, 140, 144)))
+#' pilings[,2:5] <- as.numeric(unlist(pilings[,2:5]))
+#' colnames(pilings) <- c("id", "x.coordinate", "y.coordinate", "tick.start", "tick.end")
+#' construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships, x.harbour = x.harbour, y.harbour = y.harbour)
+#' @export make.construction.traffic
+
+make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbour, startday = "2010-01-01", tz = "UTC") {
+
+  if (!inherits(pilings, "data.frame")) {
+    stop("'pilings' must be a data frame with columns 'id', 'x.coordinate' (num), 'y.coordinate' (num), 'impact' (num), tick.start' (num), and 'tick.end' (num)")
+  }
+  if (!all(c("id", "x.coordinate", "y.coordinate", "tick.start", "tick.end") %in% names(pilings))) {
+    stop("'pilings' must be a data frame with columns 'id', 'x.coordinate' (num), 'y.coordinate' (num), tick.start' (num), and 'tick.end' (num)")
+  }
+
+  if (is.null(ships)) {
+    message("No ship data provided, using default ships")
+    ships <- as.data.frame(cbind(paste0("ID_", seq(1,13)),
+                                 c(14, 25.75, 24, 15, 27, 20, 23, 25.75, 25, 19, 120, 88.4, 89),
+                                 rep(7.4, times = 13),
+                                 c(0, 1, 1, 1, 1, 1, 1, 2, 4, 8, 9, 11, 41)))
+    ships[,2:4] <- as.numeric(unlist(ships[,2:4]))
+    colnames(ships) <- c("id", "length", "speed", "pause.length")
+  }
+  if (!inherits(ships, "data.frame")) {
+    stop("'ships' must be a data frame with columns 'id', 'length' (num), 'speed' (num), and 'pause.length' (num)")
+  }
+  if (!all(c("id", "length", "speed", "pause.length") %in% names(ships))) {
+    stop("'ships' must be a data frame with columns 'id', 'length' (num), 'speed' (num), and 'pause.length' (num)")
+  }
+
+  if(!is.numeric(x.harbour) || !is.numeric(y.harbour)) message("'x.harbour' and 'y.harbour' must be numeric")
+
+  startday.test <- try(as.POSIXlt(startday, tz = "UTC"))
+  if (!("POSIXlt" %in% class(startday.test))) {
+    stop("'startday' must be of the form 'YYYY-MM-DD' for conversion to POSIX")
+  }
+
+  harbour <- c(x.harbour, y.harbour)
+  pilings$middle.tick <- pilings$tick.start + round((pilings$tick.end - pilings$tick.start)/2) # find middle tick of piling
+
+  distf <- function(first, second) { # trig function
+    return (sqrt((abs(first[1] - second[1]))^2 + (abs(first[2] - second[2]))^2))
+  }
+
+  # test if sufficient time for slowest ship to reach first piling from harbour
+  earliest <- which(pilings$middle.tick == min(pilings$middle.tick))[1]
+  slowest <- as.numeric(min(ships$speed))
+  movdist <-  distf(harbour, c(pilings$x.coordinate[earliest], pilings$y.coordinate[earliest]))
+  movtim <- round((movdist / (slowest * 1852)) * 2) + 24 # time required, and add 1/2 of longest possible daily pause length
+  if (movtim > pilings$middle.tick[earliest]) {
+    stop("Not enough time for slowest ship to reach first piling event from harbour. Move piling ticks backward. If piling ticks were converted from real dates using time.to.tick, convert again using an earlier 'origin'")
+  }
+
+  # make list of position dfs for ships
+  ship.template <- as.data.frame(matrix(nrow=0, ncol=6))
+  colnames(ship.template) <- c("id", "time", "type", "length", "x", "y")
+  ship.templates <- rep(list(ship.template), times = nrow(ships))
+  names(ship.templates) <- ships$id
+
+  # timepoints covered between any two pilings:
+  # prepil - arrival at piling event, prior to piling
+  # postpil - departure from piling event
+  # premid - in between, on arrival to that position (harbour or open water)
+  # postmid - in between, on departure from that position
+  for (ship in 1:nrow(ships)) {
+    for (piling in 1:nrow(pilings)) { # step through piling days. Note that each iteration is always dealing with the UPCOMING piling, i.e. the one the ship has not yet navigated to
+      movdist <-  distf(harbour, c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])) # straight-line distance to harbour
+      movtim <- round((movdist / (ships$speed[ship] * 1852)) * 2) # time in ticks required to cover distance at ship's speed
+
+      # first movement out to piling. Add startpos (~postmid) (on conversion by ais.to.Deponsships, this pos will be pause-buffered backwards to start of file) and first prepil
+      if (piling == 1) {
+        time.postmid <- pilings$middle.tick[piling] - movtim - ceiling(ships$pause.length[ship] / 2)
+        pos.postmid <- harbour
+        time.prepil <- pilings$middle.tick[piling] - ceiling(ships$pause.length[ship] / 2)
+        pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
+        ship.templates[[ship]] <- rbind(ship.templates[[ship]],
+                                        c(ships$id[ship], time.postmid, "Other", ships$length[ship], round(pos.postmid[1]), round(pos.postmid[2])),
+                                        c(ships$id[ship], time.prepil, "Other", ships$length[ship], round(pos.prepil[1]), round(pos.prepil[2])))
+        next
+      }
+
+      # otherwise, get distance & time for previous piling
+      movdist.old <-  distf(harbour, c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1]))
+      movtim.old <- round((movdist.old / (ships$speed[ship] * 1852)) * 2)
+
+      # for all following piling events: evaluate available time until next required position, and create times and positions accordingly
+      # the assumption is always that the ship is currently at the previous piling position, with postpil expected as next time point
+      time.avail <- pilings$middle.tick[piling] - pilings$middle.tick[piling - 1] # total time available between previous piling midpoint and current one
+
+      ## case: sufficient time for 2 * half pause & back and forth to harbour, with arbitrary waiting time there
+      if (time.avail >= movtim + movtim.old + ships$pause.length[ship]) {
+        time.postpil <- pilings$middle.tick[piling - 1] + ceiling(ships$pause.length[ship] / 2)
+        pos.postpil <- c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1])
+        time.premid <- time.postpil + movtim.old
+        pos.premid <- harbour
+        time.postmid <- pilings$middle.tick[piling] - movtim - ceiling(ships$pause.length[ship] / 2)
+        pos.postmid <- harbour
+        time.prepil <- pilings$middle.tick[piling] - ceiling(ships$pause.length[ship] / 2)
+        pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
+      } else
+
+        ## case: sufficient time for 2 * half pause & shorter move towards harbour (incl. 0 length), with immediate return
+        if (time.avail >= ships$pause.length[ship] && time.avail < movtim + movtim.old + ships$pause.length[ship]) {
+          time.postpil <- pilings$middle.tick[piling - 1] + ceiling(ships$pause.length[ship] / 2)
+          pos.postpil <- c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1])
+          traveltime.avail <- time.avail - ceiling(ships$pause.length[ship] / 2) * 2 # use "2 x rounded half" rather than "1 x" to avoid time discrepancy with time.postpil
+
+          # calculate target points for move, by multiplying the legs of the triangle by the same factor that the hypotenuse (the travel distance) has shrunk (i.e., that the available time has shrunk)
+          timefactor <- (traveltime.avail / 2) / movtim.old # factor based on half traveltime.avail, outward leg only. This is moving back on route for previous piling, while angle and distance for next one may be slightly different. Will result in minor speed difference for inward leg
+          newx <- pilings$x.coordinate[piling - 1] + (harbour[1] - pilings$x.coordinate[piling - 1]) * timefactor
+          newy <- pilings$y.coordinate[piling - 1] + (harbour[2] - pilings$y.coordinate[piling - 1]) * timefactor
+
+          time.premid <- time.postpil + round(traveltime.avail / 2)
+          pos.premid <- c(newx, newy)
+          time.postmid <- time.premid
+          pos.postmid <- pos.premid
+          time.prepil <- pilings$middle.tick[piling] - ceiling(ships$pause.length[ship] / 2)
+          pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
+        } else
+
+          ## case: less time than 2 * half pauses. Subtract travel time, stay at position for half of remainder, move directly to next piling in time to wait for second half
+          if (time.avail < ceiling(ships$pause.length[ship] / 2) * 2) {
+            movdist.direct <-  distf(c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1]), c(pilings$x.coordinate[piling], pilings$y.coordinate[piling]))
+            movtim.direct <- round((movdist.direct / (ships$speed[ship] * 1852)) * 2)
+            pausetime.avail <- time.avail - movtim.direct
+
+            time.postpil <- pilings$middle.tick[piling - 1] + round(pausetime.avail / 2)
+            pos.postpil <- c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1])
+            time.premid <- time.postpil # three identical times / positions in a row, only makes one move at end
+            pos.premid <- pos.postpil
+            time.postmid <- time.premid
+            pos.postmid <- pos.premid
+            time.prepil <- time.postmid + movtim.direct
+            pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
+          } else {
+
+            # any case not covered: abnormal ship position - throw error
+            stop(paste0("Abnormal ship position, ship ", ships$id[ship], " after piling starting at tick", pilings$tick.start))
+          }
+
+      # add positions for this piling to ship.templates. Round positions to meters
+      ship.templates[[ship]] <- rbind(ship.templates[[ship]],
+                                      c(ships$id[ship], time.postpil, "Other", ships$length[ship], round(pos.postpil[1]), round(pos.postpil[2])),
+                                      c(ships$id[ship], time.premid, "Other", ships$length[ship], round(pos.premid[1]), round(pos.premid[2])),
+                                      c(ships$id[ship], time.postmid, "Other", ships$length[ship], round(pos.postmid[1]), round(pos.postmid[2])),
+                                      c(ships$id[ship], time.prepil, "Other", ships$length[ship], round(pos.prepil[1]), round(pos.prepil[2])))
+    }
+
+    # after last piling event, wait for final full pause duration (half before and half after middle tick), then relocate to harbour
+    movdist <-  distf(harbour, c(pilings$x.coordinate[piling], pilings$y.coordinate[piling]))
+    movtim <- round(movdist / (ships$speed[ship] * 1852)) * 2
+    time.postpil <- pilings$middle.tick[piling] + ceiling(ships$pause.length[ship] / 2)
+    pos.postpil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
+    time.premid <- time.postpil + movtim
+    pos.premid <- harbour
+    ship.templates[[ship]] <- rbind(ship.templates[[ship]],
+                                    c(ships$id[ship] , time.postpil, "Other", ships$length[ship], round(pos.postpil[1]), round(pos.postpil[2])),
+                                    c(ships$id[ship] , time.premid, "Other", ships$length[ship], round(pos.premid[1]), round(pos.premid[2])))
+    names(ship.templates[[ship]]) <- names(ship.template)
+  }
+
+  # combine all the templates into one table, convert ticks to dates (with origin at startdate)
+  construction.ships <- do.call("rbind", ship.templates)
+  rownames(construction.ships) <- NULL
+  construction.ships$time <- as.character(tick.to.time(as.numeric(construction.ships$time), origin = startday, tz = tz))
+  construction.ships[,c(4:6)] <- as.numeric(unlist(construction.ships[,c(4:6)]))
+  return(construction.ships)
+}
+
+                                                               
+                                                               
 
 #' Ships on example routes through the Kattegat
 #'
