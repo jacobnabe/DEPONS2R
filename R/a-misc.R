@@ -343,7 +343,6 @@ tick.to.time <- function(tick, timestep=30, origin="2010-01-01", tz = "UTC", ...
 
 
 
-
 #'Convert date to tick number
 #'
 #'@description
@@ -432,7 +431,7 @@ time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC"
     breaks <- 0
     while (breaks == 0) { # then proceed through remaining months
       # reset format to roll over added months
-      cur.or <- as.POSIXlt(as.POSIXct(cur.or, tz = "UTC"), tz = "UTC")
+      cur.or <- as.POSIXlt(as.POSIXct(cur.or, tz = tz), tz = tz)
       if (cur.or > target) stop (paste0("tick accumulation overshot target date. Failed at ", time[instance]))
       cur.diff <- as.numeric(difftime(target, cur.or, units = "secs"))
       if (cur.or$year == target$year && cur.or$mon == target$mon) { # if reached same month and same year, add remainder secs to count
@@ -448,6 +447,8 @@ time.to.tick <- function (time, timestep = 30, origin = "2010-01-01", tz = "UTC"
     ticks <- floor(cur.count / (60 * timestep))
     return (ticks)
   }
+
+  time <- as.character(time)
   time.converted <- time
   for (instance in 1:length(time)) {
     test <- try(as.POSIXlt(time[instance], tz = tz))
