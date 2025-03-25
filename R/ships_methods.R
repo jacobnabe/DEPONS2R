@@ -1584,6 +1584,7 @@ make.stationary.ships <- function(x,
 #' @param y.harbour Numeric. Y coordinates (meters) of originating harbour for all ships
 #' @param startday Character. Intended start date of the simulation. If ticks provided in 'pilings' were converted from real dates using \code{\link{time.to.tick}},
 #' this should be the same as the 'origin' used in that conversion. Defaults to "2010-01-01".
+#' @param tz Time zone. Defaults to "UTC
 #' @return A data frame of ship positions and the times at which the positions are set, with columns 'id', 'time' (of the form
 #' "%Y-%m-%d %H:%M:%S", character, see \code{\link{as.POSIXct}}), 'type' (char; ship' type, set to "Other"), 'length' (num; ship length, meters),
 #' 'x', and 'y' (num; position, meters). This data frame is suitable for conversion using \code{\link{ais.to.DeponsShips}}.
@@ -1601,7 +1602,8 @@ make.stationary.ships <- function(x,
 #'                                c("Piling_4", 102000, 102000, 140, 144)))
 #' pilings[,2:5] <- as.numeric(unlist(pilings[,2:5]))
 #' colnames(pilings) <- c("id", "x.coordinate", "y.coordinate", "tick.start", "tick.end")
-#' construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships, x.harbour = x.harbour, y.harbour = y.harbour)
+#' construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships, 
+#'                                        x.harbour = x.harbour, y.harbour = y.harbour)
 #' @export make.construction.traffic
 
 make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbour, startday = "2010-01-01", tz = "UTC") {
