@@ -380,3 +380,33 @@ setMethod("bbox", signature("DeponsRaster"),
 )
 
 
+
+#' @title Convert a RasterLayer into a DeponsRaster
+#' @name raster.to.DeponsRaster
+#' @description Converts a \code{\link[raster]{raster}} (RasterLayer) into \code{DeponsRaster}.
+#' @details Maintains CRS (if defined) and value of NA cells. Currently DEPONS requires a fixed
+#' cell size of 400 x 400 m, and cell size is set to this value.
+#' @param x A \code{\link[raster]{raster}} (RasterLayer)
+#' @return A \code{DeponsRaster}
+#' @seealso \code{\link{DeponsRaster.to.raster}} is the inverse of this function.
+#' @examples
+#' data(bathymetry)
+#' bathymetry_RasterLayer <- DeponsRaster.to.raster(bathymetry)
+#' bathymetry <- raster.to.DeponsRaster((bathymetry_RasterLayer))
+#' @export raster.to.DeponsRaster
+
+raster.to.DeponsRaster <- function(x) {
+  if (!inherits(x, "RasterLayer")) {
+    stop("'x' must be a RasterLayer")
+  }
+  y <- new("DeponsRaster",
+           crs = ifelse((!is.na(x@srs) && x@srs != ""), x@srs, "NA"),
+           ncols = x@ncols,
+           nrows = x@nrows,
+           xllcorner = x@extent@xmin,
+           yllcorner = x@extent@ymin,
+           cellsize = 400,
+           nodata_value = x@file@nodatavalue)
+  y@data <- matrix(raster::values(x), ncol = y@header[1,2], nrow = y@header[2,2], byrow=T)
+  return(y)
+}
