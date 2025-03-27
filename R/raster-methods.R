@@ -380,3 +380,26 @@ setMethod("bbox", signature("DeponsRaster"),
 )
 
 
+
+#' @title Convert a DeponsRaster into a RasterLayer
+#' @name DeponsRaster.to.raster
+#' @description Converts a \code{DeponsRaster} into a \code{\link[raster]{raster}} (RasterLayer) for easier manipulation with common R tools.
+#' @details Maintains cell size / resolution, CRS (if defined) and value of NA cells.
+#' @param x A \code{DeponsRaster}
+#' @return A \code{\link[raster]{raster}} (RasterLayer)
+#' @seealso \code{\link{raster.to.DeponsRaster}} is the inverse of this function.
+#' @examples
+#' data(bathymetry)
+#' y <- DeponsRaster.to.raster(bathymetry)
+#' @export DeponsRaster.to.raster
+
+DeponsRaster.to.raster <- function(x) {
+  if (!inherits(x, "DeponsRaster")) {
+    stop("'x' must be a DeponsRaster")
+  }
+  y <- raster::raster(x@data)
+  raster::extent(y) <- matrix(as.numeric(unname(x@ext)), nrow=2, ncol=2)
+  if (!is.na(x@crs)) raster::crs(y) <- x@crs
+  raster::NAvalue(y) <- x@header[6,2]
+  return(y)
+}
