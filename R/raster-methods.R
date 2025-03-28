@@ -380,3 +380,28 @@ setMethod("bbox", signature("DeponsRaster"),
 )
 
 
+
+setGeneric("as.raster", package = "raster", function(x){})
+
+#' @title Convert a DeponsRaster into a RasterLayer
+#' @name as.raster
+#' @aliases as.raster,DeponsRaster-method
+#' @description Converts a \code{DeponsRaster} into a \code{\link[raster:Raster-class]{RasterLayer}} for easier manipulation with common R tools.
+#' @details Maintains cell size / resolution, CRS (if defined) and value of NA cells.
+#' @param x A \code{DeponsRaster}
+#' @return A \code{RasterLayer}
+#' @seealso \code{\link{as.DeponsRaster}} for converting a RasterLayer into a DeponsRaster
+#' @examples
+#' data(bathymetry)
+#' y <- as.raster(bathymetry)
+#' @exportMethod as.raster
+
+setMethod("as.raster", signature("DeponsRaster"),
+          function(x) {
+            y <- raster::raster(x@data)
+            raster::extent(y) <- matrix(as.numeric(unname(x@ext)), nrow=2, ncol=2)
+            if (!is.na(x@crs) && x@crs != "NA") raster::crs(y) <- x@crs
+            raster::NAvalue(y) <- x@header[6,2]
+            return(y)
+          }
+)
