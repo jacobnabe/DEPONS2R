@@ -385,6 +385,7 @@ setGeneric("as.DeponsRaster", function(x){})
 
 #' @title Convert a RasterLayer into a DeponsRaster
 #' @name as.DeponsRaster
+#' @aliases as.DeponsRaster, RasterLayer-method
 #' @description Converts a \code{\link[raster:Raster-class]{RasterLayer}} into a \code{DeponsRaster}.
 #' @details Maintains CRS (if defined) and value of NA cells. Currently DEPONS requires a fixed
 #' cell size of 400 x 400 m, and cell size is set to this value.
@@ -394,7 +395,7 @@ setGeneric("as.DeponsRaster", function(x){})
 #' @examples
 #' data(bathymetry)
 #' bathymetry_RasterLayer <- as.DeponsRaster(bathymetry)
-#' bathymetry <- raster(bathymetry_RasterLayer)
+#' bathymetry <- raster::raster(bathymetry_RasterLayer)
 #' @exportMethod as.DeponsRaster
 
 setMethod("as.DeponsRaster", signature("RasterLayer"),
@@ -414,11 +415,11 @@ setMethod("as.DeponsRaster", signature("RasterLayer"),
 
 
 
-setGeneric("as.raster", package = "raster", function(x){})
+setGeneric("as.raster", function(x, ...){})
 
 #' @title Convert a DeponsRaster into a RasterLayer
 #' @name as.raster
-#' @aliases as.raster,DeponsRaster-method
+#' @aliases as.raster, DeponsRaster-method
 #' @description Converts a \code{DeponsRaster} into a \code{\link[raster:Raster-class]{RasterLayer}} for easier manipulation with common R tools.
 #' @details Maintains cell size / resolution, CRS (if defined) and value of NA cells.
 #' @param x A \code{DeponsRaster}
