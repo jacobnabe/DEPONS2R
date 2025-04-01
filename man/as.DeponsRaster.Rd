@@ -2,6 +2,8 @@
 % Please edit documentation in R/raster-methods.R
 \name{as.DeponsRaster}
 \alias{as.DeponsRaster}
+\alias{as.DeponsRaster,}
+\alias{RasterLayer-method}
 \title{Convert a RasterLayer into a DeponsRaster}
 \usage{
 \S4method{as.DeponsRaster}{RasterLayer}(x)
@@ -22,7 +24,7 @@ cell size of 400 x 400 m, and cell size is set to this value.
 \examples{
 data(bathymetry)
 bathymetry_RasterLayer <- as.DeponsRaster(bathymetry)
-bathymetry <- raster(bathymetry_RasterLayer)
+bathymetry <- raster::raster(bathymetry_RasterLayer)
 }
 \seealso{
 \code{\link{raster}} for converting a DeponsRaster into a RasterLayer
