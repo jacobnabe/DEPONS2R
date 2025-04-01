@@ -397,7 +397,6 @@ setGeneric("as.DeponsRaster", function(x){})
 #' bathymetry_RasterLayer <- as.DeponsRaster(bathymetry)
 #' bathymetry <- raster::raster(bathymetry_RasterLayer)
 #' @exportMethod as.DeponsRaster
-
 setMethod("as.DeponsRaster", signature("RasterLayer"),
           function(x) {
             y <- new("DeponsRaster",
