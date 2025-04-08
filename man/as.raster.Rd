@@ -2,8 +2,7 @@
 % Please edit documentation in R/raster-methods.R
 \name{as.raster}
 \alias{as.raster}
-\alias{as.raster,}
-\alias{DeponsRaster-method}
+\alias{as.raster,DeponsRaster-method}
 \title{Convert a DeponsRaster into a RasterLayer}
 \usage{
 \S4method{as.raster}{DeponsRaster}(x)
