@@ -42,6 +42,9 @@ calib_01 <- function(depons_track) {
 #' @title Calculate calibration metrics of previously filtered tracks (fine-scale or large-scale)
 #'
 #' @param track_cleaned A dataframe of the filtered track (either fine scale of large scale).
+#' @param option A character string, either `"fine"` or `"large"`, indicating which type of movement (fine-scale or large-scale)
+#' metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range, 
+#' maximum net squared displacement, and sinuosity.
 #' @return A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2) 
 #' and mean residence time (RT, days)) or large scale metrics (HR, max NSD and sinuosity index).
 #' @import adehabitatHR
