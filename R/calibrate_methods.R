@@ -39,7 +39,109 @@ calib_01 <- function(depons_track) {
   return(traj)
 }
 
+#' @title Calculate calibration metrics of previously filtered tracks (fine-scale or large-scale)
+#'
+#' @param track_cleaned A dataframe of the filtered track (either fine scale of large scale).
+#' @param option A character string, either `"fine"` or `"large"`, indicating which type of movement (fine-scale or large-scale)
+#' metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range, 
+#' maximum net squared displacement, and sinuosity.
+#' @return A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2) 
+#' and mean residence time (RT, days)) or large scale metrics (HR, max NSD and sinuosity index).
+#' @import adehabitatHR
+#' @export
+#' @examples
+#' # filtering fine-scale movements on porpoise tracks
+#' 
+#'data(porpoisetrack)
+#'track <-as.data.frame(porpoisetrack)
+#'track$year <- track$tick / 17280
+#'track$yearRound <- floor(track$year) + 1
+#'track$tickNew <- ave(track$tick, track$Id, track$yearRound, FUN = seq_along)
+#'track$day <- track$tickNew / 48
+#'track$dayRound <- floor(track$day) + 1
+#'track$date <- as.POSIXct("2014-01-01 00:00:00", tz = "GMT") + (track$tick * 1800)
+#'track_fine <- track[track$DispersalMode == 0, ]
+#' 
+# extract only noon positions
+#'noon_tracks <- track_fine[format(track_fine$date, "%H:%M:%S") == "12:00:00", ]
+#' 
+#' # identify 30 consecutive days with noon data
+#'all_days <- sort(unique(as.Date(noon_tracks$date)))
+#' consecutive_days <- NULL
+#' 
+#'for (i in 1:(length(all_days) - 29)) {
+#'if (all(diff(all_days[i:(i + 29)]) == 1)) {
+#'  consecutive_days <- all_days[i:(i + 29)]
+#'  break
+#'}
+#'}
+#'# filter data to only the 30 consecutive days
+#'filtered_tracks <- noon_tracks[as.Date(noon_tracks$date) %in% consecutive_days, ]
+#'
+#'calib_02(filtered_tracks, option = "fine")
 
+
+calib_02 <- function(track_cleaned, option) {
+  # Home Range
+  coordinates <- ~ x + y
+  cellsize <- 400
+  coordinates(track_cleaned) <- coordinates
+  
+  null.grid <- expand.grid(x = seq(min(coordinates(track_cleaned)[, 1]) - 300000, 
+                                   max(coordinates(track_cleaned)[, 1]) + 300000, by = cellsize),
+                           y = seq(min(coordinates(track_cleaned)[, 2]) - 300000, 
+                                   max(coordinates(track_cleaned)[, 2]) + 300000, by = cellsize))
+  coordinates(null.grid) <- coordinates
+  gridded(null.grid) <- TRUE
+  kernel.ref <- kernelUD(track_cleaned, h = "href", grid = null.grid)
+  kernel.poly <- getverticeshr(kernel.ref, percent = 95, unin = c("m"), unout = "km2") 
+  HRsize <- data.frame(kernel.poly$id, kernel.poly$area)
+  colnames(HRsize) <- c("ID", "HRarea")
+  
+  # NSD mean and max
+  first_x <- coordinates(track_cleaned)[, 1][[1]]
+  first_y <- coordinates(track_cleaned)[, 2][[1]]
+  
+  track_cleaned$dist <- sqrt((coordinates(track_cleaned)[, 1] - first_x)^2 + 
+                               (coordinates(track_cleaned)[, 2] - first_y)^2)/1000 # in km
+  track_cleaned$nsd <- track_cleaned$dist^2
+  
+  meanNSD <- mean(track_cleaned$nsd)
+  maxNSD <- max(track_cleaned$nsd)
+  
+  ## fine scale
+  if(option == "fine") {
+    
+    # Residence Time
+    radius <- 5000  # in meters
+    
+    ltraj <- as.ltraj(xy = coordinates(track_cleaned), date = track_cleaned$date, id = track_cleaned$Id)
+    
+    rt <- residenceTime(ltraj, radius, maxt=60*60*24*30) 
+    mean_rt <- mean(rt[[1]][["RT.5000"]], na.rm = TRUE)/(24*60*60) 
+    fine_metrics <- data.frame(HR = HRsize$HRarea, NSD = meanNSD, Rt=mean_rt)
+    
+    return(fine_metrics)
+  }
+  
+  ## large scale
+  if(option == "large") {
+    
+    # Sinuosity 
+    traj <- as.ltraj(xy = coordinates(track_cleaned), date = track_cleaned$date, id= track_cleaned$Id)
+    traj <- ld(traj)
+    
+    p <- mean(traj$dist, na.rm=TRUE)
+    b <- stats::sd(traj$dist, na.rm=TRUE)/p
+    c <- mean(cos(traj$rel.angle), na.rm=TRUE)
+    
+    # according to Benhamou (2004)
+    sinuosity <- 2/sqrt(p * (((1 + c)/(1 - c)) + b^2))
+    
+    large_metrics <- data.frame(HR = HRsize$HRarea, maxNSD = maxNSD, sinuosity = sinuosity)
+    return(large_metrics)
+  }
+}
 
 #' @title Read and merges DEPONS Batchmap and Statistics Files
 #'
