@@ -8,7 +8,7 @@ Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
 Depends: R (>= 3.5.0)
-Imports: raster, methods, sp, sf, terra, utils, grDevices, xml2, jsonlite, adehabitatLT
+Imports: raster, methods, sp, sf, terra, utils, grDevices, xml2, jsonlite, adehabitatLT, adehabitatHR
 RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0)
