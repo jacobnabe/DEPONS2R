@@ -93,7 +93,7 @@ calib_02 <- function(track_cleaned, option) {
                                    max(coordinates(track)[, 1]) + 300000, by = cellsize),
                            y = seq(min(coordinates(track)[, 2]) - 300000, 
                                    max(coordinates(track)[, 2]) + 300000, by = cellsize))
-  coordinates(null.grid) <- coordinates
+  coordinates(null.grid) <- ~ x + y
   gridded(null.grid) <- TRUE
   kernel.ref <- kernelUD(track, h = "href", grid = null.grid)
   kernel.poly <- getverticeshr(kernel.ref, percent = 95, unin = c("m"), unout = "km2") 
