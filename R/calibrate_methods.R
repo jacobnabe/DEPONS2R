@@ -82,18 +82,20 @@ calib_01 <- function(depons_track) {
 
 
 calib_02 <- function(track_cleaned, option) {
-  # Home Range
-  coordinates <- ~ x + y
-  cellsize <- 400
-  coordinates(track_cleaned) <- coordinates
   
-  null.grid <- expand.grid(x = seq(min(coordinates(track_cleaned)[, 1]) - 300000, 
-                                   max(coordinates(track_cleaned)[, 1]) + 300000, by = cellsize),
-                           y = seq(min(coordinates(track_cleaned)[, 2]) - 300000, 
-                                   max(coordinates(track_cleaned)[, 2]) + 300000, by = cellsize))
-  coordinates(null.grid) <- coordinates
+  coordinates(track_cleaned) <- ~ x + y
+  
+  # Home Range
+  track <- track_cleaned[, c("Id")] # kernelUD function only accepts Id, x and y
+  cellsize <- 400
+  
+  null.grid <- expand.grid(x = seq(min(coordinates(track)[, 1]) - 300000, 
+                                   max(coordinates(track)[, 1]) + 300000, by = cellsize),
+                           y = seq(min(coordinates(track)[, 2]) - 300000, 
+                                   max(coordinates(track)[, 2]) + 300000, by = cellsize))
+  coordinates(null.grid) <- ~ x + y
   gridded(null.grid) <- TRUE
-  kernel.ref <- kernelUD(track_cleaned, h = "href", grid = null.grid)
+  kernel.ref <- kernelUD(track, h = "href", grid = null.grid)
   kernel.poly <- getverticeshr(kernel.ref, percent = 95, unin = c("m"), unout = "km2") 
   HRsize <- data.frame(kernel.poly$id, kernel.poly$area)
   colnames(HRsize) <- c("ID", "HRarea")
@@ -119,7 +121,7 @@ calib_02 <- function(track_cleaned, option) {
     
     rt <- residenceTime(ltraj, radius, maxt=60*60*24*30) 
     mean_rt <- mean(rt[[1]][["RT.5000"]], na.rm = TRUE)/(24*60*60) 
-    fine_metrics <- data.frame(HR = HRsize$HRarea, NSD = meanNSD, Rt=mean_rt)
+    fine_metrics <- data.frame(HR = HRsize$HRarea, meanNSD = meanNSD, Rt=mean_rt)
     
     return(fine_metrics)
   }
