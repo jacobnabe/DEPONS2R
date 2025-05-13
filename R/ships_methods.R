@@ -292,10 +292,10 @@ check.DeponsShips <- function(x, threshold = 35, fix = F, replacements = NA, lan
   # if calibration landscape provided, round positions on border up/down to map extent
   if (!is.null(landscape)) {
     for (i in 1:length(x@ships$name)) {
-      x@routes$route[[i]]$x[x@routes$route[[i]]$x < as.numeric(landscape@ext[1])] <- as.numeric(landscape@ext[1])
-      x@routes$route[[i]]$x[x@routes$route[[i]]$x > as.numeric(landscape@ext[3])] <- as.numeric(landscape@ext[3])
-      x@routes$route[[i]]$y[x@routes$route[[i]]$y < as.numeric(landscape@ext[2])] <- as.numeric(landscape@ext[2])
-      x@routes$route[[i]]$y[x@routes$route[[i]]$y > as.numeric(landscape@ext[4])] <- as.numeric(landscape@ext[4])
+      x@routes$route[[i]]$x[x@routes$route[[i]]$x < as.numeric(landscape@ext[1])] <- as.numeric(landscape@ext[1]) + 1
+      x@routes$route[[i]]$x[x@routes$route[[i]]$x > as.numeric(landscape@ext[3])] <- as.numeric(landscape@ext[3]) - 1
+      x@routes$route[[i]]$y[x@routes$route[[i]]$y < as.numeric(landscape@ext[2])] <- as.numeric(landscape@ext[2]) + 1
+      x@routes$route[[i]]$y[x@routes$route[[i]]$y > as.numeric(landscape@ext[4])] <- as.numeric(landscape@ext[4]) - 1
     }
   }
   return(x)
