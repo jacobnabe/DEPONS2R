@@ -39,6 +39,38 @@ calib_01 <- function(depons_track) {
   return(traj)
 }
 
+#' @title Plotting of simulated fine or large-scale metrics against argos data
+#'
+#' @param sim_metrics A dataframe of movement metrics obtained with the calib_02 function
+#' @return a plot of metrics from simulated and real tracks
+#' @export
+#'
+plot_calib02 <- function(sim_metrics, option) {
+
+  data("argos.metrics")
+
+  par(mfrow = c(1, 3), mar = c(5, 4, 4, 2))
+  argos.metrics<-argos.metrics[[option]]
+  metrics <-c(colnames(argos.metrics[2:4]))
+
+  for (i in seq_along(metrics)) {
+    metric <- metrics[i]
+    argos <- argos.metrics[[metric]]
+    sim <- sim_metrics[[metric]]
+
+    if (nrow(sim_metrics) == 1) {
+      boxplot(argos,ylab = metric, col = "#d73027", boxwex = 0.1, names = "GPS")
+      points(x = 1, y = sim[1], col = "#ef8a62", pch = 19)
+      legend("topright", c("Argos", "Sim"), border="black", fill = c("#d73027", "#ef8a62"))
+
+    } else {
+      boxplot(list(Argos = argos, Sim = sim),
+              ylab = metric,
+              col = c("#d73027", "#ef8a62"), boxwex = 0.1)
+    }
+  }
+}
+
 #' @title Calculate calibration metrics of previously filtered tracks (fine-scale or large-scale)
 #'
 #' @param track_cleaned A dataframe of the filtered track (either fine scale of large scale).
