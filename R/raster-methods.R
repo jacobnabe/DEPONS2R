@@ -438,3 +438,179 @@ setMethod("as.raster", signature("DeponsRaster"),
             return(y)
           }
 )
+
+
+#'@name interpolate.maps
+#'@title Interpolate missing entries in a series of maps
+#'@description
+#'Interpolates values for missing entries in a series of maps that is to be read by DEPONS. This is intended for map series
+#'that in their entirety are assumed to follow a cyclical pattern (e.g., monthly prey or temperature maps, where the complete series covers one year)
+#'and therefore uses an interpolation that fits a single-cycle sine curve that seamlessly connects the last to the first map in the series.
+#'
+#'@details
+#'The complete series of maps, consisting of existing and missing maps, is arranged as a chronological stack. For each raster cell
+#'in the stack, the prediction function is fit to the existing values, and the missing values are predicted from the function.
+#'The fitted function is of the form ‘α * sine(x) + β * cosine(x)’, where α & β are estimated using a basic linear model. This is equivalent
+#'to ‘Amplitude * sine(x + Phase)’, but is more straightforward to estimate. The resulting curve satisfies the assumption that
+#'the data described in the map series should have a single series maximum and minimum, and should loop around seamlessly at end of series.
+#'
+#'The function requires at least 3 existing maps in the series to interpolate from. Number of total entries and missing entries is arbitrary.
+#'
+#'The function writes a map file for each map in the series, where existing maps are unchanged and formerly missing maps consist of
+#'interpolated values. Created rasters are written in .asc format and named "interpolated_x.asc", where x is the number in the series.
+#'The coordinate system is inherited. NA values are set to -9999.
+#'
+#'If a map is specified in 'supplement', it is created by interpolation in the first round, then
+#'the original data are supplemented with this map, and the fitting and interpolation are carried out again for the complete series.
+#'This can be helpful if the existing data describe the shape of the full series poorly. For example, if only the first three month of a
+#'twelve-month series of maps are given, a sine curve fitted to these may have no existing data describing a reasonable annual maximum or minimum,
+#'and estimated values may therefore be unrealistic. In this case it may be useful to estimate a first fit with 'flatten = T' (default),
+#'spike the data with the month that is expected to contain the minimum (which has been limited to 0 now), and fit the curve again, providing
+#'the function with a more realistic existing minimum to shoot for and thus constraining the amplitude of the curve.
+#'
+#'@param map.dir Character vector. The directory containing the source files and to which the output will be written.
+#'@param map.files Character vector. Complete map series in chronological order, where existing maps are given as file names
+#'and missing maps are given as 'NA'. All file formats supported by \code{\link[raster:raster]{raster::raster}} are recognized.
+#'@param flatten Logical. Default TRUE. If true, negative interpolated values are set to 0. This prevents the generation of interpolated data
+#'that make no sense in context (negative food or temperature values). Since the fitted sine curve is likely to create some negative predictions,
+#'it is suggested to always flatten the output.
+#'@param supplement Numerical. Default NA. Can be used to specify one missing map (position number in map.files) that is to be used to 'spike'
+#'the data for a second round of fitting and prediction (see Details).
+#'
+#'@returns
+#'No return value (called for side effects)
+#'
+#'@examples
+#'\dontrun{
+#'## generate incomplete series of map files
+#'map1 <- raster::raster(matrix(nrow = 100, ncol = 100))
+#'for (i in 10:1) {
+#'  map1[1:(i*10),1:(i*10)] <- 10 + i
+#'}
+#'map3 <- map1 + 10
+#'map7 <- map1 - 5
+#'maps <- replicate(12, NA, simplify = F)
+#'maps[c(1,3,7)] <- c(map1, map3, map7)
+#'par(mfrow=c(3,4), mar=c(0,0,0,0))
+#'for (i in 1:12) {
+#'  if (is.na(maps[i])) plot(0, type='n', axes=FALSE, ann=FALSE)
+#'  else raster::plot(maps[[i]], col=rev(rainbow(40, start=0, end=1)),
+#'  breaks=c(0:40), legend = F, axes = F)
+#'}
+#'raster::writeRaster(map1, "map1.asc", format = "ascii", overwrite = T)
+#'raster::writeRaster(map3, "map3.asc", format = "ascii", overwrite = T)
+#'raster::writeRaster(map7, "map7.asc", format = "ascii", overwrite = T)
+#'
+#'## interpolate missing maps
+#'interpolate.maps(map.dir = getwd(),
+#'                 map.files = c("map1.asc", NA, "map3.asc", NA, NA, NA,
+#'                 "map7.asc", NA, NA, NA, NA, NA))
+#'
+#'par(mfrow=c(3,4), mar=c(0,0,0,0))
+#'for (i in 1:12) {
+#'  the.map <- paste0("interpolated_", i, ".asc")
+#'  raster::plot(raster::raster(the.map), col=rev(rainbow(40, start=0, end=1)),
+#'  breaks=c(0:40), legend = F, axes = F)
+#'  unlink(the.map)
+#'}
+#'unlink(c("map1.asc", "map3.asc", "map7.asc"))
+#'}
+#'@export interpolate.maps
+
+interpolate.maps <- function(map.dir, map.files, flatten = T, supplement = NA) {
+
+  if (!dir.exists(map.dir)) stop("Directory does not exist")
+  if (length(stats::na.omit(map.files)) < 3) stop("At least 3 existing maps are needed for interpolation")
+  if (!is.na(supplement)) {
+    if(!is.na(map.files(supplement)) || (supplement > length(map.files))) {
+      stop("Map used as supplement in 2nd round must be one that is created by interpolation in first round
+        - i.e., an NA position in 'map.files'")
+    }
+  }
+
+  oldwd <- getwd()
+  setwd(map.dir)
+
+  # get raster pars from one existing map
+  example.file <- raster::raster(stats::na.omit(map.files)[1])
+  xnrow <- example.file@nrows
+  xncol <- example.file@ncols
+  xcrs <- example.file@srs
+
+  # for each month, if data present, load from file and store as matrix in list, otherwise make empty matrix of same dimensions
+  file.list <- list()
+  months <- length(map.files)
+  for (i in 1:months) {
+    if (!is.na(map.files[i])) {
+      xmatrix <- as.matrix(raster(map.files[i]))
+    } else {
+      xmatrix <- matrix(nrow = xnrow, ncol = xncol)
+    }
+    file.list[[i]] <- xmatrix
+  }
+
+  # for each x/y coordinate (cell), make a stack (pillar) of cells through all required months, fit curve through the present data, and predict missing data
+  map.interpolation <- function(source) {
+    file.list.filled <- source
+    progressBar <- utils::txtProgressBar(min = 0, max = xnrow, style = 3)
+    for (the.row in 1:xnrow) {
+      for (the.col in 1:xncol) {
+
+        pillar <- as.numeric(rep(NA, times=months))
+
+        #for each present month, get the cell value at the current row/col coordinate and store in pillar
+        for (month in 1:months) {
+          pillar[month] <- source[[month]][the.row, the.col]
+        }
+        if (any(!is.na(pillar))) {
+          pillar <- data.frame(c(1:months), unlist(pillar))
+          colnames(pillar) <- c("month", "value")
+          # fit the sine curve to the pillar and predict missing values from the fitted function
+          if (length(which(!is.na(pillar$value))) > 2) {  # only fit curve if there are at least 3 months with present data for this cell
+            curve <- stats::lm(pillar$value ~ sin((2 * pi / months) * pillar$month) + cos((2 * pi / months) * pillar$month))
+            predicted <- predict(curve, pillar)
+          } else predicted <- as.numeric(rep(NA, times=months))
+
+          # fill NAs in the pillar with predicted values
+          pillar$value[which(is.na(pillar$value))] <- predicted[which(is.na(pillar$value))]
+
+          # fill in the cell in each map in the list copy (file.list.filled) with pillar values
+          for (month in 1:months)  {
+            file.list.filled[[month]][the.row, the.col] <- pillar$value[month]
+          }
+        }
+      }
+      utils::setTxtProgressBar(progressBar, value = the.row)
+    }
+
+    if (flatten) { # if flatten = T, set negative interpolated values to 0
+      for (month in 1:months) {
+        file.list.filled[[month]][file.list.filled[[month]] < 0] <- 0
+      }
+    }
+    return(file.list.filled)
+  }
+
+  message("Interpolating...")
+  file.list.filled <- map.interpolation(file.list) # base interpolation
+  # if required: second interpolation using original maps "spiked" with one interpolated month
+  if (!is.na(supplement)) {
+    file.list[[supplement]] <- file.list.filled[[supplement]]
+    message("Interpolating again with supplemented data...")
+    file.list.filled <- map.interpolation(file.list)
+  }
+
+  # write maps
+  message("\nWriting maps...")
+  progressBar <- utils::txtProgressBar(min = 0, max = months, style = 3)
+  for (month in 1:months) {
+    new.matrix <- file.list.filled[[month]]
+    new.matrix[is.na(new.matrix)] <- -9999
+    new.map <- raster::raster(new.matrix, crs = xcrs)
+    extent(new.map) <- raster::extent(example.file)
+    raster::writeRaster(new.map, paste0("interpolated_",month,".asc"), NAflag = -9999, format = "ascii", overwrite = T)
+    utils::setTxtProgressBar(progressBar, value = month)
+  }
+
+  setwd(oldwd)
+}
