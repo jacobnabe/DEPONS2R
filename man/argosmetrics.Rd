@@ -1,5 +1,5 @@
-\name{argos.metrics}
-\alias{argos.metrics}
+\name{argosmetrics}
+\alias{argosmetrics}
 \docType{data}
 \title{Fine and Large-scale metrics of Argos data}
 \description{
