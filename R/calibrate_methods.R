@@ -156,7 +156,7 @@ calib_02 <- function(track_cleaned, option) {
 #'
 plot_calib02 <- function(sim.metrics, option) {
 
-  data("argos.metrics")
+  data("argosmetrics")
 
   par(mfrow = c(1, 3), mar = c(5, 4, 4, 2))
   argos.metrics<-argos.metrics[[option]]
