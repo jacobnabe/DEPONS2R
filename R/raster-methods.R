@@ -391,7 +391,7 @@ setGeneric("as.DeponsRaster", function(x){})
 #' cell size of 400 x 400 m, and cell size is set to this value.
 #' @param x A \code{RasterLayer}
 #' @return A \code{DeponsRaster}
-#' @seealso \code{\link{raster}} for converting a DeponsRaster into a RasterLayer
+#' @seealso \code{\link{raster::raster}} for converting a DeponsRaster into a RasterLayer
 #' @examples
 #' data(bathymetry)
 #' bathymetry_RasterLayer <- as.raster(bathymetry)
