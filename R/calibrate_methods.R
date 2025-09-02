@@ -140,8 +140,11 @@ calib_02 <- function(track_cleaned, option) {
     
     # according to Benhamou (2004)
     sinuosity <- 2/sqrt(p * (((1 + c)/(1 - c)) + b^2))
-    
-    large_metrics <- data.frame(HR = HRsize$HRarea, maxNSD = maxNSD, sinuosity = sinuosity)
+
+    # cumulative distance in km
+    cumdist <- sum(traj$dist)/1000 
+   
+    large_metrics <- data.frame(HR = HRsize$HRarea, maxNSD = maxNSD, sinuosity = sinuosity, cumDist=cumdist)
     return(large_metrics)
   }
 }

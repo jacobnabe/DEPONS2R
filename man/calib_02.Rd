@@ -15,7 +15,7 @@ maximum net squared displacement, and sinuosity.}
 }
 \value{
 A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2) 
-and mean residence time (RT, days)) or large scale metrics (HR, max NSD and sinuosity index).
+and mean residence time (RT, days)) or large scale metrics (HR, max NSD, sinuosity index and cumulative distance moved (km)).
 }
 \description{
 Calculate calibration metrics of previously filtered tracks (fine-scale or large-scale)
