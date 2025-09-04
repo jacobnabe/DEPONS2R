@@ -8,5 +8,4 @@ For fine-scale movements, metrics include home range (HR, km2), mean net squared
 residence time (Rt, days) on 30-days tracks where animals used only fine-scale movements. For large-scale movements, 
 metrics include HR (km2), max NSD (km2), a sinuosity index (Benhamou, 2004) and cumulative distance moved (km) on 100-days tracks that are independent from movement types.}
 \format{list}
-}
 \keyword{datasets}
