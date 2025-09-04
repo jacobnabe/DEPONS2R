@@ -50,7 +50,7 @@ calib_01 <- function(depons_track) {
 #' and mean residence time (RT, days)) or large scale metrics (HR, max NSD and sinuosity index).
 #' @import adehabitatHR
 #' @export
-#' @examples
+#' @examples \dontrun {
 #' # filtering fine-scale movements on porpoise tracks
 #' 
 #'data(porpoisetrack)
@@ -80,6 +80,7 @@ calib_01 <- function(depons_track) {
 #'filtered_tracks <- noon_tracks[as.Date(noon_tracks$date) %in% consecutive_days, ]
 #'
 #'calib_02(filtered_tracks, option = "fine")
+#'}
 
 
 calib_02 <- function(track_cleaned, option) {
@@ -159,21 +160,21 @@ calib_02 <- function(track_cleaned, option) {
 #'
 plot_calib02 <- function(sim.metrics, option) {
 
-  data("argosmetrics")
+  utils::data("argosmetrics")
 
-  par(mfrow = c(1, 3), mar = c(5, 4, 4, 2))
-  argos.metrics<-argos.metrics[[option]]
-  metrics <-c(colnames(argos.metrics[2:4]))
+  graphics::par(mfrow = c(1, 3), mar = c(5, 4, 4, 2))
+  argos.metrics<-argosmetrics[[option]]
+  metrics <-c(colnames(argos.metrics[2:max(col(argos.metrics))]))
 
   for (i in seq_along(metrics)) {
     metric <- metrics[i]
     argos <- argos.metrics[[metric]]
     sim <- sim.metrics[[metric]]
 
-    if (nrow(sim_metrics) == 1) {
+    if (nrow(sim.metrics) == 1) {
       boxplot(argos,ylab = metric, col = "#d73027", boxwex = 0.1)
       points(x = 1, y = sim[1], col = "#ef8a62", pch = 19)
-      legend("topright", c("Argos", "Sim"), border="black", fill = c("#d73027", "#ef8a62"))
+      graphics::legend("topright", c("Argos", "Sim"), border="black", fill = c("#d73027", "#ef8a62"))
 
     } else {
       boxplot(list(Argos = argos, Sim = sim),
