@@ -1533,8 +1533,8 @@ make.stationary.ships <- function(x,
 #' 3) Between any two piling events, the ship will attempt to go back to the harbour if there is sufficient time to do so, and wait there until
 #' the next event (see ship ID_1 in example). If there is insufficient time to cover the whole distance back and forth, the ship will go back as far as possible along the
 #' route, and turn around in time to reach the next piling event (see ship ID_2 in example). If the time between pilings is shorter than the active pause duration, the ship
-#' will move straight between piling events, spending half of the remaining time pausing at each location. Pausing at the harbour is not considered
-#' an active pause, i.e. no noise is generated.
+#' will move straight between piling events, spending half of the remaining time pausing at each location. (When assigning active pauses later using \code{\link{make.stationary.ships}},
+#' pausing at the harbour will not be considered an active pause, i.e. no noise will be generated.)
 #' 4) After the last piling event, the ship will return to the harbour and wait there until the end of the simulation.
 #'
 #' If the number of ticks until the first piling event is too low for the slowest ship in the set to reach it from the harbour,
@@ -1574,6 +1574,17 @@ make.stationary.ships <- function(x,
 #' (CTV: crew transfer vessel, Dive: dive support ship, OS: offshore supply ship)
 #'
 #' The type of these ships is set to "Other" and the speed to 7.4 knots (see \code{\link{make.stationary.ships}} for the source of these conventions).
+#'
+#' \strong{Ships remaining at sea for the duration of the complete piling operations}
+#'
+#' One or more principal construction ships may be intended to remain within the piling area for the entire duration of piling operations without returning to harbour.
+#' This is achieved by setting the ship's 'daily.pause' duration in the 'ships' dataframe to a high number of ticks (greater than the longest gap between pilings,
+#' e.g. multiple days of 48 ticks each), which will cause the ship to progress directly from one piling to the next. This value will be capped at 48 ticks before the first 
+#' and after the last piling event. Note that all this time spent pausing at sea will be parameterized as an active (noisy) pause when the generated ship data set is later 
+#' processed with \code{\link{make.stationary.ships}}. This may be correct for crane ships or similar that actively hold position at sea, but inappropriate for jack-up vessels
+#' that take up a fixed position at the piling. In the latter case, the user should make note of the ship's identifier, and after carrying out the 'check' step of processing 
+#' with 'make.stationary.ships', remove all of the ship's entries from the candidates data frame before carrying out the 'replace' step (see \code{\link{make.stationary.ships}} for details).
+#'
 #' @param pilings A data frame containing the positions and times of piling operations during the construction of a wind farm.
 #' May contain real data but must be in the format as produced by \code{\link{make.windfarms}}: columns 'id', 'x.coordinate' (num),
 #' 'y.coordinate' (num),	'impact' (num; optional - not required for this function),	'tick.start' (num), and	'tick.end' (num).
@@ -1602,7 +1613,7 @@ make.stationary.ships <- function(x,
 #'                                c("Piling_4", 102000, 102000, 140, 144)))
 #' pilings[,2:5] <- as.numeric(unlist(pilings[,2:5]))
 #' colnames(pilings) <- c("id", "x.coordinate", "y.coordinate", "tick.start", "tick.end")
-#' construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships, 
+#' construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships,
 #'                                        x.harbour = x.harbour, y.harbour = y.harbour)
 #' @export make.construction.traffic
 
@@ -1663,7 +1674,7 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
   # timepoints covered between any two pilings:
   # prepil - arrival at piling event, prior to piling
   # postpil - departure from piling event
-  # premid - in between, on arrival to that position (harbour or open water)
+  # premid - in between, on arrival at that position (harbour or open water)
   # postmid - in between, on departure from that position
   for (ship in 1:nrow(ships)) {
     for (piling in 1:nrow(pilings)) { # step through piling days. Note that each iteration is always dealing with the UPCOMING piling, i.e. the one the ship has not yet navigated to
@@ -1671,10 +1682,12 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
       movtim <- round((movdist / (ships$speed[ship] * 1852)) * 2) # time in ticks required to cover distance at ship's speed
 
       # first movement out to piling. Add startpos (~postmid) (on conversion by ais.to.Deponsships, this pos will be pause-buffered backwards to start of file) and first prepil
+      # note that max length of first pause is limited to 1 day (48 ticks) to take into account ships that were intended to remain at sea,
+      # and thus have intentionally exaggerated pause durations
       if (piling == 1) {
-        time.postmid <- pilings$middle.tick[piling] - movtim - ceiling(ships$pause.length[ship] / 2)
+        time.postmid <- pilings$middle.tick[piling] - movtim - min(ceiling(ships$pause.length[ship] / 2), 48)
         pos.postmid <- harbour
-        time.prepil <- pilings$middle.tick[piling] - ceiling(ships$pause.length[ship] / 2)
+        time.prepil <- pilings$middle.tick[piling] - min(ceiling(ships$pause.length[ship] / 2), 48)
         pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
         ship.templates[[ship]] <- rbind(ship.templates[[ship]],
                                         c(ships$id[ship], time.postmid, "Other", ships$length[ship], round(pos.postmid[1]), round(pos.postmid[2])),
@@ -1683,7 +1696,7 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
       }
 
       # otherwise, get distance & time for previous piling
-      movdist.old <-  distf(harbour, c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1]))
+      movdist.old <- distf(harbour, c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1]))
       movtim.old <- round((movdist.old / (ships$speed[ship] * 1852)) * 2)
 
       # for all following piling events: evaluate available time until next required position, and create times and positions accordingly
@@ -1750,9 +1763,11 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
     }
 
     # after last piling event, wait for final full pause duration (half before and half after middle tick), then relocate to harbour
+    # note that max length of final pause is limited to 1 day (48 ticks) to take into account ships that were intended to remain at sea,
+    # and thus have intentionally exaggerated pause durations
     movdist <-  distf(harbour, c(pilings$x.coordinate[piling], pilings$y.coordinate[piling]))
     movtim <- round(movdist / (ships$speed[ship] * 1852)) * 2
-    time.postpil <- pilings$middle.tick[piling] + ceiling(ships$pause.length[ship] / 2)
+    time.postpil <- pilings$middle.tick[piling] + min(ceiling(ships$pause.length[ship] / 2), 48)
     pos.postpil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
     time.premid <- time.postpil + movtim
     pos.premid <- harbour
@@ -1769,7 +1784,6 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
   construction.ships[,c(4:6)] <- as.numeric(unlist(construction.ships[,c(4:6)]))
   return(construction.ships)
 }
-
                                                                
                                                                
 
