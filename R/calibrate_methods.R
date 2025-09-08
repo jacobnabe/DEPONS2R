@@ -44,10 +44,10 @@ calib_01 <- function(depons_track) {
 #'
 #' @param track_cleaned A dataframe of the filtered track (either fine scale of large scale).
 #' @param option A character string, either `"fine"` or `"large"`, indicating which type of movement (fine-scale or large-scale)
-#' metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range, 
-#' maximum net squared displacement, and sinuosity.
-#' @return A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2) 
-#' and mean residence time (RT, days)) or large scale metrics (HR, max NSD and sinuosity index).
+#' metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range,
+#' maximum net squared displacement, sinuosity and cumulative distance moved.
+#' @return A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2)
+#' and mean residence time (RT, days)) or large scale metrics (HR, max NSD, sinuosity index and cumulative distance moved (km)).
 #' @import adehabitatHR
 #' @export
 #' @examples \dontrun {
@@ -152,7 +152,7 @@ calib_02 <- function(track_cleaned, option) {
 
 #' @title Plotting of simulated fine or large-scale metrics against argos data
 #'
-#' @param sim_metrics A dataframe of movement metrics obtained with the calib_02 function
+#' @param sim.metrics A dataframe of movement metrics obtained with the calib_02 function
 #' @param option A character string, either `"fine"` or `"large"`, indicating which set of Argos metrics (fine-scale or large-scale) 
 #' to plot against simulated ones.
 #' @return a plot of real (Argos) vs simulated metrics
@@ -160,10 +160,8 @@ calib_02 <- function(track_cleaned, option) {
 #'
 plot_calib02 <- function(sim.metrics, option) {
 
-  utils::data("argosmetrics")
-
   graphics::par(mfrow = c(1, 3), mar = c(5, 4, 4, 2))
-  argos.metrics<-argosmetrics[[option]]
+  argos.metrics<-DEPONS2R::argosmetrics[[option]]
   metrics <-c(colnames(argos.metrics[2:max(col(argos.metrics))]))
 
   for (i in seq_along(metrics)) {
