@@ -7,10 +7,10 @@
 plot_calib02(sim.metrics, option)
 }
 \arguments{
-\item{option}{A character string, either `"fine"` or `"large"`, indicating which set of Argos metrics (fine-scale or large-scale) 
-to plot against simulated ones.}
+\item{sim.metrics}{A dataframe of movement metrics obtained with the calib_02 function}
 
-\item{sim_metrics}{A dataframe of movement metrics obtained with the calib_02 function}
+\item{option}{A character string, either `"fine"` or `"large"`, indicating which set of Argos metrics (fine-scale or large-scale)
+to plot against simulated ones.}
 }
 \value{
 a plot of real (Argos) vs simulated metrics
