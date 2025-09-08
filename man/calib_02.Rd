@@ -21,7 +21,7 @@ and mean residence time (RT, days)) or large scale metrics (HR, max NSD, sinuosi
 Calculate calibration metrics of previously filtered tracks (fine-scale or large-scale)
 }
 \examples{
-\dontrun {
+\dontrun{
 # filtering fine-scale movements on porpoise tracks
 
 data(porpoisetrack)
