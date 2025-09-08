@@ -50,9 +50,9 @@ calib_01 <- function(depons_track) {
 #' and mean residence time (RT, days)) or large scale metrics (HR, max NSD, sinuosity index and cumulative distance moved (km)).
 #' @import adehabitatHR
 #' @export
-#' @examples \dontrun {
+#' @examples \dontrun{
 #' # filtering fine-scale movements on porpoise tracks
-#' 
+#'
 #'data(porpoisetrack)
 #'track <-as.data.frame(porpoisetrack)
 #'track$year <- track$tick / 17280
@@ -62,14 +62,14 @@ calib_01 <- function(depons_track) {
 #'track$dayRound <- floor(track$day) + 1
 #'track$date <- as.POSIXct("2014-01-01 00:00:00", tz = "GMT") + (track$tick * 1800)
 #'track_fine <- track[track$DispersalMode == 0, ]
-#' 
+#'
 # extract only noon positions
 #'noon_tracks <- track_fine[format(track_fine$date, "%H:%M:%S") == "12:00:00", ]
-#' 
+#'
 #' # identify 30 consecutive days with noon data
 #'all_days <- sort(unique(as.Date(noon_tracks$date)))
 #' consecutive_days <- NULL
-#' 
+#'
 #'for (i in 1:(length(all_days) - 29)) {
 #'if (all(diff(all_days[i:(i + 29)]) == 1)) {
 #'  consecutive_days <- all_days[i:(i + 29)]
@@ -84,67 +84,67 @@ calib_01 <- function(depons_track) {
 
 
 calib_02 <- function(track_cleaned, option) {
-  
+
   coordinates(track_cleaned) <- ~ x + y
-  
+
   # Home Range
   track <- track_cleaned[, c("Id")] # kernelUD function only accepts Id, x and y
   cellsize <- 400
-  
-  null.grid <- expand.grid(x = seq(min(coordinates(track)[, 1]) - 300000, 
+
+  null.grid <- expand.grid(x = seq(min(coordinates(track)[, 1]) - 300000,
                                    max(coordinates(track)[, 1]) + 300000, by = cellsize),
-                           y = seq(min(coordinates(track)[, 2]) - 300000, 
+                           y = seq(min(coordinates(track)[, 2]) - 300000,
                                    max(coordinates(track)[, 2]) + 300000, by = cellsize))
   coordinates(null.grid) <- ~ x + y
   gridded(null.grid) <- TRUE
   kernel.ref <- kernelUD(track, h = "href", grid = null.grid)
-  kernel.poly <- getverticeshr(kernel.ref, percent = 95, unin = c("m"), unout = "km2") 
+  kernel.poly <- getverticeshr(kernel.ref, percent = 95, unin = c("m"), unout = "km2")
   HRsize <- data.frame(kernel.poly$id, kernel.poly$area)
   colnames(HRsize) <- c("ID", "HRarea")
-  
+
   # NSD mean and max
   first_x <- coordinates(track_cleaned)[, 1][[1]]
   first_y <- coordinates(track_cleaned)[, 2][[1]]
-  
-  track_cleaned$dist <- sqrt((coordinates(track_cleaned)[, 1] - first_x)^2 + 
+
+  track_cleaned$dist <- sqrt((coordinates(track_cleaned)[, 1] - first_x)^2 +
                                (coordinates(track_cleaned)[, 2] - first_y)^2)/1000 # in km
   track_cleaned$nsd <- track_cleaned$dist^2
-  
+
   meanNSD <- mean(track_cleaned$nsd)
   maxNSD <- max(track_cleaned$nsd)
-  
+
   ## fine scale
   if(option == "fine") {
-    
+
     # Residence Time
     radius <- 5000  # in meters
-    
+
     ltraj <- as.ltraj(xy = coordinates(track_cleaned), date = track_cleaned$date, id = track_cleaned$Id)
-    
-    rt <- residenceTime(ltraj, radius, maxt=60*60*24*30) 
-    mean_rt <- mean(rt[[1]][["RT.5000"]], na.rm = TRUE)/(24*60*60) 
+
+    rt <- residenceTime(ltraj, radius, maxt=60*60*24*30)
+    mean_rt <- mean(rt[[1]][["RT.5000"]], na.rm = TRUE)/(24*60*60)
     fine_metrics <- data.frame(HR = HRsize$HRarea, meanNSD = meanNSD, Rt=mean_rt)
-    
+
     return(fine_metrics)
   }
-  
+
   ## large scale
   if(option == "large") {
-    
-    # Sinuosity 
+
+    # Sinuosity
     traj <- as.ltraj(xy = coordinates(track_cleaned), date = track_cleaned$date, id= track_cleaned$Id)
     traj <- ld(traj)
-    
+
     p <- mean(traj$dist, na.rm=TRUE)
     b <- stats::sd(traj$dist, na.rm=TRUE)/p
     c <- mean(cos(traj$rel.angle), na.rm=TRUE)
-    
+
     # according to Benhamou (2004)
     sinuosity <- 2/sqrt(p * (((1 + c)/(1 - c)) + b^2))
 
     # cumulative distance in km
-    cumdist <- sum(traj$dist)/1000 
-   
+    cumdist <- sum(traj$dist)/1000
+
     large_metrics <- data.frame(HR = HRsize$HRarea, maxNSD = maxNSD, sinuosity = sinuosity, cumDist=cumdist)
     return(large_metrics)
   }
@@ -153,7 +153,7 @@ calib_02 <- function(track_cleaned, option) {
 #' @title Plotting of simulated fine or large-scale metrics against argos data
 #'
 #' @param sim.metrics A dataframe of movement metrics obtained with the calib_02 function
-#' @param option A character string, either `"fine"` or `"large"`, indicating which set of Argos metrics (fine-scale or large-scale) 
+#' @param option A character string, either `"fine"` or `"large"`, indicating which set of Argos metrics (fine-scale or large-scale)
 #' to plot against simulated ones.
 #' @return a plot of real (Argos) vs simulated metrics
 #' @export
