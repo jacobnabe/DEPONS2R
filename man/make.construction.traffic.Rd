@@ -53,8 +53,8 @@ its given speed.
 3) Between any two piling events, the ship will attempt to go back to the harbour if there is sufficient time to do so, and wait there until
 the next event (see ship ID_1 in example). If there is insufficient time to cover the whole distance back and forth, the ship will go back as far as possible along the
 route, and turn around in time to reach the next piling event (see ship ID_2 in example). If the time between pilings is shorter than the active pause duration, the ship
-will move straight between piling events, spending half of the remaining time pausing at each location. Pausing at the harbour is not considered
-an active pause, i.e. no noise is generated.
+will move straight between piling events, spending half of the remaining time pausing at each location. (When assigning active pauses later using \code{\link{make.stationary.ships}},
+pausing at the harbour will not be considered an active pause, i.e. no noise will be generated.)
 4) After the last piling event, the ship will return to the harbour and wait there until the end of the simulation.
 
 If the number of ticks until the first piling event is too low for the slowest ship in the set to reach it from the harbour,
@@ -94,6 +94,16 @@ OS \tab 120 \tab 9
 (CTV: crew transfer vessel, Dive: dive support ship, OS: offshore supply ship)
 
 The type of these ships is set to "Other" and the speed to 7.4 knots (see \code{\link{make.stationary.ships}} for the source of these conventions).
+
+\strong{Ships remaining at sea for the duration of the complete piling operations}
+
+One or more principal construction ships may be intended to remain within the piling area for the entire duration of piling operations without returning to harbour.
+This is achieved by setting the ship's 'daily.pause' duration in the 'ships' dataframe to a high number of ticks (greater than the longest gap between pilings,
+e.g. multiple days of 48 ticks each), which will cause the ship to progress directly from one piling to the next. This value will be capped at 48 ticks before the first 
+and after the last piling event. Note that all this time spent pausing at sea will be parameterized as an active (noisy) pause when the generated ship data set is later 
+processed with \code{\link{make.stationary.ships}}. This may be correct for crane ships or similar that actively hold position at sea, but inappropriate for jack-up vessels
+that take up a fixed position at the piling. In the latter case, the user should make note of the ship's identifier, and after carrying out the 'check' step of processing 
+with 'make.stationary.ships', remove all of the ship's entries from the candidates data frame before carrying out the 'replace' step (see \code{\link{make.stationary.ships}} for details).
 }
 \examples{
 x.harbour <- 0
@@ -108,7 +118,7 @@ pilings <- as.data.frame(rbind(c("Piling_1", 100000, 100000, 50, 54),
                                c("Piling_4", 102000, 102000, 140, 144)))
 pilings[,2:5] <- as.numeric(unlist(pilings[,2:5]))
 colnames(pilings) <- c("id", "x.coordinate", "y.coordinate", "tick.start", "tick.end")
-construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships, 
+construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships,
                                        x.harbour = x.harbour, y.harbour = y.harbour)
 }
 \seealso{

@@ -26,5 +26,5 @@ bathymetry_RasterLayer <- as.raster(bathymetry)
 bathymetry <- as.DeponsRaster(bathymetry_RasterLayer)
 }
 \seealso{
-\code{\link{raster}} for converting a DeponsRaster into a RasterLayer
+\code{\link{as.raster}} for converting a DeponsRaster into a RasterLayer
 }

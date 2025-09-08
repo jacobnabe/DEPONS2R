@@ -30,8 +30,8 @@ and therefore uses an interpolation that fits a single-cycle sine curve that sea
 \details{
 The complete series of maps, consisting of existing and missing maps, is arranged as a chronological stack. For each raster cell
 in the stack, the prediction function is fit to the existing values, and the missing values are predicted from the function.
-The fitted function is of the form ‘α * sine(x) + β * cosine(x)’, where α & β are estimated using a basic linear model. This is equivalent
-to ‘Amplitude * sine(x + Phase)’, but is more straightforward to estimate. The resulting curve satisfies the assumption that
+The fitted function is of the form ‘\eqn{\alpha} * sine(x) + \eqn{\beta} * cosine(x)’, where \eqn{\alpha} & \eqn{\beta} are estimated using a basic linear model. 
+This is equivalent to ‘Amplitude * sine(x + Phase)’, but is more straightforward to estimate. The resulting curve satisfies the assumption that
 the data described in the map series should have a single series maximum and minimum, and should loop around seamlessly at end of series.
 
 The function requires at least 3 existing maps in the series to interpolate from. Number of total entries and missing entries is arbitrary.
