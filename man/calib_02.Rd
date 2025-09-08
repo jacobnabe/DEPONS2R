@@ -10,17 +10,18 @@ calib_02(track_cleaned, option)
 \item{track_cleaned}{A dataframe of the filtered track (either fine scale of large scale).}
 
 \item{option}{A character string, either `"fine"` or `"large"`, indicating which type of movement (fine-scale or large-scale)
-metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range, 
-maximum net squared displacement, and sinuosity.}
+metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range,
+maximum net squared displacement, sinuosity and cumulative distance moved.}
 }
 \value{
-A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2) 
+A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2)
 and mean residence time (RT, days)) or large scale metrics (HR, max NSD, sinuosity index and cumulative distance moved (km)).
 }
 \description{
 Calculate calibration metrics of previously filtered tracks (fine-scale or large-scale)
 }
 \examples{
+\dontrun {
 # filtering fine-scale movements on porpoise tracks
 
 data(porpoisetrack)
@@ -49,4 +50,5 @@ if (all(diff(all_days[i:(i + 29)]) == 1)) {
 filtered_tracks <- noon_tracks[as.Date(noon_tracks$date) \%in\% consecutive_days, ]
 
 calib_02(filtered_tracks, option = "fine")
+}
 }
