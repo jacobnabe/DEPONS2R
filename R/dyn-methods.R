@@ -20,10 +20,10 @@
 #' the real world.
 #' @slot dyn Data frame with simulation output.
 #' @details The following columns are included in the simulation output data
-#' frame: 'tick', which indicates the number of half-hourly time steps since the
-#' start of the simulation; 'count', which indicates the population size at a
-#' given time; 'anim.e', showing the average amount of energy stored by simulated
-#' animals; 'lands.e', which shows the total amount of energy in the landscape,
+#' frame (slot 'dyn'): 'tick', which indicates the number of half-hourly time
+#' steps since the start of the simulation; 'count', which indicates the population
+#' size at a given time; 'anim.e', showing the average amount of energy stored by
+#' simulated animals; 'lands.e', which shows the total amount of energy in the landscape;
 #' and 'real.time' which shows the time relative to 'startday'.
 #' @exportClass DeponsDyn
 #' @examples a.DeponsDyn <- new("DeponsDyn")
@@ -77,15 +77,14 @@ setMethod("summary", "DeponsDyn",
 #' if this is not the current working directory.
 #' @param title Optional character string giving name of simulation
 #' @param landscape The landscape used in the simulation
-#' @param simtime Optional character string with the date and time when the
-#' simulation finished (format yyyy-mm-dd). If not provided this is obtained
+#' @param simtime Optional date and time when the simulation finished (character string
+#' of the form 'yyyy-mm-dd hh:mm:ss', or POSIXlt). If not provided this is obtained
 #' from name of input file
 #' @param startday The start of the period that the  simulation represents, i.e.
 #' the real-world equivalent of 'tick 1' (character string of the
 #' form 'yyyy-mm-dd', or POSIXlt). Default "2010-01-01"
-#' @param timestep Time step used in the model, in minutes. Default 30 minutes.
-#' @param tz Time zone. In DEPONS times are generally assumed to be in "UTC"
-#' (Coordinated Universal Time).
+#' @param timestep Time step used in the model, in minutes. Default 30 minutes
+#' @param tz Time zone. Default "UTC"
 #' @seealso See \code{\link{DeponsDyn-class}} for details on what is stored in
 #' the output object and \code{\link{as.data.frame}} for converting from data
 #' frame.
@@ -93,7 +92,7 @@ setMethod("summary", "DeponsDyn",
 #' @examples \dontrun{
 #' dyn.file <- "/Applications/DEPONS 2.1/DEPONS/Statistics.2020.Sep.02.20_24_17.csv"
 #' file.exists(dyn.file)
-#' porpoisedyn <- read.DeponsDyn(dyn.file, startday=as.POSIXlt("2010-01-01", tz = "UTC"))
+#' porpoisedyn <- read.DeponsDyn(dyn.file, startday="2010-01-01", tz = "UTC")
 #' porpoisedyn
 #' }
 #' @export read.DeponsDyn
@@ -215,7 +214,7 @@ setMethod("as.data.frame", signature("DeponsDyn"),
 #' 5, which yields a plot of the first simulated value and one in every five of
 #' the following values.
 #' @param plot.energy If set to TRUE it plots the amount of energy stored in
-#' simulated and in the landscape in addition to the population count
+#' simulated porpoises and in the landscape in addition to the population count
 #' @param plot.legend If set to TRUE, a legend is plotted
 #' @param ... Optional plotting parameters
 #' @examples
