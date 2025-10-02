@@ -14,14 +14,15 @@
 #' The definitions of the ships has been modified since earlier versions of
 #' DEPONS (i.e. 2.1 and erlier) in that it now includes ship length, type, and
 #' speed (in knots). These are used for calculating the sound source level
-#' (following McGilliwray)
+#' (following MacGillivray & de Jong 2021)
 #' @format DeponsShips
 #' @seealso \code{\link{DeponsShips-class}}
 #' @keywords datasets
 #' @references
-#' MacGillivray A & de Jong C (2021). A Reference Spectrum Model for Estimating
-#' Source Levels of Marine Shipping Based on Automated Identification System
-#' Data. J Mar Sci Eng 9:369 . \doi{10.3390/jmse9040369}
+#' MacGillivray, A., & de Jong, C (2021). A reference spectrum model for
+#' estimating source lev￾els of marine shipping based on Automated
+#' Identification System data. Journal of Marince Science and Engineering, 9(4), 369 .
+#' \doi{10.3390/jmse9040369}
 #'
 #' Nabe-Nielsen, J., Sibly, R. M., Tougaard, J., Teilmann, J., &
 #' Sveegaard, S. (2014). Effects of noise and by-catch on a Danish harbour
