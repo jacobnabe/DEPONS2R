@@ -161,8 +161,7 @@ read.DeponsRaster <- function(fname, type="NA", landscape="NA",
 setGeneric("plot")
 
 #' @title Plot a DeponsRaster object
-#' @description Plot the values in a DeponsRaster object. Porpoisetracks or
-#' other kinds of lines, poits etc. can be drawn on top of the plot by adding
+#' @description Plot the values in a DeponsRaster object.
 #' @import raster
 #' @import methods
 #' @import sp
@@ -318,24 +317,25 @@ setGeneric("make.blocksraster", make.br)
 #' defined as the smallest rectangle that includes all the specified positions.
 #' @aliases make.blocksraster,DeponsRaster-method
 #' @param template DeponsRaster object used as template for new blocks file
-#' @param blocks list of areas to be used for new blocks. Each item in 'blocks'
+#' @param blocks List of areas to be used for new blocks. Each item in 'blocks'
 #' should be a matrix (with two columns, corresponding to x- and y-coordinates)
-#' or a SpatialPolygons object
+#' or a SpatialPolygons object. SpatialPolygons objects containing multiple polygons
+#' must be separated into multiple SpatialPolygons objects each containing a single polygon.
 #' @param blockvals Vector of integer values defining the labels of the new blocks.
 #' The first value defines the background value, so the length of 'blockvals'
 #' should equal the number of blocks plus 1
 #' @param NAvalue Value used for missing data in the output object
-#' @param plot If TRUE, the raster block is plotted
+#' @param plot Logical, default TRUE. If TRUE, the raster block is plotted
 #' @param fname Name of the output raster file (character string ending with
 #' '.asc'). No file is written to disk if fname is not provided.
-#' @param overwrite Whether to replace existing file.
+#' @param overwrite Logical, default FALSE. Whether to replace existing file.
 #' @return \code{RasterLayer} object defining different subregions of the
 #' landscape where animals should be counted.
-#' @note The blocks file should not be modified when running DEPONS
+#' @details The blocks file should not be modified when running DEPONS
 #' simulations using the 'Kattegat' landscape. In this landscape the simulated
 #' animals use the blocks file for navigation. Also note that blocks are added
-#' to the new blocks raster in the order they are file in the order in which
-#' they are listed in 'blocks', so the order mattes if the blocks overlap.
+#' to the new blocks raster in the order in which they are listed in 'blocks',
+#' so the order matters if the blocks overlap.
 #' @examples
 #' #Load file to use as template for new blocks file
 #' data("bathymetry")
