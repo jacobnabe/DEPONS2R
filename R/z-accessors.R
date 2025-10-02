@@ -245,7 +245,6 @@ setMethod("landscape<-", "DeponsBlockdyn", function(x, value) {
 
 
 #' @name landscape
-#' @title Get or set the landscape name
 #' @aliases landscape,DeponsBlockdyn-method
 #' @aliases landscape<-,DeponsBlockdyn-method
 #' @rdname landscape
@@ -286,9 +285,6 @@ setGeneric("startday", function(x) { return(x@startday) })
 setMethod("startday", signature=("DeponsBlockdyn"), function(x) { return(x@startday) })
 
 #' @name startday
-#' @title Get or set start date for simulation
-#' @details The start date indicates the start of the period that the simulation
-#' is supposed to represent.
 #' @aliases startday,DeponsDyn-method
 #' @rdname startday
 #' @param x Object of class \code{DeponsDyn}
