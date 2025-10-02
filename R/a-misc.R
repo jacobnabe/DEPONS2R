@@ -11,7 +11,7 @@
 #' @title  Package for analyzing DEPONS simulation output
 #' @name DEPONS2R
 #' @description  Methods for analyzing population dynamics and movement tracks
-#' simulated using the DEPONS model (v.3.0; \url{https://www.depons.eu}), for
+#' simulated using the DEPONS model (v.3.2; \url{https://www.depons.eu}), for
 #' manipulating input raster files, shipping routes and for analyzing sound
 #' propagated from ships.
 #'
@@ -89,7 +89,7 @@ get.simtime <- function (fname = NULL, tz = "UTC") {
 #' "track" (for looking in "RandomPorpoise.XX.csv" files).
 #' @param dir Directory to look for simulation output in (character string)
 #' @seealso \code{\link{read.DeponsBlockdyn}} for example.
-#' @return character string with the name of the most recent simulation output
+#' @return Character string with the name of the most recent simulation output
 #' file.
 #' @export get.latest.sim
 get.latest.sim <- function(type="dyn", dir) {
@@ -121,10 +121,10 @@ get.latest.sim <- function(type="dyn", dir) {
 #' source level. All wind farms are assumed to consist of the same number of
 #' turbines, laid out in a rectangular grid. The start and end tick (i.e. the
 #' number of half-hour intervals since simulation start) is generated based on
-#' provided values for the time it required for each piling and the time between
+#' provided values for the time required for each piling and the time between
 #' piling events.
-#' @param area.file Name of the raster file specifying where the wind farms
-#' should be constructed.
+#' @param area.file Name of the raster file (e.g. in .asc or .tif format)
+#' specifying where the wind farms should be constructed.
 #' @param area.def Value in \code{area.file} for the areas were wind farms can
 #' be located
 #' @param n.wf Number of wind farms to construct
@@ -147,13 +147,17 @@ get.latest.sim <- function(type="dyn", dir) {
 #' @param wf.coords Possible location of the south-western corner of the wind
 #' farms. Defaults to the text "random", but can also be a data frame with
 #' coordinates in the columns x and y.
-#' @note The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
+#' @details The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
 #' and \code{constr.break} are truncated to nearest integer value. Construction
 #' of wind farms starts in WF001 at tick \code{constr.start}. Each turbine
 #' foundation is piled over a period of \code{constr.time}, followed by a
 #' noise-free period of \code{constr.break}. Several pile driving operations may
 #' take place at the same time, to ensure that the last piling ends before \code{constr.end}.
-#' @return data.frame specifying the position of each turbine in a wind farm,
+#'
+#' When exported, the dataframe should be specified as a tab-delimited .txt file placed in
+#' folder /data/wind-farms. It will contain the columns 'id', 'x' (meters), 'y' (meters),
+#' 'impact' (decibel), 'start' and 'end' (tick).
+#' @return Dataframe specifying the position of each turbine in a wind farm,
 #' along with the start time and end time for pile driving of the turbine
 #' foundation and the sound source level during pile driving. Can be
 #' exported as a text file and used for controlling DEPONS simulations.
