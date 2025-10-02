@@ -10,13 +10,13 @@
 #' the DEPONS model
 #' @description Classes for manipulating and plotting movement
 #' tracks generated with DEPONS.
-#' @slot title Name of the object (character)
-#' @slot landscape Name of the object (character)
+#' @slot title Character. Name of the object
+#' @slot landscape Character. Name of the object
 #' @slot simtime POSIXlt object with the date and time when the simulation was
 #' finished. This is read from the name of the imput file.
 #' @slot crs CRS object providing the coordinate reference system used; see
 #' \code{\link[sf]{st_crs}} for details
-#' @slot tracks Listwith one or more tracks, each stored
+#' @slot tracks List with one or more tracks, each stored
 #' as a \code{\link[sp]{SpatialPointsDataFrame}} object)
 #' @exportClass DeponsTrack
 #' @seealso \code{\link[DEPONS2R]{plot.DeponsTrack}} and
@@ -73,7 +73,7 @@ setMethod("summary", "DeponsTrack",
 #' @description Function  for reading movement tracks produced by DEPONS. These
 #' describe movements of simulated animals within the simulation landscape, where
 #' the positions after each 30-min time step are provided using the coordinate
-#' reference system that were used for generating these landscapes.See
+#' reference system that were used for generating these landscapes. See
 #' van Beest et al. (2018) and Nabe-Nielsen et al. (2013) for details regarding
 #' how these files were generated as a balance between correlated random walk
 #' behaviour and spatial memory behaviour, which allows animals to return to
@@ -85,10 +85,11 @@ setMethod("summary", "DeponsTrack",
 #' @param title Optional character string giving name of simulation
 #' @param landscape Optional character string with the landscape used in the
 #' simulation
-#' @param simtime Character sting with date of simulation (format yyyy-mm-dd).
-#' If not provided this is obtained from name of input file
+#' @param simtime Date and time when the simulation finished (character string
+#' of the form 'yyyy-mm-dd hh:mm:ss', or POSIXlt). If not provided this is obtained
+#' from name of input file
 #' @param crs Character, coordinate reference system (map projection)
-#' @param tz Time zone used in simulations. Defaults to UTC.
+#' @param tz Time zone. Default "UTC"
 #' #'
 #' @return Returns a \code{DeponsTrack} object with the elements \code{title},
 #' \code{simtime}, \code{crs}, and \code{tracks}. The \code{date} is extracted
@@ -181,9 +182,9 @@ setMethod("as.data.frame", signature("DeponsTrack"),
 #' @aliases plot.DeponsTrack
 #' @param x DeponsTrack object
 #' @param y Not used
-#' @param trackToPlot Integer; indicates which track to plot if there is more
+#' @param trackToPlot Integer. Indicates which track to plot if there is more
 #' than one track in the object. Defaults to 1
-#' @param add Logical, whether to add the track to an existing plot
+#' @param add Logical. Whether to add the track to an existing plot if more than
 #' one animal was tracked during the simulation.
 #' @param ... Optional plotting parameters
 #' @return No return value, called for side effects
@@ -238,7 +239,7 @@ setMethod("plot", signature("DeponsRaster", "DeponsTrack"),
 #' @rdname bbox
 #' @title Get bbox from Depons* object
 #' @description Retrieves spatial bounding box from object. If a Depons* object
-#' is a DeponsTrack object containing multiple track, the box bounds all tracks.
+#' is a DeponsTrack object containing multiple tracks, the box bounds all tracks.
 #' @aliases bbox,DeponsTrack-method
 #' @param obj DeponsRaster or DeponsTrack object
 #' @return Returns a \code{matrix} defining the northern, southern, eastern and
