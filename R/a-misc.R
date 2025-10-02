@@ -32,11 +32,10 @@ NULL
 
 #' @title Get simulation date
 #' @name get.simtime
-#' @description Returns the date and time when a specific simulation was finished,
-#' obtained from the date stored as part of the file name. The date format is system
-#' dependent, but the function attemts to extract the data assuming that either
-#' the English or the local language is used.
-#' (a \code{\link{POSIXlt}} object)
+#' @description Returns the date and time (a \code{\link{POSIXlt}} object) when a specific
+#' simulation was finished, obtained from the date stored as part of the file name.
+#' The date format is system dependent, but the function attempts to extract the data
+#' assuming that either the English or the local language is used.
 #' @param fname Character string with name of the file to extract the simulation
 #' date from, including the path
 #' @param tz Time zone
@@ -46,7 +45,9 @@ NULL
 get.simtime <- function (fname = NULL, tz = "UTC") {
   fn <- gsub("..", "_", fname, fixed = TRUE)
   ncf <- nchar(fn)
-  time.string <- substr(fn, ncf - 23, ncf - 4)
+  ifelse (grepl("Sept", fn, fixed=T),
+    time.string <- substr(fn, ncf - 24, ncf - 4),
+    time.string <- substr(fn, ncf - 23, ncf - 4)) # accommodate "Sept" bug in Java
   time.string <- gsub("_", ":", time.string)
   template.months <- substr(100 + (1:12), 2, 3)
   template.dates <- paste0("2000-", template.months, "-01")
@@ -60,6 +61,7 @@ get.simtime <- function (fname = NULL, tz = "UTC") {
   time.string <- gsub(paste0("Jun|jun|", system.months[6]), "06", time.string)
   time.string <- gsub(paste0("Jul|jul|", system.months[7]), "07", time.string)
   time.string <- gsub(paste0("Aug|aug|", system.months[8]), "08", time.string)
+  time.string <- gsub(paste0("Sept|sept|", system.months[9]), "09", time.string) # accommodate "Sept" bug in Java. Substituting longer option first prevents partial substitution for shorter option
   time.string <- gsub(paste0("Sep|sep|", system.months[9]), "09", time.string)
   time.string <- gsub(paste0("Oct|oct|", system.months[10]), "10", time.string)
   time.string <- gsub(paste0("Nov|nov|", system.months[11]), "11", time.string)
