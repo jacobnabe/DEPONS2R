@@ -118,7 +118,7 @@ setMethod("summary", "DeponsTrack",
 #' @export read.DeponsTrack
 read.DeponsTrack <- function (fname, title = "NA", landscape = "NA", simtime = "NA",
                               crs = as.character(NA), tz = "UTC") {
-  raw.data <- utils::read.csv(fname, sep = ";")
+  raw.data <- utils::read.csv(fname)
   if (as.character(simtime) == "NA")
     simtime <- get.simtime(fname)
   tracks <- list()
