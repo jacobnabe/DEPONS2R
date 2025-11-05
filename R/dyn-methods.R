@@ -105,7 +105,7 @@ read.DeponsDyn <- function(fname, title="NA", landscape="NA", simtime="NA",
   all.data@landscape <- landscape
   all.data@simtime <- as.POSIXlt(simtime)
   all.data@startday <- as.POSIXlt(startday, tz=tz)
-  the.data <- utils::read.csv(fname, sep=";")
+  the.data <- utils::read.csv(fname)
   if(!all(names(the.data)==c("tick", "PorpoiseCount", "FoodEnergyLevel", "PorpoiseEnergyLevel"))) {
     stop("The column names in the input data should be 'tick', 'PorpoiseCount', 'FoodEnergyLevel', and 'PorpoiseEnergyLevel'")
   }
@@ -159,7 +159,6 @@ make.DeponsDyn <- function(oname, title="NA", landscape="NA", simtime="NA",
     all.data@simtime <- as.POSIXlt(simtime, tz=tz)
   }
   all.data@startday <- as.POSIXlt(startday, tz=tz)
-  # the.data <- utils::read.csv(oname, sep=";")
   the.data <- oname
   # Convert column names if needed
   names(the.data)[names(the.data)=="count"] <- "PorpoiseCount"
