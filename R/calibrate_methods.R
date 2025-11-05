@@ -239,7 +239,7 @@ read.DeponsDynBatch <- function(dir, par, title = "NA", landscape = "NA", simtim
   if (startday == "NA" || is.na(startday))
     startday <- NA
 
-  sample_popmap <- utils::read.csv(popres_batchmap[1], sep = ";")
+  sample_popmap <- utils::read.csv(popres_batchmap[1])
   if (!all(par %in% colnames(sample_popmap))) {
     missing_pars <- par[!par %in% colnames(sample_popmap)] #check if par exist
     stop(paste("The following parameters do not exist in the batch map file:",
@@ -254,13 +254,13 @@ read.DeponsDynBatch <- function(dir, par, title = "NA", landscape = "NA", simtim
   for (i in seq_along(popres_batchmap)) {
     cat("Processing simulation", i, "/", length(popres_batchmap), "\n")
 
-    popmap <- utils::read.csv(popres_batchmap[i], sep = ";") #read parameter map
+    popmap <- utils::read.csv(popres_batchmap[i]) #read parameter map
     popmap$Sim <- i
     if (!"run" %in% colnames(popmap)) {
       stop("The batch map file must contain a 'run' column.")
     }
 
-    popstats <- utils::read.csv(popres_stats[i], sep = ";") #read stats output
+    popstats <- utils::read.csv(popres_stats[i]) #read stats output
     popstats$Sim <- i
 
     unique_runs <- unique(popstats$run) #get runs
@@ -367,10 +367,10 @@ read.DeponsTrackBatch <- function(dir, par, title = "NA", landscape = "NA", simt
 
   for (i in seq_along(popres_tracks)) {
     cat("Processing file pair", i, "/", length(popres_tracks), "\n")
-    raw.data <- utils::read.csv(popres_tracks[i], sep = ";")
+    raw.data <- utils::read.csv(popres_tracks[i])
     unique_runs <- unique(raw.data$run)
 
-    porpoisetrack <- utils::read.csv(popres_batchmap[i], sep = ";")
+    porpoisetrack <- utils::read.csv(popres_batchmap[i])
     if (!"run" %in% colnames(porpoisetrack)) {
       stop("The batch map file must contain a 'run' column.")
     }
