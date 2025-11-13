@@ -1203,6 +1203,17 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
   names(all.ships)[1] <- "name"
   all.ships$route <- paste0("Route_", unique(all.cropped.tracks$id))
   ships(all.cropped.DS) <- all.ships
+
+  # post-hoc cleanup: remove routes that were successfully interpolated timewise but have no movement
+  zero.move <- vector()
+  for (i in 1:length(all.cropped.DS@routes$route)) {
+    if (nrow(all.cropped.DS@routes$route[[i]]) == 1) zero.move <- c(zero.move, i) 
+  }
+  if (length(zero.move) > 0) {
+    all.cropped.DS@routes <- all.cropped.DS@routes[-(zero.move),]
+    all.cropped.DS@ships <- all.cropped.DS@ships[-(zero.move),]
+  }
+         
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 } # end of ais.to.DeponsShips
