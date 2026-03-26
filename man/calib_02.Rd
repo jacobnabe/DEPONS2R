@@ -4,7 +4,7 @@
 \alias{calib_02}
 \title{Calculate calibration metrics of previously filtered tracks (fine-scale or large-scale)}
 \usage{
-calib_02(track_cleaned, option)
+calib_02(track_cleaned, option, h)
 }
 \arguments{
 \item{track_cleaned}{A dataframe of the filtered track (either fine scale of large scale).}
@@ -12,6 +12,10 @@ calib_02(track_cleaned, option)
 \item{option}{A character string, either `"fine"` or `"large"`, indicating which type of movement (fine-scale or large-scale)
 metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range,
 maximum net squared displacement, sinuosity and cumulative distance moved.}
+
+\item{h}{A character string or number representing the smoothing parameter in the `kernelUD` function
+from the `adehabitatHR` package. For the NorthSea, h should be set to "href" and
+h should be "15000" (15 km) in the Kattegat.}
 }
 \value{
 A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2)
@@ -49,6 +53,6 @@ if (all(diff(all_days[i:(i + 29)]) == 1)) {
 # filter data to only the 30 consecutive days
 filtered_tracks <- noon_tracks[as.Date(noon_tracks$date) \%in\% consecutive_days, ]
 
-calib_02(filtered_tracks, option = "fine")
+calib_02(filtered_tracks, option = "fine", h="href")
 }
 }

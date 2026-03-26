@@ -9,7 +9,7 @@ set.ship.type(data, list.ur = FALSE)
 \arguments{
 \item{data}{A \code{DeponsShips} object}
 
-\item{list.ur}{If true, will print a message when a ship type identifier is not recognized and set to the catch-all of "Other".
+\item{list.ur}{Logical. If TRUE, will print a message when a ship type identifier is not recognized and set to the catch-all of "Other".
 Defaults to FALSE.}
 }
 \value{

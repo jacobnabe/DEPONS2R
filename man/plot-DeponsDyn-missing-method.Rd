@@ -17,7 +17,7 @@
 the following values.}
 
 \item{plot.energy}{If set to TRUE it plots the amount of energy stored in
-simulated and in the landscape in addition to the population count}
+simulated porpoises and in the landscape in addition to the population count}
 
 \item{plot.legend}{If set to TRUE, a legend is plotted}
 

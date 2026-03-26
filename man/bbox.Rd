@@ -20,7 +20,7 @@ objects.
 }
 \description{
 Retrieves spatial bounding box from object. If a Depons* object
-is a DeponsTrack object containing multiple track, the box bounds all tracks.
+is a DeponsTrack object containing multiple tracks, the box bounds all tracks.
 }
 \seealso{
 \code{\link{make.clip.poly}}

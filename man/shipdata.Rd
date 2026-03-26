@@ -8,7 +8,8 @@
 DeponsShips object
 }
 \description{
-The routes of fifteen ships of different types in the Kattegat during a period of 15 days. The fix points that define the routes use the UTM zone 32 projection (CRS = "+proj=utm +zone=32 +units=m +no_defs +datum=WGS84"; EPSG:32632; see https://epsg.io/32632).
+The routes of fifteen ships of different types in the Kattegat during a period of 15 days. The fix points that define the routes use the UTM zone 32 projection
+(CRS = "+proj=utm +zone=32 +units=m +no_defs +datum=WGS84"; EPSG:32632; see https://epsg.io/32632).
 }
 \seealso{
 [DeponsShips-class]

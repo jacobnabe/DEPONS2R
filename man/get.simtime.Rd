@@ -16,11 +16,10 @@ date from, including the path}
 Returns a \code{POSIXlt} object
 }
 \description{
-Returns the date and time when a specific simulation was finished,
-obtained from the date stored as part of the file name. The date format is system
-dependent, but the function attemts to extract the data assuming that either
-the English or the local language is used.
-(a \code{\link{POSIXlt}} object)
+Returns the date and time (a \code{\link{POSIXlt}} object) when a specific
+simulation was finished, obtained from the date stored as part of the file name.
+The date format is system dependent, but the function attempts to extract the data
+assuming that either the English or the local language is used.
 }
 \seealso{
 \code{\link{get.latest.sim}}

@@ -8,7 +8,7 @@ interpolate.ais.data(aisdata)
 }
 \arguments{
 \item{aisdata}{Data frame including the columns 'id' (ship identifier),
-'time' (text string readable by \code{\link{as.POSIXct}}), 'x' and 'y'
+'time' (character string of the form 'yyyy-mm-dd hh:mm:ss'), 'x' and 'y'
 (recorded ship position, unit: meters), and potentially additional columns}
 }
 \value{

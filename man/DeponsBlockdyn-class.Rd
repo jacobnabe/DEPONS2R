@@ -6,14 +6,14 @@
 \title{DeponsBlockdyn-class}
 \description{
 Stores objects containing population size for different parts of
-the landscape (i.e. different 'blocks')
+the landscape (i.e. different 'blocks').
 }
 \details{
-The \code{dyn} slot contains a data frame with the columns 'tick',
+The \code{dyn} slot contains a data frame with a column 'tick',
 which indicates the number of half-hourly time steps since the start of the
 simulation; a column 'block' indicating the region of the landscape where
-animals were counted, a 'count' column with the number of animals in that block
-and tick. The 'real.time' column shows the real-world equivalent to 'tick, i.e.
+animals were counted; and a column 'count' with the number of animals in that block
+and tick. The 'real.time' column shows the real-world equivalent to 'tick', i.e.
 the time that has passed since 'startday'.
 }
 \section{Slots}{
@@ -26,7 +26,7 @@ simulations. The landscapes 'DanTysk', 'Gemini', 'Kattegat', 'North Sea',
 'Homogeneous', and 'User defined' are distributed with the DEPONS model.}
 
 \item{\code{simtime}}{\code{\link{POSIXlt}} object with the date and time when the simulation was
-finished. This is read from the name of the imput file.}
+finished. This is read from the name of the input file.}
 
 \item{\code{startday}}{POSIXlt object with the first day of the simulation, i.e.
 the first day in the period that the simulations are intended to represent in

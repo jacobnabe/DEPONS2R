@@ -26,8 +26,7 @@ and 'main'.}
 No return value, called for side effects
 }
 \description{
-Plot the values in a DeponsRaster object. Porpoisetracks or
-other kinds of lines, poits etc. can be drawn on top of the plot by adding
+Plot the values in a DeponsRaster object.
 }
 \seealso{
 See method for \code{\link[raster]{plot}} in the \code{raster}

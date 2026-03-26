@@ -14,9 +14,9 @@ tracks generated with DEPONS.
 \section{Slots}{
 
 \describe{
-\item{\code{title}}{Name of the object (character)}
+\item{\code{title}}{Character. Name of the object}
 
-\item{\code{landscape}}{Name of the object (character)}
+\item{\code{landscape}}{Character. Name of the object}
 
 \item{\code{simtime}}{POSIXlt object with the date and time when the simulation was
 finished. This is read from the name of the imput file.}
@@ -24,7 +24,7 @@ finished. This is read from the name of the imput file.}
 \item{\code{crs}}{CRS object providing the coordinate reference system used; see
 \code{\link[sf]{st_crs}} for details}
 
-\item{\code{tracks}}{Listwith one or more tracks, each stored
+\item{\code{tracks}}{List with one or more tracks, each stored
 as a \code{\link[sp]{SpatialPointsDataFrame}} object)}
 }}
 

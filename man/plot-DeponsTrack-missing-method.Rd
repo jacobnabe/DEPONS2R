@@ -12,10 +12,10 @@
 
 \item{y}{Not used}
 
-\item{trackToPlot}{Integer; indicates which track to plot if there is more
+\item{trackToPlot}{Integer. Indicates which track to plot if there is more
 than one track in the object. Defaults to 1}
 
-\item{add}{Logical, whether to add the track to an existing plot
+\item{add}{Logical. Whether to add the track to an existing plot if more than
 one animal was tracked during the simulation.}
 
 \item{...}{Optional plotting parameters}

@@ -99,10 +99,10 @@ The type of these ships is set to "Other" and the speed to 7.4 knots (see \code{
 
 One or more principal construction ships may be intended to remain within the piling area for the entire duration of piling operations without returning to harbour.
 This is achieved by setting the ship's 'daily.pause' duration in the 'ships' dataframe to a high number of ticks (greater than the longest gap between pilings,
-e.g. multiple days of 48 ticks each), which will cause the ship to progress directly from one piling to the next. This value will be capped at 48 ticks before the first 
-and after the last piling event. Note that all this time spent pausing at sea will be parameterized as an active (noisy) pause when the generated ship data set is later 
+e.g. multiple days of 48 ticks each), which will cause the ship to progress directly from one piling to the next. This value will be capped at 48 ticks before the first
+and after the last piling event. Note that all this time spent pausing at sea will be parameterized as an active (noisy) pause when the generated ship data set is later
 processed with \code{\link{make.stationary.ships}}. This may be correct for crane ships or similar that actively hold position at sea, but inappropriate for jack-up vessels
-that take up a fixed position at the piling. In the latter case, the user should make note of the ship's identifier, and after carrying out the 'check' step of processing 
+that take up a fixed position at the piling. In the latter case, the user should make note of the ship's identifier, and after carrying out the 'check' step of processing
 with 'make.stationary.ships', remove all of the ship's entries from the candidates data frame before carrying out the 'replace' step (see \code{\link{make.stationary.ships}} for details).
 }
 \examples{
