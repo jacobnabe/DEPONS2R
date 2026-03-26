@@ -22,8 +22,8 @@ make.windfarms(
 )
 }
 \arguments{
-\item{area.file}{Name of the raster file specifying where the wind farms
-should be constructed.}
+\item{area.file}{Name of the raster file (e.g. in .asc or .tif format)
+specifying where the wind farms should be constructed.}
 
 \item{area.def}{Value in \code{area.file} for the areas were wind farms can
 be located}
@@ -61,7 +61,7 @@ farms. Defaults to the text "random", but can also be a data frame with
 coordinates in the columns x and y.}
 }
 \value{
-data.frame specifying the position of each turbine in a wind farm,
+Dataframe specifying the position of each turbine in a wind farm,
 along with the start time and end time for pile driving of the turbine
 foundation and the sound source level during pile driving. Can be
 exported as a text file and used for controlling DEPONS simulations.
@@ -72,14 +72,18 @@ the position and timing of individual piling events, as well as the sound
 source level. All wind farms are assumed to consist of the same number of
 turbines, laid out in a rectangular grid. The start and end tick (i.e. the
 number of half-hour intervals since simulation start) is generated based on
-provided values for the time it required for each piling and the time between
+provided values for the time required for each piling and the time between
 piling events.
 }
-\note{
+\details{
 The parameters \code{constr.start}, \code{constr.end}, \code{constr.time},
 and \code{constr.break} are truncated to nearest integer value. Construction
 of wind farms starts in WF001 at tick \code{constr.start}. Each turbine
 foundation is piled over a period of \code{constr.time}, followed by a
 noise-free period of \code{constr.break}. Several pile driving operations may
 take place at the same time, to ensure that the last piling ends before \code{constr.end}.
+
+When exported, the dataframe should be specified as a tab-delimited .txt file placed in
+folder /data/wind-farms. It will contain the columns 'id', 'x' (meters), 'y' (meters),
+'impact' (decibel), 'start' and 'end' (tick).
 }

@@ -15,7 +15,7 @@ get.latest.sim(type = "dyn", dir)
 \item{dir}{Directory to look for simulation output in (character string)}
 }
 \value{
-character string with the name of the most recent simulation output
+Character string with the name of the most recent simulation output
 file.
 }
 \description{

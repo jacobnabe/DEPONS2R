@@ -23,12 +23,13 @@ not the current working directory.}
 \item{landscape}{Optional character string with the landscape used in the
 simulation}
 
-\item{simtime}{Character sting with date of simulation (format yyyy-mm-dd).
-If not provided this is obtained from name of input file}
+\item{simtime}{Date and time when the simulation finished (character string
+of the form 'yyyy-mm-dd hh:mm:ss', or POSIXlt). If not provided this is obtained
+from name of input file}
 
 \item{crs}{Character, coordinate reference system (map projection)}
 
-\item{tz}{Time zone used in simulations. Defaults to UTC.
+\item{tz}{Time zone. Default "UTC"
 #'}
 }
 \value{
@@ -43,7 +44,7 @@ simulated animal (several animals can be tracked in one simulation).
 Function  for reading movement tracks produced by DEPONS. These
 describe movements of simulated animals within the simulation landscape, where
 the positions after each 30-min time step are provided using the coordinate
-reference system that were used for generating these landscapes.See
+reference system that were used for generating these landscapes. See
 van Beest et al. (2018) and Nabe-Nielsen et al. (2013) for details regarding
 how these files were generated as a balance between correlated random walk
 behaviour and spatial memory behaviour, which allows animals to return to

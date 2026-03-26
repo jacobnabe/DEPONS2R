@@ -8,10 +8,13 @@ ais.to.DeponsShips(data, landsc, title = "NA", ...)
 }
 \arguments{
 \item{data}{data.frame with ship positions and the times at which the
-positions were recorded. Must contain the columns 'id', 'time' (of the form
-"%Y-%m-%d %H:%M:%S", character, see \code{\link{as.POSIXct}}), 'type' (ship
-type, character), 'length' (ship length, meters), 'x', and 'y' (position,
-meters/UTM).}
+positions were recorded. Must contain the columns ’id’ (character), ’time’
+(character string of the form 'yyyy-mm-dd hh:mm:ss'), 'type' (character), ’length’
+(ship length; meters, numeric), ’x’, and ’y’ (position; meters/UTM, numeric).
+'type' must correspond to one of the vessel classes from Table 1 in MacGillivray &
+de Jong (2021). The user may instead provide numerical AIS vessel type codes here
+and later convert these into the recognized ship types in the DeponsShips object
+using \code{\link{set.ship.type}}.}
 
 \item{landsc}{A \code{DeponsRaster} object corresponding to the
 landscape that the ships move in. It is assumed that the spatial projection
@@ -20,27 +23,15 @@ of the ship positions corresponds to that of the DeponsRaster object}
 \item{title}{Title of the output object}
 
 \item{...}{Optional parameters, including 'startday' and 'endday'
-("%Y-%m-%d %H:%M:%S", character) for defining the first and last date to use
+(character string of the form 'yyyy-mm-dd') for defining the first and last date to use
 from 'data'. If startday = endday the output object will contain up to
 49 positions from the selected date for each vessel track.}
 }
 \value{
-Returns a \code{DeponsShips} object containing one or more ships
-assigned to each of the routes in the object. All ships on a particular
-route move at the same speed along the route. The routes are
-defined by x and y coordinates based on the same coordinate reference
-system as the landscape they are located in. The speed that ships use after
-reaching a particular position (a particular 'virtual buoy') is calculated
-from the distance to the following position, and the time it takes reaching
-that position. If speed is included in the input AIS data, this is NOT used.
-The routes include one position per half-hour time step, corresponding to
-the default time step used in the DEPONS model. If input data does not
-include one position per half hour, new positions are generated using linear
-interpolation. If the input data contains many positions in a particular
-half-hour interval, only the positions closest to the half-hour interval are
-used. The routes contain information about the number of half-hour
-intervals were ships 'pause' at a particular location, e.g. in a
-port. These are calculated based on the input AIS data.
+A \code{DeponsShips} object containing one or more ships
+assigned to each of the routes in the object. The routes contain information about the number of half-hour
+intervals were ships 'pause' at a particular location without noise emission,
+e.g. in a port. These are calculated based on the input AIS data.
 }
 \description{
 Convert Automatic Identification System (AIS) data for ships to
@@ -49,6 +40,42 @@ extent of a landscape and converting the data to a \code{DeponsShips-class}
 object. If the AIS data does not include ship positions recorded in half-hour
 steps, the tracks are interpolated to make objects suitable for use in DEPONS.
 }
+\details{
+All ships on a particular route move at the same speed along the route.
+The routes are defined by x and y coordinates based on the same coordinate reference
+system as the landscape they are located in. The speed that ships use after
+reaching a particular position (a particular 'virtual buoy') is calculated
+from the distance to the following position, and the time it takes reaching
+that position. Any speed data provided in the input are ignored.
+The routes include one position per half-hour time step, corresponding to
+the default time step used in the DEPONS model. If input data does not
+include one position per half hour, new positions are generated using linear
+interpolation. If the input data contains many positions in a particular
+half-hour interval, only the positions closest to the half-hour interval are
+used.
+
+Either both or neither of 'startday' and 'endday' must be provided. If these
+dates are given, ship routes that do not span the full duration will be buffered
+with pauses from and to the start and end dates, and all routes will be recycled
+when 'endday' is reached. If the dates are not given, routes will not be buffered,
+all routes will start on the first tick of the simulation, and each route will be
+recycled individually when it reaches its last position.
+
+Individual routes that are too short to integrate (< 30 min duration) will be shown
+in console and omitted from the created DeponsShips object.
+
+Note that DEPONS assumes months of 31 days for January and March, 28 days for February,
+and 30 days for all other months. Entries with the following dates are omitted when the
+data are processed, and the dates cannot be used as 'startday' or 'endday':
+February 29, and May/June/July/October/December 31.
+}
+\section{References}{
+
+MacGillivray, A., & de Jong, C (2021). A reference spectrum model for estimating source
+levels of marine shipping based on Automated Identification System data. Journal of
+Marine Science and Engineering, 9(4), 369. doi:10.3390/jmse9040369
+}
+
 \examples{
 data(aisdata)
 plot(aisdata$x, aisdata$y, type="n", asp=1)
@@ -80,10 +107,14 @@ routes(depons.ais2)
 \code{\link{aisdata}} for an example of data that can be used as
 input to ais.to.DeponsShips. The function builds on
 \code{\link{interpolate.ais.data}}, which interpolates tracks to ensure
-that there is a position every 30 minutes. Use \code{\link{check.DeponsShips}}
-for testing if speeds are realistic.
+that there is a position every 30 minutes.
 See \code{\link[DEPONS2R]{write.DeponsShips}} for conversion of
 \code{DeponsShips} objects to json-files to be used in DEPONS. Use
 \code{\link{routes}}, \code{\link{ships}}, and \code{\link{title}} for
 inspection/modification of the ship tracks.
+See \code{\link{check.DeponsShips}} for testing if speeds are realistic.
+See \code{\link{set.ship.type}} to convert numerical AIS vessel identifiers into recognized
+ship types, if these have not yet been provided here.
+See \code{\link{make.stationary.ships}} for augmenting existing DeponsShips objects with
+information on stationary but active ships (e.g. bollard pushing, dynamic positioning systems).
 }

@@ -614,7 +614,7 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' 'type' must correspond to one of the vessel classes from Table 1 in MacGillivray &
 #' de Jong (2021). The user may instead provide numerical AIS vessel type codes here
 #' and later convert these into the recognized ship types in the DeponsShips object
-#' using \code{\link{set.ship.types}}.
+#' using \code{\link{set.ship.type}}.
 #' @param landsc A \code{DeponsRaster} object corresponding to the
 #' landscape that the ships move in. It is assumed that the spatial projection
 #' of the ship positions corresponds to that of the DeponsRaster object
@@ -667,7 +667,7 @@ setMethod("routes<-", signature=("DeponsShips"), function(x, value) {
 #' \code{\link{routes}}, \code{\link{ships}}, and \code{\link{title}} for
 #' inspection/modification of the ship tracks.
 #' See \code{\link{check.DeponsShips}} for testing if speeds are realistic.
-#' See \code{\link{set.ship.types}} to convert numerical AIS vessel identifiers into recognized
+#' See \code{\link{set.ship.type}} to convert numerical AIS vessel identifiers into recognized
 #' ship types, if these have not yet been provided here.
 #' See \code{\link{make.stationary.ships}} for augmenting existing DeponsShips objects with
 #' information on stationary but active ships (e.g. bollard pushing, dynamic positioning systems).
@@ -1207,13 +1207,13 @@ ais.to.DeponsShips <- function (data, landsc, title = "NA", ...)
   # post-hoc cleanup: remove routes that were successfully interpolated timewise but have no movement
   zero.move <- vector()
   for (i in 1:length(all.cropped.DS@routes$route)) {
-    if (nrow(all.cropped.DS@routes$route[[i]]) == 1) zero.move <- c(zero.move, i) 
+    if (nrow(all.cropped.DS@routes$route[[i]]) == 1) zero.move <- c(zero.move, i)
   }
   if (length(zero.move) > 0) {
     all.cropped.DS@routes <- all.cropped.DS@routes[-(zero.move),]
     all.cropped.DS@ships <- all.cropped.DS@ships[-(zero.move),]
   }
-         
+
   validObject(all.cropped.DS)
   return(all.cropped.DS)
 } # end of ais.to.DeponsShips
@@ -1553,7 +1553,7 @@ make.stationary.ships <- function(x,
 # end of 'make.stationary.ships'
 
 
-                                                               
+
 #' @title Generate artificial AIS data representing ship traffic during wind farm construction
 #' @name make.construction.traffic
 #' @description Generates artificial Automatic Identification System (AIS) data to represent ship traffic connected with the construction
@@ -1616,10 +1616,10 @@ make.stationary.ships <- function(x,
 #'
 #' One or more principal construction ships may be intended to remain within the piling area for the entire duration of piling operations without returning to harbour.
 #' This is achieved by setting the ship's 'daily.pause' duration in the 'ships' dataframe to a high number of ticks (greater than the longest gap between pilings,
-#' e.g. multiple days of 48 ticks each), which will cause the ship to progress directly from one piling to the next. This value will be capped at 48 ticks before the first 
-#' and after the last piling event. Note that all this time spent pausing at sea will be parameterized as an active (noisy) pause when the generated ship data set is later 
+#' e.g. multiple days of 48 ticks each), which will cause the ship to progress directly from one piling to the next. This value will be capped at 48 ticks before the first
+#' and after the last piling event. Note that all this time spent pausing at sea will be parameterized as an active (noisy) pause when the generated ship data set is later
 #' processed with \code{\link{make.stationary.ships}}. This may be correct for crane ships or similar that actively hold position at sea, but inappropriate for jack-up vessels
-#' that take up a fixed position at the piling. In the latter case, the user should make note of the ship's identifier, and after carrying out the 'check' step of processing 
+#' that take up a fixed position at the piling. In the latter case, the user should make note of the ship's identifier, and after carrying out the 'check' step of processing
 #' with 'make.stationary.ships', remove all of the ship's entries from the candidates data frame before carrying out the 'replace' step (see \code{\link{make.stationary.ships}} for details).
 #'
 #' @param pilings A data frame containing the positions and times of piling operations during the construction of a wind farm.
@@ -1821,8 +1821,8 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
   construction.ships[,c(4:6)] <- as.numeric(unlist(construction.ships[,c(4:6)]))
   return(construction.ships)
 }
-                                                               
-                                                               
+
+
 
 #' @title Convert AIS vessel type identifiers into the ship types recognized by DEPONS
 #' @name set.ship.type
@@ -1920,12 +1920,12 @@ set.ship.type <- function(data, list.ur = FALSE) {
   return(data)
 }
 
-                                                               
+
 
 #' Ships on example routes through the Kattegat
 #'
 #' @description
-#' The routes of fifteen ships of different types in the Kattegat during a period of 15 days. The fix points that define the routes use the UTM zone 32 projection 
+#' The routes of fifteen ships of different types in the Kattegat during a period of 15 days. The fix points that define the routes use the UTM zone 32 projection
 #' (CRS = "+proj=utm +zone=32 +units=m +no_defs +datum=WGS84"; EPSG:32632; see https://epsg.io/32632).
 #'
 #' @name shipdata

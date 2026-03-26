@@ -30,6 +30,4 @@
 }
 \description{
 Get or set the landscape name
-
-Get or set the landscape name
 }

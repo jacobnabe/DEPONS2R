@@ -13,21 +13,21 @@ and ship agents used in DEPONS simulations.
 \section{Slots}{
 
 \describe{
-\item{\code{title}}{Name of the object (character)}
+\item{\code{title}}{Character. Name of the object}
 
-\item{\code{landscape}}{Name of the landscape that the ships occur in (character)}
+\item{\code{landscape}}{Character. Name of the landscape that the ships occur in}
 
 \item{\code{crs}}{CRS object providing the coordinate reference system used; see
 \code{\link[sp]{CRS}} for details}
 
-\item{\code{routes}}{\code{data.frame} geographic positions of the 'virtual buoys'
+\item{\code{routes}}{\code{data.frame}. Geographic positions of the 'virtual buoys'
 that define one or more ship routes that ship agents follow, and the speed
 that the ships should use when following this route. They also provide
 information about how long ships should use speed zero when reaching a
 specific buoy ('i.e. 'pause', measured in minutes). Can be extracted
 using the \code{\link{routes}} function.}
 
-\item{\code{ships}}{\code{data.frame} defining each of the ships occurring in DEPONS
+\item{\code{ships}}{\code{data.frame}. Defines each of the ships occurring in DEPONS
 simulations, and the routes they occur on. The data frame includes the variables
 'name', 'type', 'length', and 'route'. Info can be extracted using the
 \code{\link{ships}} function.}

@@ -4,6 +4,65 @@
 
 # devtools::document()  # Make rd files based on roxygen comments.
 
+#' @name geminidata
+#' @docType data
+#' @title Observed and simulated data from Gemini windfarm construction
+#' @description A nested list containing observed and simulated data used for
+#' response-to-piling calibration in the Gemini case study.
+#'
+#' The observed data component contains CPOD detections, CPOD coordinates,
+#' gemini piling coordinates and schedule, and observed DPM data aggregated by
+#' distance to piling and hour since piling. `cpod.data`, `cpod.coord`, and
+#' `piling.data` are used in [calib_03_make_sim_dpm()], and `obs.dpm` is used
+#' to calculate SSD with the function [calib_03_ssd()].
+#'
+#' The simulated data component contains raw simulated porpoise counts per block
+#' (`sim.data`; summed across 10000 replicates) resulting from the best combination of
+#' c and RT in DEPONS 4.0, and those simulated data aggregated by
+#' distance interval and hour since piling (`sim.dpm`; aggregated with the function
+#' [calib_03_make_sim_dpm()]). These simulated DPM data can be visualised against
+#' observed ones with the function [calib_03_ssd()].
+#' @format A nested list with two elements:
+#' \describe{
+#'   \item{obs.data}{A list containing:
+#'     \describe{
+#'       \item{piling.data}{Data frame of gemini piling coordinates and schedule.}
+#'       \item{cpod.coord}{Data frame of CPOD station coordinates.}
+#'       \item{cpod.data}{Observed CPOD detection data.}
+#'       \item{dpm.vs.hr}{Observed DPM data aggregated by distance to piling and
+#'       hour since piling.}
+#'     }
+#'   }
+#'   \item{sim.data}{A list containing:
+#'     \describe{
+#'       \item{sim.data}{Raw simulated porpoise counts per block.}
+#'       \item{sim.dpm.vs.hr}{Simulated DPM data aggregated by distance interval
+#'       and hour since piling.}
+#'     }
+#'   }
+#' }
+#' @keywords datasets
+# data("geminidata")
+
+#' @name argosmetrics
+#' @docType data
+#' @title Fine and Large-scale metrics of Argos data
+#' @description A nested list containing fine- and large-scale movement metrics
+#' derived from satellite-tracked harbour porpoises (Argos data) in the North Sea
+#' and Kattegat.
+#'
+#' Fine-scale movement metrics include home range (HR, km2), mean net squared
+#' displacement (NSD, km2), and residence time (RT, days), calculated from
+#' 30-day track segments during which animals used only fine-scale movements.
+#'
+#' Large-scale movement metrics include HR (km2), maximum NSD (km2), a sinuosity
+#' index (Benhamou, 2004), and cumulative distance moved (km), calculated from
+#' 100-day track segments irrespective of movement type. Large-scale metrics are
+#' available for the North Sea only.
+#' @format A nested list of data frames.
+#' @keywords datasets
+#data("argosmetrics")
+
 #' @name  shipdata
 #' @docType data
 #' @title Hypothetical ships on  routes through Kattegat

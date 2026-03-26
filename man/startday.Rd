@@ -24,13 +24,8 @@
 }
 \description{
 Get or set start date for simulation
-
-Get or set start date for simulation
 }
 \details{
-The start date indicates the start of the period that the simulation
-is supposed to represent.
-
 The start date indicates the start of the period that the simulation
 is supposed to represent.
 }

@@ -24,18 +24,17 @@ if this is not the current working directory.}
 
 \item{landscape}{The landscape used in the simulation}
 
-\item{simtime}{Optional character string with the date and time when the
-simulation finished (format yyyy-mm-dd). If not provided this is obtained
+\item{simtime}{Optional date and time when the simulation finished (character string
+of the form 'yyyy-mm-dd hh:mm:ss', or POSIXlt). If not provided this is obtained
 from name of input file}
 
 \item{startday}{The start of the period that the  simulation represents, i.e.
 the real-world equivalent of 'tick 1' (character string of the
 form 'yyyy-mm-dd', or POSIXlt). Default "2010-01-01"}
 
-\item{timestep}{Time step used in the model, in minutes. Default 30 minutes.}
+\item{timestep}{Time step used in the model, in minutes. Default 30 minutes}
 
-\item{tz}{Time zone. In DEPONS times are generally assumed to be in "UTC"
-(Coordinated Universal Time).}
+\item{tz}{Time zone. Default "UTC"}
 }
 \value{
 \code{DeponsDyn} object containing simulation output
@@ -47,7 +46,7 @@ Function  for reading simulation output produced by DEPONS.
 \dontrun{
 dyn.file <- "/Applications/DEPONS 2.1/DEPONS/Statistics.2020.Sep.02.20_24_17.csv"
 file.exists(dyn.file)
-porpoisedyn <- read.DeponsDyn(dyn.file, startday=as.POSIXlt("2010-01-01", tz = "UTC"))
+porpoisedyn <- read.DeponsDyn(dyn.file, startday="2010-01-01", tz = "UTC")
 porpoisedyn
 }
 }

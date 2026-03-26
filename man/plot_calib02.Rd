@@ -4,13 +4,16 @@
 \alias{plot_calib02}
 \title{Plotting of simulated fine or large-scale metrics against argos data}
 \usage{
-plot_calib02(sim.metrics, option)
+plot_calib02(sim.metrics, option, landscape)
 }
 \arguments{
 \item{sim.metrics}{A dataframe of movement metrics obtained with the calib_02 function}
 
 \item{option}{A character string, either `"fine"` or `"large"`, indicating which set of Argos metrics (fine-scale or large-scale)
 to plot against simulated ones.}
+
+\item{landscape}{A character strong, either `"NorthSea"` or `"Kattegat"`, indicating
+metrics from which landscape to plot against simulated ones.}
 }
 \value{
 a plot of real (Argos) vs simulated metrics
