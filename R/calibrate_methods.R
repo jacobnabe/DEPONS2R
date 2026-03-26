@@ -3,6 +3,7 @@
 ## reading in files produced by DEPONS when running in batch mode.
 ## Written by Axelle Cordier 2024-2025.
 
+
 #' @title Plot distribution of turning angles, step lengths and speed of tracked simulated porpoises.
 #'
 #' @param depons_track Object of class `DeponsTrack` produced by either read.DeponsTrack or read.DeponsTrackBatch
@@ -46,6 +47,9 @@ calib_01 <- function(depons_track) {
 #' @param option A character string, either `"fine"` or `"large"`, indicating which type of movement (fine-scale or large-scale)
 #' metrics to return.`"fine"` returns home range, mean net squared displacement, and mean residence time. `"large"` returns home range,
 #' maximum net squared displacement, sinuosity and cumulative distance moved.
+#' @param h A character string or number representing the smoothing parameter in the `kernelUD` function
+#' from the `adehabitatHR` package. For the NorthSea, h should be set to "href" and
+#' h should be "15000" (15 km) in the Kattegat.
 #' @return A dataframe storing either fine scale metrics (home range (HR, km2), mean net squared displacement (NSD, km2)
 #' and mean residence time (RT, days)) or large scale metrics (HR, max NSD, sinuosity index and cumulative distance moved (km)).
 #' @import adehabitatHR
@@ -79,25 +83,20 @@ calib_01 <- function(depons_track) {
 #'# filter data to only the 30 consecutive days
 #'filtered_tracks <- noon_tracks[as.Date(noon_tracks$date) %in% consecutive_days, ]
 #'
-#'calib_02(filtered_tracks, option = "fine")
+#'calib_02(filtered_tracks, option = "fine", h="href")
 #'}
 
 
-calib_02 <- function(track_cleaned, option) {
+calib_02 <- function(track_cleaned, option, h) {
 
   coordinates(track_cleaned) <- ~ x + y
 
   # Home Range
   track <- track_cleaned[, c("Id")] # kernelUD function only accepts Id, x and y
-  cellsize <- 400
+  grid_cells <- 400
+  extent_factor <-5
 
-  null.grid <- expand.grid(x = seq(min(coordinates(track)[, 1]) - 300000,
-                                   max(coordinates(track)[, 1]) + 300000, by = cellsize),
-                           y = seq(min(coordinates(track)[, 2]) - 300000,
-                                   max(coordinates(track)[, 2]) + 300000, by = cellsize))
-  coordinates(null.grid) <- ~ x + y
-  gridded(null.grid) <- TRUE
-  kernel.ref <- kernelUD(track, h = "href", grid = null.grid)
+  kernel.ref <- kernelUD(track, h = h, grid = grid_cells, extent = extent_factor)
   kernel.poly <- getverticeshr(kernel.ref, percent = 95, unin = c("m"), unout = "km2")
   HRsize <- data.frame(kernel.poly$id, kernel.poly$area)
   colnames(HRsize) <- c("ID", "HRarea")
@@ -155,13 +154,15 @@ calib_02 <- function(track_cleaned, option) {
 #' @param sim.metrics A dataframe of movement metrics obtained with the calib_02 function
 #' @param option A character string, either `"fine"` or `"large"`, indicating which set of Argos metrics (fine-scale or large-scale)
 #' to plot against simulated ones.
+#' @param landscape A character strong, either `"NorthSea"` or `"Kattegat"`, indicating
+#' metrics from which landscape to plot against simulated ones.
 #' @return a plot of real (Argos) vs simulated metrics
 #' @export
 #'
-plot_calib02 <- function(sim.metrics, option) {
+plot_calib02 <- function(sim.metrics, option, landscape) {
 
   graphics::par(mfrow = c(1, 3), mar = c(5, 4, 4, 2))
-  argos.metrics<-DEPONS2R::argosmetrics[[option]]
+  argos.metrics<-DEPONS2R::argosmetrics[[landscape]][[option]]
   metrics <-c(colnames(argos.metrics[2:max(col(argos.metrics))]))
 
   for (i in seq_along(metrics)) {
@@ -180,6 +181,261 @@ plot_calib02 <- function(sim.metrics, option) {
               col = c("#d73027", "#ef8a62"), boxwex = 0.1)
     }
   }
+}
+
+#' @title Create piling-response table from simulated porpoise counts
+#' @description Converts a simulation summary table into the aggregated
+#' DPM-vs-hours-since-piling table used for response to piling calibration.
+#' The function matches simulated porpoise counts to CPOD stations and pods,
+#' assigns each record to the nearest piling event (found by the helper function
+#' `find.nearest.piling`), groups records into distance intervals from piling (
+#' using the helper function `get.pods.at.dist.sim.dat`), and aggregates detections
+#' by piling event and hour since piling (using the helper function `aggregate.dpm.sim.dat`).
+#' The output has the same general structure as the observed DPM data used for
+#' comparison with simulations.
+#' The default distance interval classes are 1.5-3 km, 3-6 km, 6-9 km, 9-12 km,
+#' 12-15 km and 15-18 km (modify parameters min.dists and max.dists to get different
+#' intervals).
+#' @param sim.data Data frame with at least columns `block`, `datetime`, `PorpoiseCount`.
+#' @param cpod.data A data frame of observed CPOD data containing at least
+#' the columns `station`, `time`, and `pod`. For each station, this table is
+#' used to identify which CPOD was active and when pod switches occurred, so
+#' that simulated records can be matched to the correct pod before aggregation.
+#' @param cpod.coord CPOD coordinates table. Should contain at least columns `station`,
+#' `x`, `y`. Station numbers should correspond to block numbers in the "block.asc" file
+#' used to count porpoises per block in DEPONS.
+#' @param piling.data Piling data table. Should contain at least columns `id`,
+#' `x`, `y`, `start.time`,`stop.time`. The `start.time` and `stop.time` columns should be
+#' date-time objects or character strings convertible to date-time format,
+#' expressed in the same time zone as `sim.dat$datetime`.
+#' @param min.dists Numeric vector of lower distance bounds in meters. This is to create
+#' an interval of distance from piling, and dpm is aggregated per distance interval.
+#' @param max.dists Numeric vector of upper distance bounds in meters.
+#' @param c.val Simulation parameter value for `c`.
+#' @param RT.val Simulation parameter value for `RT`.
+#' @param tz Time zone.
+#' @param bad.data A data frame with columns `date.start`, `date.end` (Date
+#' objects), and `station` (numeric). One row per exclusion. Use `NULL`
+#' (default) to treat all data as good.
+#' @return A data frame with aggregated DPM-vs-hour, with the same format as
+#' observed DPM data.
+#' @examples \dontrun{
+#' load(gemini.obs.data)
+#' bad.data <- data.frame(date.start = as.Date("2010-06-20"),
+#' date.end = as.Date("2010-06-25"),
+#' station = c(7, 8))
+#'
+#' dpm.sim <- calib_03_make_sim_dpm(sim.data = sim.data,
+#' cpod.data = gemini.obs.data$cpod.data,
+#' cpod.coord = gemini.obs.data$cpod.coord,
+#' piling.data = gemini.obs.data$piling.data,
+#' c.val = gemini.sim.data$sim.data$c,
+#' RT.val = gemini.sim.data$sim.data$RT,
+#' tz = "Europe/Amsterdam",
+#' bad.data = bad.data)
+#'}
+#' @export calib_03_make_sim_dpm
+calib_03_make_sim_dpm <- function(sim.data, cpod.data, cpod.coord, piling.data,
+                                      min.dists = c(1500, 3000, 6000, 9000, 12000, 15000),
+                                      max.dists = c(3000, 6000, 9000, 12000, 15000, 18000),
+                                      c.val, RT.val, tz, bad.data) {
+
+  extract.table <- data.frame(min.dists = min.dists, max.dists = max.dists)
+  extract.table$lab <- paste0(min.dists / 1000, "-", max.dists / 1000, " km")
+
+  sim.data$station <- as.numeric(sim.data$block)
+  sim.data$time <- as.POSIXct(sim.data$datetime, format = "%Y-%m-%d %H:%M:%S", tz = tz)
+
+  cpod.lookup <- cpod.data[, c("station", "time", "pod")]
+  cpod.lookup <- cpod.lookup[!is.na(cpod.lookup$pod), ]
+  cpod.lookup$time <- as.POSIXct(cpod.lookup$time, tz = tz)
+  cpod.lookup <- cpod.lookup[order(cpod.lookup$station, cpod.lookup$time), ]
+
+  sim.data$pod <- NA_real_
+
+  for (st in sort(unique(cpod.lookup$station))) {
+    cp_st <- cpod.lookup[cpod.lookup$station == st, ]
+    sim_st <- sim.data$station == st
+
+    if (!any(sim_st)) next
+
+    pod_ids <- unique(cp_st$pod)
+
+    if (length(pod_ids) == 1) {
+      sim.data$pod[sim_st & sim.data$time <= max(cp_st$time)] <- pod_ids[1]
+    } else {
+      pod1 <- pod_ids[1]
+      pod2 <- pod_ids[2]
+      switch_time <- min(cp_st$time[cp_st$pod == pod2], na.rm = TRUE)
+
+      sim.data$pod[sim_st & sim.data$time < switch_time]  <- pod1
+      sim.data$pod[sim_st & sim.data$time >= switch_time] <- pod2
+    }
+  }
+
+  sim.data <- sim.data[!is.na(sim.data$pod), ]
+
+  sim.data$dpm <- sim.data$PorpoiseCount
+  sim.data$nall <- 500
+  sim.data$good.data <- TRUE
+  if (!is.null(bad.data)) {
+    for (i in seq_len(nrow(bad.data))) {
+      sim.data$good.data[
+        as.Date(sim.data$time) >= bad.data$date.start[i] &
+          as.Date(sim.data$time) <= bad.data$date.end[i] &
+          sim.data$station == bad.data$station[i]
+      ] <- FALSE
+    }
+  }
+
+  sim.data <- sim.data[, c("station", "time", "pod", "dpm", "nall", "good.data")]
+
+  sim.data2 <- find.nearest.piling(cpod.coord, sim.data, piling.data)
+
+  extract.list <- vector("list", length = nrow(extract.table))
+  names(extract.list) <- extract.table$lab
+
+  for (j in seq_len(nrow(extract.table))) {
+    tmp <- get.pods.at.dist.sim.dat(extract.table$min.dists[j],
+      extract.table$max.dists[j], sim.data2, tz=tz)
+    extract.list[[j]] <- tmp[tmp$np != "NA", ]
+  }
+
+  sim.dpm <- data.frame()
+
+  for (j in seq_along(extract.list)) {
+    sim.data4 <- aggregate.dpm.sim.dat(extract.list[[j]])
+    sim.data5 <- sim.data4[!is.na(sim.data4$sum.dpm), ]
+
+    tt <- which(names(sim.data5) == "minutes.per.hr")
+    names(sim.data5)[tt] <- "minutes.w.dpm.data"
+
+    sim.data5$dist.from.nearest.piling <- names(extract.list)[j]
+    sim.dpm <- rbind(sim.dpm, sim.data5)
+  }
+
+  sim.dpm$c  <- c.val
+  sim.dpm$RT <- RT.val
+
+  sim.dpm
+}
+
+#' @title Compute SSD for one response to piling simulation
+#' @description Computes the sum of squared differences (SSD) between observed
+#' and simulated porpoise detection responses to piling, separately for each
+#' distance class and summed across classes.
+#'
+#' Observed and simulated aggregated DPM data are first summarised by hour since
+#' piling. Simulated values are then scaled to have the same overall mean and
+#' standard deviation as the observed values before SSD is calculated.
+#'
+#' @param sim.dpm Data frame returned by `calib_03_make_dpm_simdat()`.
+#' @param obs.dpm Observed DPM-vs-hour data.
+#' @param filter.good.data Logical. If `TRUE`, rows flagged as
+#' `good.data == FALSE` are excluded from both `sim.dpm` and `obs.dpm`
+#' before computing the SSD. Defaulft is `TRUE`.
+#' @param plot Logical. If `TRUE`, the function plots the observed and scaled simulated
+#' response curves for each distance class
+#' @return A list with `sum.ssd` and per-distance SSD table.
+#' @examples \dontrun{
+#' load(gemini.obs.data)
+#' load(gemini.sim.data)
+#'
+#' calib_03_ssd(sim.dpm=gemini.sim.data$dpm.sim,
+#' obs.dpm = gemini.obs.data$dpm.vs.hr, plot=T)
+#'}
+#' @export calib_03_ssd
+calib_03_ssd <- function(sim.dpm, obs.dpm, filter.good.data = TRUE, plot = FALSE) {
+
+  if (filter.good.data) {
+    sim.dpm <- sim.dpm[sim.dpm$good.data, ]
+    obs.dpm <- obs.dpm[obs.dpm$good.data, ]
+  }
+
+  dist_classes <- unique(as.character(obs.dpm$dist.from.nearest.piling))
+  sum.ssd <- 0
+  ssd_by_dist <- data.frame()
+
+  obs.all <- obs.dpm[obs.dpm$dist.from.nearest.piling %in% dist_classes, ]
+  sim.all <- sim.dpm[sim.dpm$dist.from.nearest.piling %in% dist_classes, ]
+
+  s <- data.frame()
+
+  for (sel.dist in dist_classes) {
+    obs2 <- obs.all[obs.all$dist.from.nearest.piling == sel.dist, ]
+    obs.sum <- summarise.aggregated.dpm.dat(obs2, label = sel.dist)
+    obs.sum2 <- data.frame(obs.sum[obs.sum$hrs.since.piling >= 0, ], sel.dist = sel.dist)
+
+    sim2 <- sim.all[sim.all$dist.from.nearest.piling == sel.dist, ]
+    sim.sum <- summarise.aggregated.dpm.dat(sim2, label = sel.dist)
+    sim.sum2 <- data.frame(sim.sum[sim.sum$hrs.since.piling >= 0, ], sel.dist = sel.dist)
+
+    if (any(obs.sum2$hrs.since.piling != sim.sum2$hrs.since.piling)) {
+      stop("Mismatch in hrs.since.piling between observed and simulated data.")
+    }
+
+    all.data2 <- cbind(sim.sum2,obs.dpm = as.numeric(obs.sum2$mean.dpm),
+      obs.se.dpm = as.numeric(obs.sum2$se.dpm))
+
+    s <- rbind(s, all.data2)
+  }
+
+  s$s.sim.dpm <- scale(s$mean.dpm, scale = TRUE)
+  s$s.sim.dpm <- as.numeric(s$s.sim.dpm) * stats::sd(s$obs.dpm) + mean(s$obs.dpm)
+
+  for (sel.dist in dist_classes) {
+    sel.dist.data <- s[s$sel.dist == sel.dist, ]
+    if (nrow(sel.dist.data) == 0) next
+
+    ssd <- sum((sel.dist.data$s.sim.dpm - sel.dist.data$obs.dpm)^2)
+
+    sum.ssd <- sum.ssd + ssd
+    ssd_by_dist <- rbind(ssd_by_dist, data.frame(dist.from.nearest.piling = sel.dist, ssd = ssd))
+  }
+
+  if (plot) {
+    old.par <- graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(old.par), add = TRUE)
+
+    n_dist <- length(dist_classes)
+    ncol <- 2
+    nrow <- ceiling(n_dist / ncol)
+
+    graphics::par(mfrow = c(nrow, ncol), mar = c(2, 2, 2, 1), oma = c(4, 3, 0.5, 0.5))
+
+    y_max <- max(c(s$obs.dpm + s$obs.se.dpm, s$s.sim.dpm), na.rm = TRUE)
+    y_min <- min(c(s$obs.dpm - s$obs.se.dpm, s$s.sim.dpm), na.rm = TRUE)
+
+    for (sel.dist in dist_classes) {
+      sel.dist.data <- s[s$sel.dist == sel.dist, ]
+      sel.ssd <- ssd_by_dist$ssd[ssd_by_dist$dist.from.nearest.piling == sel.dist]
+
+      graphics::plot(sel.dist.data$hrs.since.piling, sel.dist.data$obs.dpm, pch = 16,
+        xlab = "Hrs since piling stopped", ylab = "Relative porpoise density",
+        main = sel.dist, ylim = c(y_min, y_max))
+      graphics::lines(sel.dist.data$hrs.since.piling, sel.dist.data$obs.dpm)
+
+      graphics::arrows(sel.dist.data$hrs.since.piling, sel.dist.data$obs.dpm - sel.dist.data$obs.se.dpm,
+        sel.dist.data$hrs.since.piling, sel.dist.data$obs.dpm + sel.dist.data$obs.se.dpm,
+        length = 0.02, angle = 90, code = 3)
+
+      graphics::points(sel.dist.data$hrs.since.piling, sel.dist.data$s.sim.dpm, col = "red")
+      graphics::lines(sel.dist.data$hrs.since.piling, sel.dist.data$s.sim.dpm, col = "red")
+
+      graphics::text(x = max(sel.dist.data$hrs.since.piling, na.rm = TRUE) * 0.8,
+        y = y_min + 0.05 * (y_max - y_min), labels = paste("SSD:", round(sel.ssd, 2)))
+
+      if (sel.dist == dist_classes[1]) {
+        graphics::legend("topleft", legend = c("Observed", "Sim (scaled)"),
+          col = c("black", "red"), lty = 1, pch = 16,bty = "n")
+      }
+    }
+
+    graphics::mtext("Hrs since piling stopped", side = 1, line = 1, outer = TRUE)
+    graphics::mtext("Relative porpoise density", side = 2, line = 1, outer = TRUE)
+  }
+
+  list(sum.ssd = sum.ssd, ssd_by_dist = ssd_by_dist)
 }
 
 #' @title Read and merges DEPONS Batchmap and Statistics Files

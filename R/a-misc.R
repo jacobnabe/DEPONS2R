@@ -517,3 +517,237 @@ setMethod("make.clip.poly", signature("matrix"),
           }
 )
 
+
+
+#' @name find.nearest.piling
+#' @title Find nearest active piling from simulated CPOD blocks
+#' @description For each row of simulated porpoise data, this function identifies whether any
+#' piling event was active at that time and, if so, assigns the nearest active
+#' piling based on Euclidean distance between the simulated location and the piling
+#' location. If more than one piling is active for a given row, the function keeps the
+#' closest active piling only. It adds the ID of the nearest active piling, the distance to that
+#' piling, and the piling start time to the input simulation table.
+#' This function is intended for simulated PorpoisePerBlock data that have already
+#' been reformatted to match the structure of CPOD-derived data used in the
+#' Gemini piling-response workflow.
+#' @param cpod.coord A data frame containing CPOD station coordinates, including
+#'   station ID and projected `x`/`y` coordinates.
+#' @param sim.data A dataframe of PorpoisePerBlock outputs transformed into columns "station",
+#' "time", "pod", "dpm", "nall", "good.data".
+#' @param piling.data A data frame containing piling event information, including
+#'   piling ID, start and stop times, and projected `x`/`y` coordinates.
+#' @param tz Character string giving the time zone used for piling start and stop
+#'   times. Default is `"Europe/Amsterdam"`.
+#' @return A data frame equal to `sim.data` joined with station coordinates and with
+#'   three additional columns: `nearest.piling`, `np.dist`, and `np.starttime`.
+#' @export find.nearest.piling
+find.nearest.piling <- function(cpod.coord, sim.data, piling.data, tz="Eupore/Amsterdam") {
+cpod.coord$station <- as.numeric(sub(".*?(\\d+)$", "\\1", as.character(cpod.coord$station)))
+sim.data2 <- merge(sim.data, cpod.coord)
+sim.data2$nearest.piling <- "NA"
+sim.data2$np.dist <- NA
+sim.data2$np.starttime <- NA
+message(paste("Number of rows:", dim(sim.data2)[1]))
+# piling data in model was in UTC so need to convert to Europe Ams to get same as sim output data
+attributes(piling.data$start.datetime)$tzone <- tz
+attributes(piling.data$stop.datetime)$tzone <- tz
+for(i in 1:dim(sim.data2)[1]) {
+  if(i %% 10000 == 0) message(paste("Row", i))
+  active.piling.lines <- which((piling.data$start.datetime <= sim.data2$time[i]) &
+                                 (sim.data2$time[i] <= piling.data$stop.datetime))
+  if(length(active.piling.lines)>0) {
+    sim.data2$nearest.piling[i] <- as.character(piling.data$id[active.piling.lines[1]])
+    dd <- matrix(c(sim.data2$x[i], sim.data2$y[i], piling.data$x[active.piling.lines[1]],
+                   piling.data$y[active.piling.lines[1]]), nrow=2, byrow=TRUE)
+    sim.data2$np.dist[i] <- stats::dist(dd)
+    sim.data2$np.starttime[i] <- as.character(piling.data$start.datetime[active.piling.lines[1]])
+    if(length(active.piling.lines)>1) { # i.e. if there's more than one active piling for this pod line
+      for (j in 2:length(active.piling.lines)) {
+        dd2 <- matrix(c(sim.data2$x[i], sim.data2$y[i], piling.data$x[active.piling.lines[j]],
+                        piling.data$y[active.piling.lines[j]]), nrow=2, byrow=TRUE)
+        if (stats::dist(dd2) < stats::dist(dd)) {
+          sim.data2$nearest.piling[i] <- as.character(piling.data$id[active.piling.lines[j]])
+          sim.data2$np.dist[i] <- stats::dist(dd2)
+          sim.data2$np.starttime[i] <- as.character(piling.data$start.datetime[active.piling.lines[j]])
+        }
+      }
+    }
+  }
+}
+return(sim.data2)
+}
+
+#' @name get.pods.at.dist.sim.dat
+#' @title Assign hours since piling for detections within a distance interval
+#' @description Identifies simulated porpoise detections associated with piling events occurring
+#' within a specified distance interval from block location.
+#'
+#' For each pod-piling combination, the function labels rows belonging to that
+#' piling event and computes `hrs.since.piling`, including a short window before
+#' piling and a recovery window after piling has stopped.
+#'
+#' This function is used to prepare simulation output for aggregation of porpoise
+#' detections before, during, and after piling within given distance bands.
+#' @param min.dist Numeric. Lower distance threshold in meters.
+#' @param max.dist Numeric. Upper distance threshold in meters.
+#' @param sim.data2 A data frame containing simulated porpoise data already
+#' annotated with nearest piling information, typically the output of
+#' [find.nearest.piling()].
+#' @param tz Time zone.
+#' @return A data frame with two added columns:
+#'   \describe{
+#'     \item{hrs.since.piling}{Integer hours relative to the end of piling,
+#'     including a short pre-piling and post-piling window.}
+#'     \item{np}{The piling ID associated with the row, or `"NA"` if the row is
+#'     not assigned to a piling event in the selected distance class.}
+#'   }
+#' @export get.pods.at.dist.sim.dat
+get.pods.at.dist.sim.dat <- function(min.dist, max.dist, sim.data2, tz) {
+  sim.data3<-sim.data2
+  # Find pods that are at some point min.dist-max.dist m from a piling
+  the.lines <- which(sim.data3$np.dist>min.dist & sim.data3$np.dist<max.dist)
+  the.pods <- sort(unique(sim.data3$pod[the.lines]))
+  the.pilings <- sort(unique(as.character(sim.data3$nearest.piling[the.lines])))
+  sim.data3$hrs.since.piling <- NA
+  sim.data3$np.starttime <- as.POSIXct(sim.data3$np.starttime, format= "%Y-%m-%d %H:%M:%S", tz)
+  sim.data3$np <- "NA"
+  # For every combination of pod and piling, fill in hours since start of piling (also for
+  # the 5 hours before piling started).
+  # NOTE that consecutive pilings are sometimes < 6 hrs apart
+  for (po in the.pods) {
+    message(paste("Distance: ", min.dist, "-", max.dist, ", CPOD: ", po, sep=""))
+    for (pil in the.pilings) {
+      # message(pil)
+      lns <- which(sim.data3$pod==po & sim.data3$nearest.piling==pil)
+      if(length(lns)==0) {
+        warning(paste("No data for comb. of pod", po, "and piling", pil))
+        next
+      }
+      if(sim.data3$np.dist[lns][1]>max.dist || sim.data3$np.dist[lns][1]<min.dist) next
+      sim.data3$np[lns] <- pil
+      sim.data3$hrs.since.piling[lns] <- floor(as.numeric(difftime(sim.data3$time[lns], sim.data3$time[max(lns)+1], units="hours")))
+      last.pile.time <- sim.data3$time[max(lns)+1]
+      # Jump to next piling if followed directly by another piling:
+      if(!is.na(sim.data3$np.dist[max(lns)+1])) {
+        if(sim.data3$np.dist[max(lns)+1]<max.dist) next
+      }
+      # Move forward in time <25 hrs to look at recovery
+      for (lno in (max(lns)+1):length(sim.data3[,1])) {
+        if(sim.data3$pod[lno] != po) break
+        if(!is.na(sim.data3$np.dist[lno])) {
+          if (sim.data3$np.dist[lno]<max.dist) break # stop if there's another piling
+        }
+        ttt <- floor(as.numeric(difftime(sim.data3$time[lno], last.pile.time, units="hours")))
+        if(ttt>=13) break
+        if(!is.na(sim.data3$hrs.since.piling[lno])) {
+          warning(paste("Piling ", pil, " is <25 hrs from the following (line=", lno, ")", sep=""))
+          break
+        }
+        sim.data3$hrs.since.piling[lno] <- ttt
+        sim.data3$np[lno] <- pil
+      }
+    }
+    for (pil in the.pilings) {
+      # Move back in time <6 hrs
+      lns <- which(sim.data3$pod==po & sim.data3$nearest.piling==pil)
+      if(length(lns)==0) next
+      if(sim.data3$np.dist[lns][1]>max.dist || sim.data3$np.dist[lns][1]<min.dist) next
+      last.pile.time <- sim.data3$time[max(lns)+1]
+      for (lno in (min(lns)-1):1) {
+        if(sim.data3$pod[lno] != po) break
+        ttt <- floor(as.numeric(difftime(sim.data3$time[lno], last.pile.time, units="hours")))
+        if(ttt<=-4) break
+        if(!is.na(sim.data3$hrs.since.piling[lno]) && sim.data3$hrs.since.piling[lno]<=12) break
+        sim.data3$hrs.since.piling[lno] <- ttt
+        sim.data3$np[lno] <- pil
+      }
+    }
+  }
+  return(sim.data3)
+}
+
+#' @name aggregate.dpm.sim.dat
+#' @title Aggregate simulated porpoise detections by piling event and hour
+#' @description Aggregates simulated porpoise detections per minute (`dpm`) to
+#' hourly values for each station, pod, piling event, and hour since piling.
+#'
+#' The function is applied after simulation outputs have been matched to piling
+#' events and assigned a value of `hrs.since.piling`. For each combination of
+#' station, pod, piling event, and hour since piling, it computes the total
+#' number of porpoise, the average monitoring effort (dummy value), the fraction
+#' of minutes during which piling was active, minutes of monitoring per hour (time step is
+#' of 30min in DEPONS, so it is 2min/h), and whether all contributing rows were
+#' flagged as good data (as in the real CPOD data).
+#'
+#' This is used to create the hourly input tables required to compare simulated
+#' piling responses with observed CPOD data.
+#' @param sim.data3 A data frame containing piling assignments and hour offsets,
+#'   typically the output of [get.pods.at.dist.sim.dat()].
+#'   @return A data frame with one row per station, pod, piling event, and
+#'   `hrs.since.piling`, containing:
+#'   \describe{
+#'     \item{sum.dpm}{Sum of detections per minute across rows in the group.}
+#'     \item{mean.nall}{Mean monitoring effort.}
+#'     \item{fraction.piling}{Fraction of contributing rows during which piling
+#'     was active.}
+#'     \item{minutes.per.hr}{Number of minutes recorded in the hour.}
+#'     \item{good.data}{Logical indicator for flagging as good data.}
+#'   }
+#' @export aggregate.dpm.sim.dat
+aggregate.dpm.sim.dat <- function(sim.data3) {
+  ttt <- sim.data3[sim.data3$np!="NA"  ,]
+  ttt$is.piling <- ifelse(is.na(ttt$np.dist), 0, 1)
+  sim.data4 <- aggregate(ttt$dpm, by=list(ttt$station, ttt$pod, ttt$np, ttt$hrs.since.piling), FUN="sum", drop=FALSE)
+  names(sim.data4) <- c("station", "pod", "np", "hrs.since.piling", "sum.dpm")
+  mean.nall <- aggregate(ttt$nall, by=list(ttt$station, ttt$pod, ttt$np, ttt$hrs.since.piling),
+                         FUN="mean", drop=FALSE)
+  fraction.piling <- aggregate(ttt$is.piling, by=list(ttt$station, ttt$pod, ttt$np, ttt$hrs.since.piling),
+                               FUN="mean", drop=FALSE)
+  minutes.per.hr <- aggregate(ttt$nall, by=list(ttt$station, ttt$pod, ttt$np, ttt$hrs.since.piling),
+                              FUN="length", drop=FALSE)
+  minutes.per.hr <- ifelse(is.na(mean.nall[,5]), NA, minutes.per.hr[,5])
+  good.data <- aggregate(ttt$good.data, by=list(ttt$station, ttt$pod, ttt$np, ttt$hrs.since.piling),
+                         FUN="all", drop=FALSE)
+  sim.data4 <- cbind(sim.data4, "mean.nall"=mean.nall[,5], "fraction.piling"=fraction.piling[,5],
+                      "minutes.per.hr"= minutes.per.hr,"good.data"=good.data[,5])
+  ii <- order(sim.data4$station, sim.data4$pod, sim.data4$np, sim.data4$hrs.since.piling)
+  sim.data4 <- sim.data4[ii,]
+  sim.data4$sum.dpm <- ifelse(is.na(sim.data4$mean.nall), NA, sim.data4$sum.dpm)
+  return(sim.data4)
+}
+
+#' @name summarise.aggregated.dpm.dat
+#' @title Summarises aggregated simulated detections before and after piling
+#' @description Summarises an aggregated DPM table to produce the mean porpoise
+#' detection rate per hour since piling across all piling events and pods within
+#' a distance class.
+#'
+#' The function takes the event-level output from [aggregate.dpm.sim.dat()] and
+#' collapses it across piling events and pods, returning a single response curve
+#' by `hrs.since.piling`. For each hour bin, it calculates the mean detection
+#' rate and its standard error.
+#'
+#' This is used to generate the hourly response curves that are compared between
+#' simulated and observed data during piling-response calibration.
+#' @param ttt A data frame of aggregated simulated detections, typically produced
+#'   by [aggregate.dpm.sim.dat()].
+#' @param label Character string used as the distance-class label in the plot.
+#' @export summarise.aggregated.dpm.dat
+summarise.aggregated.dpm.dat <- function(ttt, label) {
+  # Plot averages per hr across all pilings and pods at selected distance
+  length.na.rm <- function(x) length(x[!is.na(x)])
+  mean.na.rm <- function(x) mean(x, na.rm=TRUE)
+  sd.na.rm <- function(x) stats::sd(x, na.rm=TRUE)
+  mean.dpm <- tapply(ttt$sum.dpm, ttt$hrs.since.piling, FUN="mean.na.rm")
+  names(ttt)[which(names(ttt)=="minutes.w.dpm.data")] <- "minutes.per.hr"
+  mean.minutes.per.hr <- tapply(ttt$minutes.per.hr, ttt$hrs.since.piling, FUN="mean.na.rm")
+  mean.dpm <- mean.dpm * 60 / mean.minutes.per.hr
+  sd.dpm <- tapply(ttt$sum.dpm, ttt$hrs.since.piling, FUN="sd.na.rm")
+  mean.dpm <- ifelse(is.na(sd.dpm), NA, mean.dpm)
+  n.dpm <- tapply(ttt$sum.dpm, ttt$hrs.since.piling, FUN="length.na.rm")
+  se.dpm <- sd.dpm/sqrt(n.dpm)
+  hrs.since.p <- as.numeric(names(mean.dpm))
+  # There's nearly always data for all of hr -3, so piling took place during all of that hour.
+  # Seal scare was on in the 30 min before piling, i.e. usually in hr. -4 or -5
+  return(data.frame("hrs.since.piling"=hrs.since.p, "mean.dpm"=100*mean.dpm/60, "se.dpm"=100*se.dpm/60))
+}
