@@ -1624,7 +1624,7 @@ make.stationary.ships <- function(x,
 #'
 #' @param pilings A data frame containing the positions and times of piling operations during the construction of a wind farm.
 #' May contain real data but must be in the format as produced by \code{\link{make.windfarms}}: columns 'id', 'x.coordinate' (num),
-#' 'y.coordinate' (num),	'impact' (num; optional - not required for this function),	'tick.start' (num), and	'tick.end' (num).
+#' 'y.coordinate' (num),	'impact' (num; value ignored but must be present),	'tick.start' (num), and	'tick.end' (num).
 #' @param ships A data frame with the characteristics of the ships that should be simulated. Must contain one entry for each ship and
 #' the columns 'id', length' (num; ship length, meters), 'speed' (num; knots), and 'daily.pause' (num; length of active, i.e. noisy,
 #' pause at each piling event, ticks). If no data are provided, a set of 13 ships based on data from piling operations at the Moray East wind farm in 2019 is used (see details).
@@ -1644,12 +1644,12 @@ make.stationary.ships <- function(x,
 #'                               c("ID_2", 20, 8, 20)))
 #' ships[,2:4] <- as.numeric(unlist(ships[,2:4]))
 #' colnames(ships) <- c("id", "length", "speed", "pause.length")
-#' pilings <- as.data.frame(rbind(c("Piling_1", 100000, 100000, 50, 54),
-#'                                c("Piling_2", 102000, 100000, 80, 84),
-#'                                c("Piling_3", 100000, 102000, 110, 114),
-#'                                c("Piling_4", 102000, 102000, 140, 144)))
-#' pilings[,2:5] <- as.numeric(unlist(pilings[,2:5]))
-#' colnames(pilings) <- c("id", "x.coordinate", "y.coordinate", "tick.start", "tick.end")
+#' pilings <- as.data.frame(rbind(c("Piling_1", 100000, 100000, 0, 50, 54),
+#'                                c("Piling_2", 102000, 100000, 0, 80, 84),
+#'                                c("Piling_3", 100000, 102000, 0, 110, 114),
+#'                                c("Piling_4", 102000, 102000, 0, 140, 144)))
+#' pilings[,2:6] <- as.numeric(unlist(pilings[,2:6]))
+#' colnames(pilings) <- c("id", "x.coordinate", "y.coordinate", "impact", "tick.start", "tick.end")
 #' construction.traffic <- make.construction.traffic(pilings = pilings, ships = ships,
 #'                                        x.harbour = x.harbour, y.harbour = y.harbour)
 #' @export make.construction.traffic
@@ -1752,40 +1752,40 @@ make.construction.traffic <- function (pilings, ships = NULL, x.harbour, y.harbo
         pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
       } else
 
-        ## case: sufficient time for 2 * half pause & shorter move towards harbour (incl. 0 length), with immediate return
-        if (time.avail >= ships$pause.length[ship] && time.avail < movtim + movtim.old + ships$pause.length[ship]) {
+         ## case: less time than 2 * half pauses. Subtract travel time, stay at position for half of remainder, move directly to next piling in time to wait for second half 
+         if (time.avail < ships$pause.length[ship] + 1) {
+         movdist.direct <-  distf(c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1]), c(pilings$x.coordinate[piling], pilings$y.coordinate[piling]))
+         movtim.direct <- round((movdist.direct / (ships$speed[ship] * 1852)) * 2)
+         pausetime.avail <- time.avail - movtim.direct
+         
+         time.postpil <- pilings$middle.tick[piling - 1] + round(pausetime.avail / 2)
+         pos.postpil <- c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1])
+         time.premid <- time.postpil # three identical times / positions in a row, only makes one move at end
+         pos.premid <- pos.postpil
+         time.postmid <- time.premid
+         pos.postmid <- pos.premid
+         time.prepil <- time.postmid + movtim.direct
+         pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
+       } else
+      
+          ## case: sufficient time for 2 * half pause & shorter move towards harbour (incl. 0 length), with immediate return
+          if (time.avail >= (ships$pause.length[ship] + 1) && time.avail < movtim + movtim.old + ships$pause.length[ship]) {
           time.postpil <- pilings$middle.tick[piling - 1] + ceiling(ships$pause.length[ship] / 2)
           pos.postpil <- c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1])
           traveltime.avail <- time.avail - ceiling(ships$pause.length[ship] / 2) * 2 # use "2 x rounded half" rather than "1 x" to avoid time discrepancy with time.postpil
-
+          
           # calculate target points for move, by multiplying the legs of the triangle by the same factor that the hypotenuse (the travel distance) has shrunk (i.e., that the available time has shrunk)
           timefactor <- (traveltime.avail / 2) / movtim.old # factor based on half traveltime.avail, outward leg only. This is moving back on route for previous piling, while angle and distance for next one may be slightly different. Will result in minor speed difference for inward leg
           newx <- pilings$x.coordinate[piling - 1] + (harbour[1] - pilings$x.coordinate[piling - 1]) * timefactor
           newy <- pilings$y.coordinate[piling - 1] + (harbour[2] - pilings$y.coordinate[piling - 1]) * timefactor
-
+          
           time.premid <- time.postpil + round(traveltime.avail / 2)
           pos.premid <- c(newx, newy)
           time.postmid <- time.premid
           pos.postmid <- pos.premid
           time.prepil <- pilings$middle.tick[piling] - ceiling(ships$pause.length[ship] / 2)
-          pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
-        } else
-
-          ## case: less time than 2 * half pauses. Subtract travel time, stay at position for half of remainder, move directly to next piling in time to wait for second half
-          if (time.avail < ceiling(ships$pause.length[ship] / 2) * 2) {
-            movdist.direct <-  distf(c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1]), c(pilings$x.coordinate[piling], pilings$y.coordinate[piling]))
-            movtim.direct <- round((movdist.direct / (ships$speed[ship] * 1852)) * 2)
-            pausetime.avail <- time.avail - movtim.direct
-
-            time.postpil <- pilings$middle.tick[piling - 1] + round(pausetime.avail / 2)
-            pos.postpil <- c(pilings$x.coordinate[piling - 1], pilings$y.coordinate[piling - 1])
-            time.premid <- time.postpil # three identical times / positions in a row, only makes one move at end
-            pos.premid <- pos.postpil
-            time.postmid <- time.premid
-            pos.postmid <- pos.premid
-            time.prepil <- time.postmid + movtim.direct
-            pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling])
-          } else {
+          pos.prepil <- c(pilings$x.coordinate[piling], pilings$y.coordinate[piling]) 
+      } else {  
 
             # any case not covered: abnormal ship position - throw error
             stop(paste0("Abnormal ship position, ship ", ships$id[ship], " after piling starting at tick", pilings$tick.start))
